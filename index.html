@@ -400,7 +400,8 @@ var FISH = {
     var why = 'Season, sea temperature, swell and timing all line up.';
     if (f[worst] < 0.75) {
       var o = {
-        season: 'Out of its usual season in ' + MONTHS[c.month - 1] + '.',
+        /* Resident fish (season never below 0.4: sargo, veja, moray) are here all year, just quieter in some months. */
+        season: Math.min.apply(null, sp.season) >= 0.4 ? 'Here all year, but quieter in ' + MONTHS[c.month - 1] + '.' : 'Out of its usual season in ' + MONTHS[c.month - 1] + '.',
         temp: 'Sea at ' + c.temp + '°C, it prefers ' + sp.t[0] + '–' + sp.t[1] + '°C.',
         wave: c.eff > sp.wave[1] ? 'Too rough here at ' + c.eff.toFixed(1) + ' m effective, it prefers up to ' + sp.wave[1] + ' m.' : 'Too calm here, it prefers at least ' + sp.wave[0] + ' m.',
         wind: c.wind + ' km/h wind is above its comfort limit.',
