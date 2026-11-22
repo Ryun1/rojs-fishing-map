@@ -1,0 +1,293 @@
+{
+  "name": "Horta_Azores",
+  "country_code": "PT",
+  "country": "Portugal",
+  "continent": "Europe",
+  "latitude": 38.533,
+  "longitude": -28.622,
+  "timezone": "Atlantic/Azores",
+  "source": {
+    "name": "TICON-4",
+    "url": "https://www.seanoe.org/data/00980/109129/",
+    "id": "horta_azores-212a-prt-uhslc_rq",
+    "published_harmonics": true
+  },
+  "license": {
+    "type": "cc-by-4.0",
+    "commercial_use": true,
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "disclaimers": "No obvious issues Datums derived from harmonic prediction; observations do not support a mean-datum reduction over twelve continuous whole months after bounded short-gap reconstruction. Datum values carry higher uncertainty. Complete prepared observations do not cover every calendar month of the year for a balanced gauge mean; datums remain in the constituent frame (MSL = 0). Harmonic datums retain every predicted turning point without prominence filtering.",
+  "datums": {
+    "HAT": 0.861,
+    "MHHW": 0.476,
+    "MHW": 0.44,
+    "MSL": 0,
+    "MTL": 0.005,
+    "MLW": -0.43,
+    "MLLW": -0.452,
+    "LAT": -0.796,
+    "MHWS": 0.566,
+    "MLWS": -0.566
+  },
+  "datums_source": "harmonic",
+  "datum_frame": "constituent",
+  "chart_datum": "LAT",
+  "type": "reference",
+  "harmonic_constituents": [
+    {
+      "name": "M2",
+      "amplitude": 0.41370308,
+      "phase": 59.474987
+    },
+    {
+      "name": "N2",
+      "amplitude": 0.09125314,
+      "phase": 44.71366
+    },
+    {
+      "name": "S2",
+      "amplitude": 0.152671,
+      "phase": 78.437001
+    },
+    {
+      "name": "K2",
+      "amplitude": 0.04247285,
+      "phase": 75.135778
+    },
+    {
+      "name": "2N2",
+      "amplitude": 0.01360416,
+      "phase": 28.035196
+    },
+    {
+      "name": "S1",
+      "amplitude": 0.00272664,
+      "phase": 9.225347
+    },
+    {
+      "name": "K1",
+      "amplitude": 0.04155379,
+      "phase": 84.261437
+    },
+    {
+      "name": "P1",
+      "amplitude": 0.01276736,
+      "phase": 76.650783
+    },
+    {
+      "name": "O1",
+      "amplitude": 0.01993325,
+      "phase": 326.812619
+    },
+    {
+      "name": "Q1",
+      "amplitude": 0.00828553,
+      "phase": 247.740853
+    },
+    {
+      "name": "M1",
+      "amplitude": 0.00445568,
+      "phase": 240.761185
+    },
+    {
+      "name": "M4",
+      "amplitude": 0.00515908,
+      "phase": 131.053931
+    },
+    {
+      "name": "MM",
+      "amplitude": 0.00909254,
+      "phase": 279.250786
+    },
+    {
+      "name": "MF",
+      "amplitude": 0.00275741,
+      "phase": 317.21442
+    },
+    {
+      "name": "SA",
+      "amplitude": 0.04682592,
+      "phase": 207.995634
+    },
+    {
+      "name": "SSA",
+      "amplitude": 0.02138174,
+      "phase": 15.180316
+    },
+    {
+      "name": "T2",
+      "amplitude": 0.0096797,
+      "phase": 77.336306
+    },
+    {
+      "name": "J1",
+      "amplitude": 0.00103823,
+      "phase": 75.792945
+    },
+    {
+      "name": "L2",
+      "amplitude": 0.00850597,
+      "phase": 59.735224
+    },
+    {
+      "name": "R2",
+      "amplitude": 0.00363977,
+      "phase": 43.423757
+    },
+    {
+      "name": "2Q1",
+      "amplitude": 0.00222263,
+      "phase": 199.230963
+    },
+    {
+      "name": "MSF",
+      "amplitude": 0.00043279,
+      "phase": 60.876813
+    },
+    {
+      "name": "MSQM",
+      "amplitude": 0.00139701,
+      "phase": 30.65855
+    },
+    {
+      "name": "EP2",
+      "amplitude": 0.00416052,
+      "phase": 345.830215
+    },
+    {
+      "name": "M3",
+      "amplitude": 0.0031263,
+      "phase": 147.654961
+    },
+    {
+      "name": "MU2",
+      "amplitude": 0.01835349,
+      "phase": 13.566469
+    },
+    {
+      "name": "MTM",
+      "amplitude": 0.00530216,
+      "phase": 206.793376
+    },
+    {
+      "name": "NU2",
+      "amplitude": 0.01646971,
+      "phase": 45.05078
+    },
+    {
+      "name": "LAMBDA2",
+      "amplitude": 0.00114184,
+      "phase": 78.512654
+    },
+    {
+      "name": "MN4",
+      "amplitude": 0.00261873,
+      "phase": 93.002225
+    },
+    {
+      "name": "MS4",
+      "amplitude": 0.00186771,
+      "phase": 184.623797
+    },
+    {
+      "name": "MKS2",
+      "amplitude": 0.00097639,
+      "phase": 128.988415
+    },
+    {
+      "name": "N4",
+      "amplitude": 0.0006719,
+      "phase": 47.25865
+    },
+    {
+      "name": "M6",
+      "amplitude": 0.00097289,
+      "phase": 258.040281
+    },
+    {
+      "name": "M8",
+      "amplitude": 0.00010046,
+      "phase": 322.228014
+    },
+    {
+      "name": "S4",
+      "amplitude": 0.00013371,
+      "phase": 208.604283
+    },
+    {
+      "name": "OO1",
+      "amplitude": 0.00112061,
+      "phase": 205.429676
+    },
+    {
+      "name": "S3",
+      "amplitude": 0.00076885,
+      "phase": 278.505825
+    },
+    {
+      "name": "MA2",
+      "amplitude": 0.0015893,
+      "phase": 113.209585
+    },
+    {
+      "name": "MB2",
+      "amplitude": 0.00724714,
+      "phase": 35.623389
+    },
+    {
+      "name": "T3",
+      "amplitude": 0.00095162,
+      "phase": 324.465839
+    },
+    {
+      "name": "R3",
+      "amplitude": 0.00094631,
+      "phase": 51.92205
+    },
+    {
+      "name": "RHO1",
+      "amplitude": 0.00143517,
+      "phase": 262.699694
+    },
+    {
+      "name": "SGM",
+      "amplitude": 0.00267798,
+      "phase": 211.091759
+    },
+    {
+      "name": "3L2",
+      "amplitude": 0.00217695,
+      "phase": 225.662227
+    },
+    {
+      "name": "3N2",
+      "amplitude": 0.00081011,
+      "phase": 93.867524
+    },
+    {
+      "name": "2SM2",
+      "amplitude": 0.00117535,
+      "phase": 200.148662
+    },
+    {
+      "name": "2MS6",
+      "amplitude": 0.00074415,
+      "phase": 324.067241
+    },
+    {
+      "name": "2MK5",
+      "amplitude": 0.00042233,
+      "phase": 69.7778
+    },
+    {
+      "name": "2MO5",
+      "amplitude": 0.00026375,
+      "phase": 358.412144
+    }
+  ],
+  "epoch": {
+    "start": "1984-01-01",
+    "end": "1986-06-30"
+  }
+}
