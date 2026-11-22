@@ -163,6 +163,19 @@ a { color: var(--accent); }
 details.whatif { color: var(--fg); }
 details.whatif > div { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
 .limits { font-family: var(--font-data); font-size: 0.82rem; }
+.mnav { display: flex; align-items: center; gap: 6px; }
+.mnav .chip { padding: 6px 12px; }
+.mnav .mname { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; min-width: 6.5em; text-align: center; }
+.months { gap: 6px; }
+.months .chip { padding: 6px 0; min-width: 3.4em; font-family: var(--font-data); font-size: 0.85rem; }
+.spark { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; height: 44px; }
+.spark button { border: 0; padding: 0; background: transparent; display: flex; align-items: flex-end; height: 100%; min-width: 0; }
+.spark button span { display: block; width: 100%; border-radius: 2px 2px 0 0; background: color-mix(in srgb, var(--muted) 40%, var(--surface)); }
+.spark button.on span { background: var(--accent); }
+.spark button:hover span { background: color-mix(in srgb, var(--accent) 55%, var(--surface)); }
+.saxis { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; font-family: var(--font-data); font-size: 0.7rem; color: var(--muted); text-align: center; }
+.saxis .on { color: var(--accent); font-weight: 500; }
+.speak { color: var(--muted); font-size: 0.85rem; }
 body{margin:0}
 [hidden]{display:none!important}
 </style></head><body>
@@ -232,6 +245,21 @@ body{margin:0}
   <section aria-labelledby="h-all" style="display:flex;flex-direction:column;gap:12px">
     <h2 id="h-all">All spots at this time</h2>
     <div class="scroll"><table id="grid"></table></div>
+  </section>
+
+  <section aria-labelledby="h-season" style="display:flex;flex-direction:column;gap:12px">
+    <div class="head-row">
+      <h2 id="h-season">Seasons</h2>
+      <div class="mnav">
+        <button class="chip" id="s-prev" type="button" aria-label="Previous month">&larr;</button>
+        <span class="mname" id="s-mname" aria-live="polite"></span>
+        <button class="chip" id="s-next" type="button" aria-label="Next month">&rarr;</button>
+      </div>
+    </div>
+    <div class="chips months" id="s-months" role="group" aria-label="Month"></div>
+    <p class="spotnote">How strongly each fish is in season, month by month, across the island. Pick a month to rank them, or tap a bar.</p>
+    <ol class="rank" id="s-list"></ol>
+    <p class="fine">From 32 years of monthly fish-auction landings on Pico (SREA, 1994 to 2025), smoothed. These are commercial landings, so they show when each fish is around and targeted, not shore catches. Sargo, veja and moray live on the coast all year, so they never fall below a moderate level.</p>
   </section>
 
   <details class="whatif panel" id="whatif">
@@ -559,7 +587,45 @@ var FISH = {
   var SPOTS = [], SPECIES = [], LIMITS = {};
   var LEVELS = ['Good', 'Fair', 'Poor', 'Unsafe'];
   var LIVE_KEY = 'pico-live-v1';
-  var state = { spot: 'madalena', source: 'example', gps: null, tideAuto: true, live: null, warn: null };
+  var state = { smonth: null, spot: 'madalena', source: 'example', gps: null, tideAuto: true, live: null, warn: null };
+
+  /* Seasons: browse the 12-month curves in data/species.json. state.smonth is null while it follows the chosen date. */
+  function seasonMonth() {
+    if (state.smonth) return state.smonth;
+    var w = readWhen();
+    return w ? w.month : azParts(new Date()).month;
+  }
+  function seasonLevel(v) {
+    return v >= 0.85 ? ['Peak', 'good'] : v >= 0.6 ? ['Good', 'good'] : v >= 0.35 ? ['Fair', 'fair'] : ['Low', 'poor'];
+  }
+  function peakText(sp) {
+    var top = Math.max.apply(null, sp.season), on = sp.season.map(function (v) { return v >= top - 0.05; });
+    var ab = function (k) { return MONTHS[k].slice(0, 3); };
+    var starts = [];
+    on.forEach(function (x, k) { if (x && !on[(k + 11) % 12]) starts.push(k); });
+    if (starts.length !== 1) return 'Peaks ' + on.map(function (x, k) { return x ? ab(k) : null; }).filter(Boolean).join(', ');
+    var a = starts[0], b = a;
+    while (on[(b + 1) % 12] && (b + 1) % 12 !== a) b = (b + 1) % 12;
+    return 'Peaks ' + (a === b ? ab(a) : ab(a) + '–' + ab(b));
+  }
+  function renderSeasons() {
+    var mo = seasonMonth(), i = mo - 1;
+    $('s-mname').textContent = MONTHS[i];
+    $('s-months').innerHTML = MONTHS.map(function (n, k) {
+      return '<button class="chip" type="button" data-smonth="' + (k + 1) + '" aria-pressed="' + (k === i) + '" aria-label="' + n + '">' + n.slice(0, 3) + '</button>';
+    }).join('');
+    var axis = '<div class="saxis" aria-hidden="true">' + MONTHS.map(function (n, k) { return '<span' + (k === i ? ' class="on"' : '') + '>' + n[0] + '</span>'; }).join('') + '</div>';
+    $('s-list').innerHTML = SPECIES.slice().sort(function (a, b) { return b.season[i] - a.season[i] || a.name.localeCompare(b.name); }).map(function (sp) {
+      var v = sp.season[i], lv = seasonLevel(v);
+      var bars = sp.season.map(function (x, k) {
+        return '<button type="button" data-smonth="' + (k + 1) + '"' + (k === i ? ' class="on"' : '') + ' aria-label="' + sp.name + ', ' + MONTHS[k] + ': ' + Math.round(x * 100) + '"><span style="height:' + Math.max(4, Math.round(x * 100)) + '%"></span></button>';
+      }).join('');
+      return '<li class="' + lv[1] + '"><div class="rowtop"><div class="sid">' + fishSvg(sp.id) + '<div><div class="sname">' + sp.name + '<span>' + sp.pt + '</span></div><div class="speak">' + peakText(sp) + '</div></div></div>' +
+        '<div class="score">' + Math.round(v * 100) + '<small>' + lv[0] + '</small></div></div>' +
+        '<div class="spark">' + bars + '</div>' + axis + '</li>';
+    }).join('');
+  }
+  function setSeasonMonth(m) { state.smonth = ((m - 1 + 12) % 12) + 1; renderSeasons(); }
 
   function currentSpot() { return SPOTS.filter(function (s) { return s.id === state.spot; })[0] || SPOTS[0]; }
   function compass16(deg) {
@@ -794,6 +860,7 @@ var FISH = {
 
   function render() {
     var when = readWhen();
+    if (SPECIES.length) renderSeasons();
     if (!when || !SPOTS.length) return;
     var spot = currentSpot();
     var conds = SPOTS.map(function (s, i) { return spotCond(s, i, when); });
@@ -925,6 +992,17 @@ var FISH = {
       }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
     });
     $('f-moon').addEventListener('change', render);
+    $('s-prev').addEventListener('click', function () { setSeasonMonth(seasonMonth() - 1); });
+    $('s-next').addEventListener('click', function () { setSeasonMonth(seasonMonth() + 1); });
+    $('s-months').addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault(); setSeasonMonth(seasonMonth() + (e.key === 'ArrowRight' ? 1 : -1));
+      var b = document.querySelector('#s-months [data-smonth="' + seasonMonth() + '"]'); if (b) b.focus();
+    });
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest ? e.target.closest('[data-smonth]') : null;
+      if (t) setSeasonMonth(+t.getAttribute('data-smonth'));
+    });
     $('b-live').addEventListener('click', loadLive);
     function pick(t) { state.spot = t.getAttribute('data-spot'); render(); }
     document.addEventListener('click', function (e) {
