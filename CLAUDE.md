@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Static PWA, no build step or dependencies. Everything lives in `index.html` (HTML + CSS + JS + tide calculation from TICON-4 constants for Horta, between the `TIDE START` and `TIDE END` comments).
+Static PWA, no build step or dependencies. Code lives in `index.html` (HTML + CSS + JS + tide calculation from TICON-4 constants for Horta, between the `TIDE START` and `TIDE END` comments). Reference data lives in `data/`: `spots.json` (spot positions, facings, open and channel sectors, wave sample points, and the fishability limits) and `species.json`. The island map is inline SVG in `index.html`; see `tools/map.md`.
 
 - Run: `python3 -m http.server 8000` and open http://localhost:8000.
 - Whenever any shipped file changes, bump `CACHE` in `sw.js`; new assets must also be added to its `FILES` list.

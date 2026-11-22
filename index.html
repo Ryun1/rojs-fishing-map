@@ -115,55 +115,108 @@ a { color: var(--accent); }
 .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 4px 16px; font-size: 0.88rem; }
 .keys b { font-family: var(--font-data); font-weight: 500; margin-right: 6px; }
 @media (prefers-reduced-motion: no-preference) { .fill { transition: width 0.25s ease; } }
+.when { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: end; }
+.when .field { flex: 1 1 140px; }
+.mapbox { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.map { display: block; width: 100%; height: auto; }
+.map .sea { fill: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+.map .pico { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; }
+.map .other { fill: color-mix(in srgb, var(--line) 55%, var(--bg)); stroke: var(--line); stroke-width: 1; }
+.map .iname { fill: var(--muted); font-family: var(--font-display); font-size: 20px; letter-spacing: 0.2em; }
+.map .iname.small { font-size: 15px; letter-spacing: 0.08em; font-style: italic; }
+.map .mk { cursor: pointer; }
+.map .mk:focus { outline: none; }
+.map .mk:focus-visible .ring { stroke: var(--accent); stroke-width: 3; }
+.map .hit { fill: transparent; pointer-events: all; }
+.map .ring { fill: none; stroke: none; }
+.map .mk.sel .ring { stroke: var(--accent); stroke-width: 3; }
+.map .lbl { font-family: var(--font-body); font-size: 17px; font-weight: 600; fill: var(--fg); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.map .mk.sel .lbl { fill: var(--accent); }
+.s0 { fill: var(--good); } .s1 { fill: var(--warn); } .s2 { fill: var(--bad); } .s3 { stroke: var(--bad); stroke-width: 4.5; stroke-linecap: round; fill: none; }
+.s3bg { fill: var(--surface); stroke: var(--bad); stroke-width: 1.5; }
+.sn { fill: var(--surface); stroke: var(--muted); stroke-width: 2; }
+.map .arrow { stroke: var(--fg); stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.map .arrow.swell { stroke: var(--accent); }
+.map .dial { fill: var(--surface); stroke: var(--line); stroke-width: 1.2; }
+.map .alab { font-family: var(--font-data); font-size: 13px; fill: var(--fg); text-anchor: middle; }
+.map .me { fill: var(--accent); stroke: var(--surface); stroke-width: 2.5; }
+.maplegend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 0.82rem; color: var(--muted); align-items: center; }
+.maplegend svg { width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; }
+.maplegend .credit { margin-left: auto; font-size: 0.75rem; }
+.spotlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.spotrow { width: 100%; text-align: left; background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.spotrow[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.spotrow .top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.spotrow .nm { font-weight: 600; }
+.spotrow .sum { color: var(--muted); font-size: 0.85rem; font-family: var(--font-data); }
+.badge { display: inline-block; font-size: 0.78rem; font-weight: 600; border-radius: 999px; padding: 1px 9px; border: 1px solid currentColor; white-space: nowrap; }
+.badge.l0 { color: var(--good); } .badge.l1 { color: var(--warn); } .badge.l2 { color: var(--bad); }
+.badge.l3 { color: var(--surface); background: var(--bad); border-color: var(--bad); }
+.badge.lx { color: var(--muted); }
+.detail h3 { font-family: var(--font-display); font-size: 1.5rem; margin: 0; line-height: 1.1; }
+.detail .sub { color: var(--muted); font-size: 0.88rem; }
+.condlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 0.92rem; }
+.condlist b { font-weight: 600; display: inline-block; min-width: 4.2em; }
+.reasons { margin: 0; padding-left: 18px; font-size: 0.9rem; display: flex; flex-direction: column; gap: 2px; }
+.hazard { border-left: 3px solid var(--warn); padding: 4px 10px; font-size: 0.88rem; }
+.fine { color: var(--muted); font-size: 0.82rem; }
+details.whatif { color: var(--fg); }
+details.whatif > div { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
+.limits { font-family: var(--font-data); font-size: 0.82rem; }
 body{margin:0}
 [hidden]{display:none!important}
 </style></head><body>
-
 <div class="wrap">
   <header>
     <p class="eyebrow">Pico island, Azores</p>
     <h1>Pico Fishing Forecast</h1>
-    <p class="lede">Shore fishing scores for five spots. Enter the sea conditions, or load them live, and see which species line up best.</p>
+    <p class="lede">Sea conditions and a fishability rating for five shore spots, then the species most likely there. Tap a spot on the map.</p>
   </header>
 
-  <section class="panel" aria-labelledby="h-cond">
+  <section class="panel" aria-labelledby="h-when">
     <div class="head-row">
-      <h2 id="h-cond">Conditions</h2>
+      <h2 id="h-when">When</h2>
       <span class="status" id="status" role="status">Example conditions</span>
     </div>
-    <div class="grid">
+    <div class="when">
       <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
       <div class="field"><label for="f-time">Time (Azores)</label><input type="time" id="f-time"></div>
-      <div class="field"><label for="f-temp">Sea temp &deg;C</label><input type="number" id="f-temp" step="0.1" min="8" max="30" inputmode="decimal"></div>
-      <div class="field"><label for="f-wave">Wave height m</label><input type="number" id="f-wave" step="0.1" min="0" max="12" inputmode="decimal"></div>
-      <div class="field"><label for="f-dir">Swell from</label>
-        <select id="f-dir">
-          <option value="0">N</option><option value="45">NE</option><option value="90">E</option><option value="135">SE</option>
-          <option value="180">S</option><option value="225">SW</option><option value="270">W</option><option value="315">NW</option>
-        </select></div>
-      <div class="field"><label for="f-wind">Wind km/h</label><input type="number" id="f-wind" step="1" min="0" max="150" inputmode="numeric"></div>
-      <div class="field"><label for="f-tide">Tide</label>
-        <select id="f-tide">
-          <option value="rising">Rising</option><option value="falling">Falling</option>
-          <option value="high">Slack high</option><option value="low">Slack low</option>
-        </select></div>
     </div>
     <div class="actions">
-      <button class="btn" id="b-live" type="button">Load live conditions</button>
-      <button class="btn ghost" id="b-tide" type="button" hidden>Use auto tide</button>
-      <button class="btn ghost" id="b-now" type="button">Use current time</button>
-      <button class="btn" id="b-gps" type="button">Use my location</button>
+      <button class="btn ghost" id="b-now" type="button">Now</button>
+      <button class="btn" id="b-live" type="button">Load live forecast</button>
+      <button class="btn ghost" id="b-gps" type="button">Use my location</button>
     </div>
     <p class="msg" id="livemsg" hidden></p>
-    <p class="msg" id="tideline" hidden></p>
     <div class="sunline" id="sunline"></div>
   </section>
 
-  <section aria-labelledby="h-spot" style="display:flex;flex-direction:column;gap:14px">
-    <h2 id="h-spot">Spot</h2>
-    <div class="chips" id="chips"></div>
+  <section aria-labelledby="h-spot" style="display:flex;flex-direction:column;gap:12px">
+    <h2 id="h-spot">Spots</h2>
+    <div id="warnbanner"></div>
+    <div class="mapbox">
+      <svg class="map" id="map" viewBox="30 50 545 300" role="group" aria-label="Map of Pico with the fishing spots">
+        <rect class="sea" x="30" y="50" width="545" height="300"/>
+        <path class="other" d="M-121.1 97.6L-120.1 98.4L-120.4 99.2L-121.1 98.7L-120.0 99.9L-120.5 101.0L-116.1 102.7L-115.8 106.4L-116.5 107.4L-115.8 107.9L-116.5 109.2L-116.0 108.1L-113.2 109.1L-111.1 113.7L-106.2 118.5L-104.6 118.7L-102.0 120.9L-95.4 124.0L-91.1 128.1L-87.3 129.5L-85.7 131.4L-81.9 133.0L-79.4 135.4L-76.0 134.5L-73.4 136.1L-73.4 135.0L-72.1 134.1L-68.6 133.5L-63.2 137.5L-61.0 141.2L-57.0 152.3L-55.4 161.0L-55.1 170.6L-53.7 170.9L-53.0 172.2L-53.7 175.2L-56.4 174.3L-57.8 175.2L-58.2 176.6L-57.2 178.1L-54.0 176.5L-49.5 175.9L-45.1 177.0L-40.8 179.7L-35.8 180.8L-35.8 182.0L-33.9 182.1L-34.0 181.3L-31.3 182.7L-26.0 182.5L-21.0 182.0L-17.2 179.5L-15.9 180.4L-9.9 178.6L0.8 179.1L6.5 177.0L6.4 176.4L8.5 177.6L10.7 177.2L13.5 178.1L19.1 176.1L19.1 177.0L19.6 176.4L23.4 177.7L25.9 176.2L27.3 176.9L29.7 176.4L30.4 175.1L32.1 174.5L34.6 175.1L34.4 175.7L38.4 175.6L39.5 175.4L40.6 173.7L42.0 174.5L42.4 176.7L40.4 177.2L38.2 179.3L37.2 182.5L38.4 183.2L39.0 182.5L41.0 184.2L39.9 181.8L41.4 180.6L43.1 184.1L44.5 184.8L45.9 183.9L47.2 181.0L46.3 178.4L43.8 177.1L44.4 175.6L46.0 175.4L45.3 172.7L46.0 166.1L45.2 170.9L44.3 171.3L44.9 172.4L42.7 172.0L42.0 170.8L41.9 168.9L42.8 169.1L42.8 170.2L42.4 165.9L43.3 168.3L43.3 166.6L42.3 165.0L43.0 162.5L45.9 158.7L45.9 159.8L46.9 159.6L45.4 162.4L47.7 159.6L46.9 157.9L47.6 158.5L47.6 157.2L58.5 156.4L60.6 153.5L59.9 151.2L55.4 145.8L54.9 144.0L55.8 143.3L54.6 142.4L55.6 142.0L53.4 138.9L54.3 136.8L55.5 136.1L55.3 134.7L58.7 132.5L59.7 130.8L56.0 120.7L57.8 118.0L57.7 115.1L59.4 113.8L59.8 110.8L64.0 108.0L64.0 106.0L57.5 99.0L51.7 95.8L45.1 88.6L41.0 87.3L41.0 86.4L32.7 86.1L26.5 83.9L24.7 82.6L23.7 80.3L19.4 77.6L18.2 75.0L16.9 74.5L17.3 74.0L15.0 73.7L13.6 69.8L10.1 68.7L5.6 65.4L3.2 65.9L2.5 64.5L1.4 65.1L-5.0 60.7L-15.2 58.6L-18.6 56.4L-20.6 57.0L-28.2 56.2L-36.7 62.7L-39.0 65.4L-41.1 71.1L-49.2 82.3L-54.3 86.9L-58.7 89.2L-60.5 89.8L-64.4 87.5L-68.0 86.9L-71.5 87.3L-73.9 89.2L-76.4 89.8L-84.5 88.3L-95.6 89.2L-101.6 90.4L-102.2 91.6L-104.5 91.6L-104.6 93.2L-109.3 96.5L-112.2 95.4L-113.1 96.1L-112.7 97.8L-113.6 98.5L-115.6 98.3L-117.9 96.1L-119.9 96.3L-119.9 97.9Z"/>
+        <path class="other" d="M283.9 -55.3L284.5 -53.0L289.1 -50.4L294.0 -46.0L301.9 -34.5L306.7 -30.4L310.1 -28.6L314.3 -22.7L318.4 -20.2L321.8 -15.9L330.7 -10.5L336.9 -9.2L342.9 -4.9L345.6 -4.7L352.1 -1.2L354.1 1.0L355.4 4.7L355.3 6.4L352.8 8.6L355.0 10.3L355.3 8.8L356.3 8.2L359.2 8.3L360.8 9.7L359.7 15.2L358.1 15.7L357.8 17.1L356.6 17.8L358.1 20.2L360.4 20.8L363.7 18.9L364.4 19.8L365.2 19.2L367.0 20.2L366.2 21.8L367.3 20.7L367.8 23.2L371.1 20.7L371.7 22.1L372.9 21.9L374.3 23.2L372.1 20.1L375.1 19.7L378.1 22.8L379.3 25.5L378.8 26.0L379.5 26.1L379.0 26.9L380.2 30.8L382.8 33.0L384.7 33.3L388.6 36.0L395.0 37.2L400.4 40.0L403.1 42.4L405.7 43.2L405.6 44.1L406.5 43.9L406.3 44.7L414.1 48.4L415.5 50.4L424.3 52.9L427.0 55.1L428.2 54.8L428.1 56.1L431.0 56.5L431.9 55.4L433.3 56.8L432.9 57.6L434.4 57.3L436.5 59.1L435.7 60.5L437.2 61.3L436.9 62.0L443.3 62.5L446.8 64.7L447.5 65.4L447.1 66.0L448.3 65.5L449.8 67.1L450.5 66.8L451.0 67.3L450.2 68.3L452.5 67.4L454.2 68.9L455.6 67.8L457.0 69.2L459.5 68.6L468.2 71.7L469.8 71.3L470.5 72.8L471.5 72.5L472.3 73.4L475.4 71.7L480.7 73.4L495.6 83.0L497.6 86.4L500.8 87.4L503.5 90.8L505.5 91.8L504.8 93.2L505.3 92.8L505.5 93.9L506.6 93.8L513.0 98.6L517.9 98.9L520.2 100.1L522.8 99.4L524.7 100.5L523.9 99.5L524.5 99.6L524.1 98.7L525.0 98.2L525.8 99.3L531.8 100.6L537.0 104.1L538.9 103.6L546.4 106.2L550.1 105.7L555.1 103.2L561.3 105.8L567.2 110.0L577.0 110.5L587.9 119.6L592.4 121.4L595.1 126.2L598.6 127.4L602.0 130.8L606.6 132.6L609.8 135.1L619.2 137.4L628.1 144.1L635.3 146.4L636.9 149.3L638.2 149.6L639.6 152.4L641.4 153.9L645.0 154.9L650.1 158.5L654.7 160.1L660.4 163.9L666.0 166.3L692.9 164.8L703.1 162.6L707.4 163.0L709.7 164.6L710.8 162.4L716.3 161.0L716.2 159.8L718.6 158.0L720.9 158.4L721.4 158.0L720.5 157.1L721.5 156.7L721.7 154.2L725.9 152.4L725.0 150.5L723.3 150.3L722.1 147.4L720.2 147.7L716.8 142.8L712.2 141.2L705.8 134.9L702.2 132.8L697.2 133.0L692.6 130.1L690.6 126.8L690.5 125.0L687.9 125.9L680.1 122.7L675.2 122.0L673.4 121.2L673.4 120.1L671.6 121.5L668.8 117.0L667.5 118.3L666.0 117.9L661.4 113.4L651.6 109.2L640.6 101.8L624.9 94.4L621.8 91.1L618.2 91.0L608.0 85.5L597.0 83.9L591.6 78.6L590.7 75.3L588.4 72.0L586.5 71.5L583.3 73.5L580.6 71.4L578.8 71.4L577.3 68.2L562.6 62.4L560.4 56.8L550.3 56.0L546.3 52.5L544.6 49.6L543.1 49.0L541.3 45.6L539.2 44.6L538.8 42.5L537.6 42.9L536.3 41.5L535.8 42.1L532.5 40.0L528.6 39.6L526.0 36.5L518.4 33.0L513.6 27.9L510.2 27.6L508.9 28.8L505.3 29.4L498.0 27.1L496.6 27.5L496.4 25.6L494.1 24.8L494.1 23.3L492.1 23.4L493.1 21.6L493.0 18.6L489.6 21.5L489.1 21.6L489.7 20.2L488.6 20.1L487.8 23.2L485.7 23.6L475.4 19.6L470.8 18.9L468.5 16.5L458.8 10.6L449.3 7.4L443.5 8.0L440.3 7.0L438.5 5.2L437.5 1.6L436.9 2.6L433.9 3.1L426.8 0.9L419.4 -6.2L416.9 -6.1L413.1 -8.1L410.5 -7.8L406.6 -9.0L402.8 -11.8L394.0 -13.6L385.7 -18.8L383.1 -18.6L381.1 -19.8L377.1 -20.2L374.3 -22.3L365.4 -25.4L363.4 -27.2L357.2 -28.8L354.0 -31.4L352.2 -30.2L350.1 -30.8L346.7 -34.1L343.0 -35.2L338.5 -38.3L332.9 -39.9L325.7 -45.3L313.1 -48.6L306.7 -52.0L298.9 -52.6L290.3 -55.5Z"/>
+        <path class="pico" d="M108.1 190.4L108.8 194.3L108.4 195.4L109.3 196.5L109.0 200.3L110.2 201.8L110.3 204.4L108.3 205.2L109.1 205.3L109.3 207.0L108.1 207.9L109.1 208.1L110.2 212.0L110.4 213.2L109.5 213.6L110.6 215.2L110.3 215.7L111.4 216.3L111.1 217.1L112.3 217.5L111.7 218.2L113.4 219.9L113.1 221.1L115.0 222.6L115.1 224.5L118.0 229.8L124.3 235.0L126.0 243.8L127.6 245.9L127.6 247.8L139.1 253.9L139.8 255.3L142.0 255.3L144.3 257.7L145.0 257.3L147.6 259.5L155.0 262.6L156.6 263.8L156.5 264.6L160.1 265.3L160.9 266.2L163.7 266.2L165.5 267.7L165.9 267.0L168.6 267.2L170.0 269.5L171.2 268.9L172.6 269.6L175.8 273.2L178.3 274.6L180.7 277.8L184.2 279.8L191.0 280.0L198.7 278.6L202.9 273.1L206.6 272.0L210.5 272.1L215.2 274.4L217.0 274.0L224.4 279.1L234.4 282.2L244.5 287.6L248.4 287.4L253.8 284.7L257.0 284.2L261.4 286.1L263.6 285.9L264.9 287.1L265.9 286.3L270.5 286.4L273.2 285.5L275.0 286.7L277.6 286.3L277.8 287.1L280.6 288.1L286.7 288.0L293.5 289.4L303.8 287.4L308.5 287.5L308.7 288.3L310.2 287.3L311.1 288.1L315.6 287.7L316.3 288.3L318.9 287.6L328.0 292.0L331.4 295.9L331.6 298.3L333.0 299.4L333.9 301.8L333.3 303.7L332.5 302.6L331.2 303.4L330.3 300.6L330.7 303.0L331.8 303.7L331.6 307.5L332.5 307.5L332.6 308.9L333.6 309.4L335.2 308.9L334.7 310.3L335.6 310.0L335.3 307.5L336.3 308.6L335.7 312.2L334.2 313.0L334.2 314.1L336.0 312.9L341.3 316.2L344.0 316.7L344.4 317.9L353.5 315.4L363.9 310.1L369.7 306.0L372.9 306.5L378.1 305.0L381.8 298.7L385.3 297.1L385.9 294.7L386.7 294.4L385.6 294.2L385.9 293.3L393.3 290.4L405.4 291.6L406.7 291.9L406.8 292.8L407.3 292.1L408.1 293.2L409.2 292.6L409.9 293.4L411.1 292.3L414.6 291.6L418.5 291.7L424.1 293.7L439.8 293.9L442.6 295.0L442.6 295.7L445.4 295.5L448.5 297.1L450.5 296.7L451.2 297.8L452.4 297.5L452.1 298.3L454.1 298.0L458.7 300.3L461.2 299.5L462.8 300.4L465.5 299.2L468.4 300.4L469.7 298.1L470.7 297.8L470.1 297.2L471.4 297.4L471.6 296.0L474.2 296.2L476.7 298.1L477.5 297.4L478.3 298.1L478.5 297.2L480.0 298.1L480.3 297.0L484.0 294.6L486.5 294.6L487.1 295.7L487.6 294.2L490.0 293.5L490.4 292.1L493.6 292.7L498.0 291.3L498.4 292.1L501.2 291.3L502.1 290.1L503.0 290.5L502.6 290.0L503.9 288.8L509.7 288.3L509.3 287.0L510.1 284.6L508.8 282.6L509.3 282.3L508.3 281.9L509.3 280.6L508.5 280.0L509.2 278.4L507.9 278.2L508.5 277.2L507.6 276.9L505.3 271.9L502.9 269.9L499.4 269.9L497.6 268.3L496.4 265.4L493.5 265.5L488.6 262.0L488.7 258.8L487.5 257.1L481.0 255.9L474.9 253.4L474.7 254.4L472.8 253.6L471.1 254.5L470.1 253.3L470.4 254.2L469.5 254.7L450.0 251.0L441.7 251.2L436.9 249.6L431.3 250.1L421.9 247.4L420.5 244.9L418.8 243.9L414.3 244.0L411.7 242.7L405.3 243.2L403.7 242.4L401.8 243.7L401.7 243.0L398.3 243.6L395.0 240.1L392.2 240.5L390.0 236.9L382.5 237.6L380.2 232.9L379.3 232.7L378.1 228.3L377.1 228.7L376.0 227.7L376.4 226.8L375.7 224.9L375.0 225.2L375.3 224.3L372.6 223.3L372.5 222.1L371.4 222.5L370.0 220.0L362.5 218.5L361.1 219.4L359.0 217.5L359.1 216.2L357.5 216.4L355.7 214.6L350.5 212.9L349.5 211.1L347.3 210.0L346.9 206.3L345.9 204.1L342.0 200.6L339.6 200.5L335.6 202.6L330.9 203.1L330.0 202.5L330.2 201.7L328.7 202.3L327.4 200.8L321.3 200.9L320.3 199.4L319.7 200.0L314.9 196.9L314.9 195.8L311.7 193.0L305.3 194.5L301.9 194.1L295.6 187.7L296.0 184.9L293.8 183.1L293.3 179.9L291.4 179.3L291.0 177.8L289.5 177.1L289.3 175.5L288.8 176.2L288.2 175.3L287.8 176.6L286.9 176.6L286.8 175.4L285.2 176.3L282.8 172.8L280.4 172.0L280.7 168.8L282.6 169.0L279.0 168.0L274.2 163.7L269.7 165.0L268.8 163.7L269.1 161.8L267.8 162.2L267.1 161.0L266.0 161.8L265.9 160.9L265.1 161.5L263.3 160.6L259.6 157.4L249.1 152.7L243.9 148.8L234.3 147.2L227.0 141.7L224.4 141.2L220.1 141.9L207.7 138.6L200.0 141.7L197.3 141.3L197.2 142.0L194.5 142.7L189.7 142.5L186.3 140.9L182.8 142.6L182.7 143.6L182.0 143.4L182.0 144.6L181.3 144.8L178.0 144.1L175.7 142.2L173.9 142.8L166.5 140.0L162.4 140.3L161.0 139.3L159.6 140.1L158.8 139.5L155.3 141.8L152.5 141.9L149.5 143.7L142.0 145.3L137.4 147.7L137.4 148.5L135.7 147.6L134.4 150.1L130.2 150.8L125.2 155.0L124.2 160.4L117.8 162.0L114.8 163.7L117.7 162.6L117.4 163.3L118.2 163.3L116.9 164.0L117.3 164.9L116.6 164.7L118.3 165.7L117.1 165.6L117.0 166.6L114.7 165.6L113.8 166.2L113.1 164.5L113.6 167.2L111.8 170.2L112.4 173.2L111.2 174.1L111.0 178.5L109.6 180.8Z"/>
+        <text class="iname small" x="34" y="104">Faial</text>
+        <text class="iname small" x="505" y="70" text-anchor="middle">São Jorge</text>
+        <text class="iname" x="305" y="228" text-anchor="middle">PICO</text>
+        <g id="map-arrows"></g>
+        <g id="map-me"></g>
+        <g id="map-spots"></g>
+      </svg>
+      <div class="maplegend" id="maplegend"></div>
+    </div>
+    <ul class="spotlist" id="spotlist" aria-label="Spots"></ul>
+  </section>
+
+  <section class="panel detail" id="detail" aria-live="polite"></section>
+
+  <section aria-labelledby="h-fish" style="display:flex;flex-direction:column;gap:14px">
+    <h2 id="h-fish">Likely species</h2>
     <p class="spotnote" id="spotnote"></p>
-    <div id="banner"></div>
     <ol class="rank" id="rank"></ol>
   </section>
 
@@ -177,17 +230,54 @@ body{margin:0}
   </section>
 
   <section aria-labelledby="h-all" style="display:flex;flex-direction:column;gap:12px">
-    <h2 id="h-all">All spots right now</h2>
+    <h2 id="h-all">All spots at this time</h2>
     <div class="scroll"><table id="grid"></table></div>
   </section>
 
+  <details class="whatif panel" id="whatif">
+    <summary>Enter conditions by hand</summary>
+    <div>
+      <p class="msg">For when there is no connection, or to try "what if". These open-sea values are applied to every spot, then reduced for each spot's shelter. They are used until you load the live forecast again.</p>
+      <div class="grid">
+        <div class="field"><label for="f-temp">Sea temp &deg;C</label><input type="number" id="f-temp" step="0.1" min="8" max="30" inputmode="decimal"></div>
+        <div class="field"><label for="f-wave">Swell height m</label><input type="number" id="f-wave" step="0.1" min="0" max="12" inputmode="decimal"></div>
+        <div class="field"><label for="f-dir">Swell from</label>
+          <select id="f-dir">
+            <option value="0">N</option><option value="45">NE</option><option value="90">E</option><option value="135">SE</option>
+            <option value="180">S</option><option value="225">SW</option><option value="270">W</option><option value="315">NW</option>
+          </select></div>
+        <div class="field"><label for="f-per">Swell period s</label><input type="number" id="f-per" step="1" min="2" max="25" inputmode="numeric"></div>
+        <div class="field"><label for="f-wind">Wind km/h</label><input type="number" id="f-wind" step="1" min="0" max="150" inputmode="numeric"></div>
+        <div class="field"><label for="f-wdir">Wind from</label>
+          <select id="f-wdir">
+            <option value="0">N</option><option value="45">NE</option><option value="90">E</option><option value="135">SE</option>
+            <option value="180">S</option><option value="225">SW</option><option value="270">W</option><option value="315">NW</option>
+          </select></div>
+        <div class="field"><label for="f-tide">Tide</label>
+          <select id="f-tide">
+            <option value="rising">Rising</option><option value="falling">Falling</option>
+            <option value="high">Slack high</option><option value="low">Slack low</option>
+          </select></div>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" id="b-tide" type="button" hidden>Use computed tide</button>
+      </div>
+    </div>
+  </details>
+
   <details>
-    <summary>How the scores work</summary>
-    <ul>
-      <li>Each species is scored from 0 to 100 on season, sea temperature, wave height at the spot, wind, time of day against sunrise and sunset, tide movement and the kind of spot.</li>
-      <li>Wave height is adjusted for each spot. Swell coming from the direction a coast faces counts in full, swell from behind the island counts for much less, and harbours get a little extra shelter.</li>
-      <li>Species pictures are from your own catches, except the moray, which is a drawing. Species windows and spot facings are starting estimates. Spot positions are approximate. They are meant to be corrected with local knowledge and, later, with catch logs.</li>
-      <li>Moon phase is shown for planning and feeds the best-times timeline, but it does not change the species scores yet. Tide is computed on the phone for Horta from published tidal constants, for any date and with no connection, and matches the official Instituto Hidrográfico table to within a few minutes and about 5 cm. It is the astronomical tide only: wind and air pressure can move the real sea level. You can override it with the dropdown. Madalena is within 7 minutes of Horta, and the other Pico spots are treated as Horta. Tidal constants: <a href="https://www.seanoe.org/data/00980/109129/" target="_blank" rel="noopener">TICON-4</a> (Hart-Davis, Dettmering and Seitz, CC BY 4.0). Live sea data: <a href="https://open-meteo.com/en/docs/marine-weather-api" target="_blank" rel="noopener">Open-Meteo Marine</a>.</li>
+    <summary>How the ratings and scores work</summary>
+    <ul id="howto">
+      <li><b>Fishability</b> (Good, Fair, Poor, Unsafe) describes the forecast for the open sea near each spot, reduced for the spot's shelter. It cannot see a rogue set, a wet ledge or surge in a gully. Look at the sea before you go down, and more so at night.</li>
+      <li>Waves: each spot has the wind and swell directions that reach it from open ocean, and those that only cross a channel to Faial or São Jorge. Swell from the open sector counts in full; swell across a channel counts about a third, and swell from behind the island counts for little, because some always wraps around headlands. Wind waves count a little more across a channel.</li>
+      <li>Wind is called onshore when it blows within 60 degrees of straight at the spot, offshore when it blows from behind, and cross otherwise. Onshore wind has lower limits.</li>
+      <li>Official IPMA warnings for the central group are checked: an orange or red sea warning makes every spot Unsafe; a yellow sea warning makes spots open to the swell Unsafe and the rest no better than Poor; any wind warning makes every spot no better than Poor.</li>
+      <li id="limitsline">The limits used are listed with each spot.</li>
+      <li>Wind comes from the Open-Meteo forecast over the sea next to each spot. Waves come from the Open-Meteo marine model at a point a few kilometres off the right coast. Both are on grids of about 8 to 9 km, so wind funnelling and shelter behind the mountain are not modelled. Spot positions and facings come from the OpenStreetMap coastline and have not been checked on the ground.</li>
+      <li>Each species is scored from 0 to 100 on season, sea temperature, wave height at the spot, wind, time of day against sunrise and sunset, tide movement and the kind of spot. These are starting estimates, to be corrected with local knowledge and catch logs.</li>
+      <li>Species pictures are from your own catches, except the moray, which is a drawing. Moon phase is shown for planning and feeds the best-times timeline, but does not change the species scores.</li>
+      <li>Tide is computed on the phone for Horta from published tidal constants, for any date and with no connection, and matches the official Instituto Hidrogr&aacute;fico table to within a few minutes and about 5 cm. It is the astronomical tide only: wind and air pressure can move the real sea level. All five spots use Horta's times. Tidal constants: <a href="https://www.seanoe.org/data/00980/109129/" target="_blank" rel="noopener">TICON-4</a> (Hart-Davis, Dettmering and Seitz, CC BY 4.0).</li>
+      <li>Sources: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (wind and waves), <a href="https://www.ipma.pt/" target="_blank" rel="noopener">IPMA</a> (warnings), map &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>.</li>
     </ul>
   </details>
 </div>
@@ -196,35 +286,6 @@ body{margin:0}
 (function () {
   var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   var COMPASS = ['N','NE','E','SE','S','SW','W','NW'];
-
-  /* Spots: face is the bearing the coast looks toward. Positions are approximate. */
-  /* tideLag: minutes the spot's tide runs after Horta. The Instituto Hidrográfico gives 0 for Lajes and Santo António and
-     -7 to +7 for Madalena. It lists +28 for Cais do Pico (São Roque), which is still to be checked against the printed table, so 0 for now. */
-  var SPOTS = [
-    { id: 'madalena', name: 'Madalena', type: 'harbour', face: 260, lat: 38.535, lon: -28.53, tideLag: 0, note: 'Harbour and breakwater on the Faial channel side. Sheltered from easterly swell, open to the west.' },
-    { id: 'saoroque', name: 'São Roque', type: 'harbour', face: 350, lat: 38.52, lon: -28.32, tideLag: 0, note: 'North coast harbour. Open to northerly swell and often calmer in a southerly blow.' },
-    { id: 'lajes', name: 'Lajes do Pico', type: 'harbour', face: 175, lat: 38.385, lon: -28.26, tideLag: 0, note: 'South coast harbour. Takes southerly swell and is sheltered when the wind is from the north.' },
-    { id: 'calheta', name: 'Calheta de Nesquim', type: 'rock', face: 130, lat: 38.41, lon: -28.1, tideLag: 0, note: 'Rocky points on the south-east coast with deep water close in.' },
-    { id: 'ponta', name: 'Ponta da Ilha', type: 'rock', face: 90, lat: 38.41, lon: -28.03, tideLag: 0, note: 'Eastern tip of the island. Takes any easterly swell and a lot of current.' }
-  ];
-
-  /* Species: t = sea temp [low, high, soft margin]; wave = effective metres [low, high, soft]; wind = comfort limit km/h. */
-  var SPECIES = [
-    { id: 'amberjack', name: 'Amberjack / almaco jack', pt: 'írio', t: [19, 24, 4], wave: [0.4, 2.0, 1.5], wind: 30,
-      season: [.1,.1,.1,.15,.25,.4,.7,.9,1,1,.7,.3], time: { dawn: 1, dusk: 1, day: .6, night: .4 }, tide: { move: 1, slack: .6 }, kind: { rock: 1, harbour: .55 } },
-    { id: 'bluefish', name: 'Bluefish', pt: 'anchova', t: [18, 23, 4], wave: [0.5, 2.0, 1.5], wind: 28,
-      season: [.05,.05,.1,.2,.4,.7,.9,1,1,.9,.5,.15], time: { dawn: 1, dusk: 1, day: .4, night: .7 }, tide: { move: 1, slack: .5 }, kind: { rock: 1, harbour: .9 } },
-    { id: 'barracuda', name: 'Barracuda', pt: 'bicuda', t: [16, 24, 4], wave: [0.4, 2.0, 1.5], wind: 30,
-      season: [.25,.2,.55,.65,.75,.8,.85,1,.95,.95,.8,.35], time: { dawn: .9, dusk: 1, day: .5, night: .9 }, tide: { move: 1, slack: .5 }, kind: { rock: 1, harbour: .7 } },
-    { id: 'bonito', name: 'Atlantic bonito', pt: 'serra', t: [17, 22, 4], wave: [0.3, 1.8, 1.5], wind: 28,
-      season: [.1,.1,.2,.4,.7,.9,1,1,.9,.7,.4,.15], time: { dawn: 1, dusk: .9, day: .6, night: .1 }, tide: { move: 1, slack: .6 }, kind: { rock: 1, harbour: .6 } },
-    { id: 'sargo', name: 'White seabream', pt: 'sargo', t: [15, 22, 5], wave: [0.8, 2.0, 1.2], wind: 35,
-      season: [.7,.7,.7,.8,.8,.7,.7,.7,.8,.9,.9,.8], time: { dawn: .9, dusk: .9, day: .7, night: .5 }, tide: { move: 1, slack: .7 }, kind: { rock: 1, harbour: .85 } },
-    { id: 'veja', name: 'Parrotfish', pt: 'veja', t: [19, 24, 3], wave: [0.2, 1.2, 1.0], wind: 25,
-      season: [.2,.2,.2,.3,.5,.8,1,1,1,.8,.5,.3], time: { dawn: .6, dusk: .6, day: 1, night: .1 }, tide: { move: 1, slack: .8 }, kind: { rock: 1, harbour: .6 } },
-    { id: 'moray', name: 'Moray eel', pt: 'moreia', t: [17, 24, 4], wave: [0, 0.8, 1.0], wind: 25,
-      season: [.4,.4,.4,.5,.6,.8,.9,1,1,.9,.6,.5], time: { dawn: .4, dusk: .7, day: .2, night: 1 }, tide: { move: .9, slack: 1 }, kind: { rock: 1, harbour: .8 } }
-  ];
 
 var FISH = {
     barracuda: '<path d="M92 24 L114 11 L108 24 L114 37 Z" fill="#7F918C"/><path d="M52 20.5 L57 13 L63 20 Z" fill="#566A68"/><path d="M84 22 L89 16 L93 23 Z" fill="#566A68"/><path d="M4 24.5 L17 20.5 C42 16.5 72 18 94 22.5 L94 25.5 C72 30 42 30.5 17 28.5 L6 25.5 Z" fill="#A3B3B0"/><path d="M4 24.5 L17 20.5 C42 16.5 72 18 94 22.5 L94 24.5 C72 24 42 23.5 17 24 Z" fill="#566A68"/><path d="M6 25 L19 25.8" stroke="#22302F" stroke-width=".9" fill="none"/><path d="M21 25.6 C45 25 70 25.2 92 24.8" stroke="#D7B53A" stroke-width="1.6" fill="none"/><path d="M32 28 L38 33 L36 28 Z" fill="#7F918C"/><circle cx="19" cy="22.8" r="2" fill="#fff"/><circle cx="19.4" cy="22.8" r="1.1" fill="#13222B"/>',
@@ -285,10 +346,6 @@ var FISH = {
     return 2 * R * Math.asin(Math.sqrt(h));
   }
   function angDiff(a, b) { var d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; }
-  function effWave(wave, from, spot) {
-    var exposure = Math.max(0, Math.cos(angDiff(from, spot.face) * Math.PI / 180));
-    return wave * (0.25 + 0.75 * exposure) * (spot.type === 'harbour' ? 0.8 : 1);
-  }
   function phaseOf(t, sr, ss) {
     if (t >= sr - 60 && t <= sr + 90) return 'dawn';
     if (t >= ss - 90 && t <= ss + 60) return 'dusk';
@@ -327,33 +384,6 @@ var FISH = {
     return { score: score, why: why };
   }
   function labelOf(s) { return s >= 70 ? ['good', 'Good'] : (s >= 45 ? ['fair', 'Fair'] : ['poor', 'Poor']); }
-
-  var state = { spot: 'madalena', source: 'example', gps: null, tideAuto: true };
-
-  function currentSpot() { return SPOTS.filter(function (s) { return s.id === state.spot; })[0]; }
-
-  function setNow() {
-    var p = azParts(new Date());
-    $('f-date').value = p.year + '-' + pad(p.month) + '-' + pad(p.day);
-    $('f-time').value = pad(p.hour) + ':' + pad(p.minute);
-  }
-
-  function readInputs() {
-    var date = $('f-date').value, time = $('f-time').value;
-    var temp = parseFloat($('f-temp').value), wave = parseFloat($('f-wave').value), wind = parseFloat($('f-wind').value);
-    if (!date || !time || isNaN(temp) || isNaN(wave) || isNaN(wind)) return null;
-    var dp = date.split('-').map(Number), tp = time.split(':').map(Number);
-    return { y: dp[0], month: dp[1], d: dp[2], t: tp[0] * 60 + tp[1], temp: temp, wave: wave, wind: wind,
-      from: parseInt($('f-dir').value, 10), tide: $('f-tide').value };
-  }
-
-  function ctxFor(inp, spot) {
-    var at = state.gps || spot;
-    var sun = sunTimes(inp.y, inp.month, inp.d, at.lat, at.lon);
-    var eff = effWave(inp.wave, inp.from, spot);
-    return { month: inp.month, temp: inp.temp, wind: inp.wind, eff: eff, phase: phaseOf(inp.t, sun.rise, sun.set),
-      moving: inp.tide === 'rising' || inp.tide === 'falling', danger: eff >= 2.5 || inp.wind >= 55, sun: sun };
-  }
 
   function hmUTC(ms) { var d = new Date(ms); return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()); }
   function hmLocal(ms) { return hmUTC(ms + azOffsetMin(new Date(ms)) * 60000); }
@@ -426,26 +456,6 @@ var FISH = {
     return { state: st, next: next, level: tideHeight(m) };
   }
   /* TIDE END */
-  function applyTide() {
-    var line = $('tideline'), btn = $('b-tide');
-    var date = $('f-date').value, time = $('f-time').value;
-    if (!date || !time) return;
-    var dp = date.split('-').map(Number), tp = time.split(':').map(Number);
-    var guess = Date.UTC(dp[0], dp[1] - 1, dp[2], tp[0], tp[1]);
-    var utc = guess - azOffsetMin(new Date(guess)) * 60000;
-    var names = { rising: 'rising', falling: 'falling', high: 'slack high', low: 'slack low' };
-    var spot = currentSpot(), o = tideAt(utc, spot.tideLag);
-    if (!o) { line.hidden = true; btn.hidden = true; return; }
-    var parts = [o.next.high && ['High', o.next.high], o.next.low && ['Low', o.next.low]].filter(Boolean)
-      .sort(function (x, y) { return x[1].t - y[1].t; })
-      .map(function (p) { return p[0] + ' ' + hmLocal(p[1].t) + ' (' + p[1].h.toFixed(1) + ' m)'; });
-    var text = names[o.state] + ', about ' + o.level.toFixed(1) + ' m. ' + (parts.length ? 'Next: ' + parts.join(', ') + '. ' : '') +
-      'Predicted astronomical tide for Horta in local time, heights above chart zero; wind and air pressure can shift the real level.';
-    line.hidden = false;
-    btn.hidden = state.tideAuto;
-    if (state.tideAuto) $('f-tide').value = o.state;
-    line.textContent = (state.tideAuto ? 'Tide: ' : 'Tide set by hand. The prediction says ') + text;
-  }
 
   var RAD = Math.PI / 180;
   function normPi(x) { x = x % (2 * Math.PI); if (x > Math.PI) x -= 2 * Math.PI; if (x <= -Math.PI) x += 2 * Math.PI; return x; }
@@ -542,131 +552,397 @@ var FISH = {
       '<p class="msg">Scores combine tide movement, light and the moon. The moon windows come from solunar tradition and have little scientific backing, so the default influence is light. Your own catch log will show whether they matter at Pico.</p>';
   }
 
-  function render() {
-    applyTide();
-    var spot = currentSpot();
-    var ordered = state.gps ? SPOTS.slice().sort(function (a, b) { return km(state.gps, a) - km(state.gps, b); }) : SPOTS;
-    $('chips').innerHTML = ordered.map(function (s) {
-      var dist = state.gps ? ' \u00B7 ' + km(state.gps, s).toFixed(1) + ' km' : '';
-      return '<button type="button" class="chip" data-spot="' + s.id + '" aria-pressed="' + (s.id === state.spot) + '">' + s.name + dist + '</button>';
-    }).join('');
-    $('spotnote').textContent = spot.note + ' Faces ' + COMPASS[Math.round(spot.face / 45) % 8] + '.';
+  /* ---------- Spots, map and per-spot conditions ---------- */
+  var SPOTS = [], SPECIES = [], LIMITS = {};
+  var LEVELS = ['Good', 'Fair', 'Poor', 'Unsafe'];
+  var LIVE_KEY = 'pico-live-v1';
+  var state = { spot: 'madalena', source: 'example', gps: null, tideAuto: true, live: null, warn: null };
 
-    var inp = readInputs();
-    if (!inp) {
-      $('rank').innerHTML = '<li><span class="msg">Fill in every condition to see scores.</span></li>';
-      $('banner').innerHTML = ''; $('grid').innerHTML = ''; $('sunline').textContent = '';
+  function currentSpot() { return SPOTS.filter(function (s) { return s.id === state.spot; })[0] || SPOTS[0]; }
+  function compass16(deg) {
+    var n = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    return n[Math.round((((deg % 360) + 360) % 360) / 22.5) % 16];
+  }
+  /* Map projection, the same one used to draw the coastline paths (tools/map.md). */
+  function mapXY(lat, lon) { return [(lon + 28.68) * Math.cos(38.5 * Math.PI / 180) * 1000, (38.70 - lat) * 1000]; }
+
+  /* Degrees from direction d to sector s = [from, to] (clockwise); 0 when inside. */
+  function sectorDist(d, s) {
+    var w = (s[1] - s[0] + 360) % 360, off = (d - s[0] + 360) % 360;
+    return off <= w ? 0 : Math.min(off - w, 360 - off);
+  }
+  /* Share of open-sea wave height that reaches the spot from direction d. */
+  function exposure(spot, d, windWave) {
+    if (d == null || isNaN(d)) return 0.6;
+    var dOpen = 180;
+    spot.open.forEach(function (s) { dOpen = Math.min(dOpen, sectorDist(d, s)); });
+    if (dOpen === 0) return 1;
+    var inCh = spot.channel.some(function (s) { return sectorDist(d, s) <= 5; });
+    return Math.max(1 - dOpen / 45, inCh ? (windWave ? 0.5 : 0.3) : 0, 0.15);
+  }
+  function windRel(spot, from) {
+    if (from == null) return '';
+    var a = angDiff(from, spot.face);
+    return a <= 60 ? 'onshore' : (a >= 120 ? 'offshore' : 'cross-shore');
+  }
+  function limitsFor(spot) {
+    var L = {}, k;
+    for (k in LIMITS) L[k] = LIMITS[k];
+    if (spot.limits) for (k in spot.limits) L[k] = spot.limits[k];
+    return L;
+  }
+
+  /* When: the chosen date and time, as local parts and UTC milliseconds. */
+  function readWhen() {
+    var date = $('f-date').value, time = $('f-time').value;
+    if (!date || !time) return null;
+    var dp = date.split('-').map(Number), tp = time.split(':').map(Number);
+    var guess = Date.UTC(dp[0], dp[1] - 1, dp[2], tp[0], tp[1]);
+    return { y: dp[0], month: dp[1], d: dp[2], t: tp[0] * 60 + tp[1], utc: guess - azOffsetMin(new Date(guess)) * 60000, local: date + 'T' + time };
+  }
+  function setNow() {
+    var p = azParts(new Date());
+    $('f-date').value = p.year + '-' + pad(p.month) + '-' + pad(p.day);
+    $('f-time').value = pad(p.hour) + ':' + pad(p.minute);
+  }
+  function num(id) { var v = parseFloat($(id).value); return isNaN(v) ? null : v; }
+
+  /* Open-sea values for a spot at a time: live forecast hour, or the hand-entered values. */
+  function rawFor(spot, i, utc) {
+    var L = state.live;
+    if (state.source !== 'manual' && L && L.m[i] && L.w[i]) {
+      var m = L.m[i], w = L.w[i];
+      var mi = Math.round((utc / 1000 - m.time[0]) / 3600), wi = Math.round((utc / 1000 - w.time[0]) / 3600);
+      if (mi >= 0 && mi < m.time.length && wi >= 0 && wi < w.time.length && m.wave_height[mi] != null && w.wind_speed_10m[wi] != null) {
+        return { src: 'live', waveH: m.wave_height[mi], waveDir: m.wave_direction[mi], wavePer: m.wave_period[mi],
+          swellH: m.swell_wave_height[mi], swellDir: m.swell_wave_direction[mi], swellPer: m.swell_wave_period[mi],
+          windWaveH: m.wind_wave_height[mi], windWaveDir: m.wind_wave_direction[mi], sst: m.sea_surface_temperature[mi],
+          wind: w.wind_speed_10m[wi], windDir: w.wind_direction_10m[wi], gust: w.wind_gusts_10m[wi] };
+      }
+    }
+    var wave = num('f-wave'), wind = num('f-wind');
+    if (wave == null || wind == null || num('f-temp') == null) return null;
+    return { src: state.source === 'manual' ? 'manual' : 'example', waveH: wave, waveDir: +$('f-dir').value, wavePer: num('f-per'),
+      swellH: wave, swellDir: +$('f-dir').value, swellPer: num('f-per'), windWaveH: 0, windWaveDir: null,
+      sst: num('f-temp'), wind: wind, windDir: +$('f-wdir').value, gust: Math.round(wind * 1.4) };
+  }
+
+  function activeWarnings(when) {
+    if (!state.warn || !when) return [];
+    return state.warn.filter(function (w) {
+      return w.awarenessLevelID && w.awarenessLevelID !== 'green' && w.startTime <= when.local + ':00' && when.local + ':00' < w.endTime &&
+        /Agita|Vento/.test(w.awarenessTypeName);
+    });
+  }
+
+  /* Everything shown for one spot at the chosen time. */
+  function spotCond(spot, i, when) {
+    var r = rawFor(spot, i, when.utc);
+    if (!r) return null;
+    var sH = r.swellH != null ? r.swellH : r.waveH, sD = r.swellH != null ? r.swellDir : r.waveDir;
+    var sP = r.swellH != null ? (r.swellPer || r.wavePer) : r.wavePer;
+    var fs = exposure(spot, sD, false), fw = exposure(spot, r.windWaveDir, true);
+    var eff = Math.sqrt(Math.pow(sH * fs, 2) + Math.pow((r.windWaveH || 0) * fw, 2));
+    var at = state.gps || spot, sun = sunTimes(when.y, when.month, when.d, at.lat, at.lon);
+    var phase = phaseOf(when.t, sun.rise, sun.set), night = phase === 'night';
+    var tide = tideAt(when.utc, spot.tideLag);
+    var c = { raw: r, swellH: sH, swellDir: sD, swellPer: sP, exposure: fs, eff: eff, rel: windRel(spot, r.windDir),
+      sun: sun, phase: phase, night: night, tide: tide };
+    c.rating = rate(spot, c, activeWarnings(when));
+    return c;
+  }
+
+  function rate(spot, c, warns) {
+    var L = limitsFor(spot), cut = c.night ? L.nightWaveCut : 0, r = c.raw, level = 0, why = [];
+    var dark = c.night ? ' after dark' : '';
+    var e = Math.round(c.eff * 10) / 10, on = c.rel === 'onshore', gust = r.gust || 0;
+    function hit(lv, text) { if (lv > level) level = lv; why.push([lv, text]); }
+    function f1(x) { return (Math.round(x * 10) / 10).toFixed(1); }
+    if (e >= L.unsafeWave - cut) hit(3, 'Waves about ' + f1(e) + ' m here; the Unsafe limit is ' + f1(L.unsafeWave - cut) + ' m' + dark + '.');
+    else if (c.swellPer >= L.longPeriod && e >= L.unsafeWaveLong - cut) hit(3, 'Long swell (' + Math.round(c.swellPer) + ' s) surges up the rocks: ' + f1(e) + ' m here, limit ' + f1(L.unsafeWaveLong - cut) + ' m for swell of ' + L.longPeriod + ' s or more' + dark + '.');
+    else if (e >= L.poorWave - cut) hit(2, 'Waves about ' + f1(e) + ' m here; Poor from ' + f1(L.poorWave - cut) + ' m' + dark + '.');
+    else if (e >= L.fairWave - cut) hit(1, 'Waves about ' + f1(e) + ' m here; Fair from ' + f1(L.fairWave - cut) + ' m' + dark + '.');
+    if (r.wind >= L.unsafeWind) hit(3, 'Wind ' + Math.round(r.wind) + ' km/h; Unsafe from ' + L.unsafeWind + '.');
+    else if (gust >= L.unsafeGust) hit(3, 'Gusts ' + Math.round(gust) + ' km/h; Unsafe from ' + L.unsafeGust + '.');
+    else if (r.wind >= L.poorWind || (on && r.wind >= L.poorOnshoreWind) || gust >= L.poorGust)
+      hit(2, 'Wind ' + Math.round(r.wind) + ' km/h ' + c.rel + ', gusts ' + Math.round(gust) + '; Poor from ' + (on ? L.poorOnshoreWind + ' onshore' : L.poorWind) + ' or gusts ' + L.poorGust + '.');
+    else if (r.wind >= L.fairWind || (on && r.wind >= L.fairOnshoreWind) || gust >= L.fairGust)
+      hit(1, 'Wind ' + Math.round(r.wind) + ' km/h ' + c.rel + ', gusts ' + Math.round(gust) + '; Fair from ' + (on ? L.fairOnshoreWind + ' onshore' : L.fairWind) + ' or gusts ' + L.fairGust + '.');
+    warns.forEach(function (w) {
+      var lvl = w.awarenessLevelID, sea = /Agita/.test(w.awarenessTypeName), name = (sea ? 'sea' : 'wind') + ' warning (' + lvl + ')';
+      if (sea && (lvl === 'orange' || lvl === 'red')) hit(3, 'Official IPMA ' + name + ' for the central group.');
+      else if (sea && c.exposure >= 0.75) hit(3, 'Official IPMA ' + name + ', and this spot is open to the swell.');
+      else hit(2, 'Official IPMA ' + name + ' for the central group.');
+    });
+    why.sort(function (a, b) { return b[0] - a[0]; });
+    return { level: level, label: LEVELS[level], why: why.map(function (w) { return w[1]; }),
+      ok: 'Waves about ' + f1(e) + ' m here and wind ' + Math.round(r.wind) + ' km/h are under every limit' + dark + '.' };
+  }
+
+  function condSummary(c) {
+    var r = c.raw;
+    return 'Wind ' + Math.round(r.wind) + ' ' + compass16(r.windDir) + (r.gust ? ' g' + Math.round(r.gust) : '') + ' · ' +
+      'Sea ' + c.swellH.toFixed(1) + ' m ' + compass16(c.swellDir) + (c.swellPer ? ' ' + Math.round(c.swellPer) + 's' : '') + ' → ' + c.eff.toFixed(1) + ' m here';
+  }
+
+  /* ---------- Drawing ---------- */
+  var SHAPES = {
+    0: '<circle class="s0" r="9"/>',
+    1: '<path class="s1" d="M0 -11 L10 7 L-10 7 Z"/>',
+    2: '<rect class="s2" x="-8" y="-8" width="16" height="16"/>',
+    3: '<circle class="s3bg" r="10"/><path class="s3" d="M-5 -5 L5 5 M5 -5 L-5 5"/>',
+    x: '<circle class="sn" r="8"/>'
+  };
+  function legendIcon(k) { return '<svg viewBox="-12 -12 24 24" aria-hidden="true">' + SHAPES[k] + '</svg>'; }
+
+  function drawMap(conds) {
+    $('map-spots').innerHTML = SPOTS.map(function (s, i) {
+      var p = mapXY(s.lat, s.lon), c = conds[i], lv = c ? c.rating.level : 'x', sel = s.id === state.spot, lb = s.label || {};
+      var desc = s.name + ': ' + (c ? c.rating.label : 'no data');
+      return '<g class="mk' + (sel ? ' sel' : '') + '" data-spot="' + s.id + '" tabindex="0" role="button" aria-pressed="' + sel + '" aria-label="' + desc + '" transform="translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')">' +
+        '<circle class="hit" r="22"/><circle class="ring" r="15"/>' + SHAPES[lv] +
+        '<text class="lbl" x="' + (lb.dx || 0) + '" y="' + (lb.dy || 0) + '" text-anchor="' + (lb.anchor || 'middle') + '">' + s.name + '</text></g>';
+    }).join('');
+    /* Wind and swell arrows: island-wide picture from the most exposed sample points. */
+    var wx = 0, wy = 0, wn = 0, big = null;
+    conds.forEach(function (c) {
+      if (!c) return;
+      var r = c.raw, a = r.windDir * Math.PI / 180;
+      wx += r.wind * Math.sin(a); wy += r.wind * Math.cos(a); wn++;
+      if (!big || c.swellH > big.swellH) big = c;
+    });
+    var html = '';
+    function arrow(cx, cy, from, cls, text) {
+      var a = (from + 180) * Math.PI / 180, dx = Math.sin(a) * 16, dy = -Math.cos(a) * 16;
+      var hx = cx + dx, hy = cy + dy, b1 = a + 2.6, b2 = a - 2.6;
+      return '<circle class="dial" cx="' + cx + '" cy="' + cy + '" r="24"/>' +
+        '<path class="arrow ' + cls + '" d="M' + (cx - dx).toFixed(1) + ' ' + (cy - dy).toFixed(1) + ' L' + hx.toFixed(1) + ' ' + hy.toFixed(1) +
+        ' M' + (hx + Math.sin(b1) * 8).toFixed(1) + ' ' + (hy - Math.cos(b1) * 8).toFixed(1) + ' L' + hx.toFixed(1) + ' ' + hy.toFixed(1) +
+        ' L' + (hx + Math.sin(b2) * 8).toFixed(1) + ' ' + (hy - Math.cos(b2) * 8).toFixed(1) + '"/>' +
+        '<text class="alab" x="' + cx + '" y="' + (cy + 40) + '">' + text + '</text>';
+    }
+    if (wn) {
+      var wdir = (Math.atan2(wx, wy) * 180 / Math.PI + 360) % 360, wsp = Math.sqrt(wx * wx + wy * wy) / wn;
+      html += arrow(452, 160, wdir, 'wind', 'Wind ' + Math.round(wsp));
+    }
+    if (big) html += arrow(538, 160, big.swellDir, 'swell', 'Sea ' + big.swellH.toFixed(1) + ' m');
+    $('map-arrows').innerHTML = html;
+    $('map-me').innerHTML = state.gps ? (function () { var p = mapXY(state.gps.lat, state.gps.lon); return '<circle class="me" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="7"><title>You</title></circle>'; })() : '';
+    $('maplegend').innerHTML = [0, 1, 2, 3].map(function (k) { return '<span>' + legendIcon(k) + LEVELS[k] + '</span>'; }).join('') +
+      '<span>Arrows show where wind and sea are heading</span><span class="credit">&copy; OpenStreetMap contributors</span>';
+  }
+
+  function renderSpots(conds) {
+    $('spotlist').innerHTML = SPOTS.map(function (s, i) {
+      var c = conds[i], sel = s.id === state.spot;
+      var dist = state.gps ? ' · ' + km(state.gps, s).toFixed(1) + ' km' : '';
+      var badge = c ? '<span class="badge l' + c.rating.level + '">' + c.rating.label + '</span>' : '<span class="badge lx">No data</span>';
+      return '<li><button type="button" class="spotrow" data-spot="' + s.id + '" aria-pressed="' + sel + '"><span class="top"><span class="nm">' + s.name + dist + '</span>' + badge + '</span>' +
+        (c ? '<span class="sum">' + condSummary(c) + '</span>' : '') + '</button></li>';
+    }).join('');
+  }
+
+  function tideText(o) {
+    if (!o) return 'No tide prediction for this time.';
+    var names = { rising: 'Rising', falling: 'Falling', high: 'Slack high', low: 'Slack low' };
+    var parts = [o.next.high && ['high', o.next.high], o.next.low && ['low', o.next.low]].filter(Boolean)
+      .sort(function (x, y) { return x[1].t - y[1].t; })
+      .map(function (p) { return p[0] + ' ' + hmLocal(p[1].t) + ' (' + p[1].h.toFixed(1) + ' m)'; });
+    return names[o.state] + ', about ' + o.level.toFixed(1) + ' m' + (parts.length ? '. Next ' + parts.join(', ') : '') + '.';
+  }
+
+  function renderDetail(spot, c, when) {
+    var L = limitsFor(spot);
+    if (!c) {
+      $('detail').innerHTML = '<h3>' + spot.place + '</h3><p class="msg">No conditions for this time. Load the live forecast, or open "Enter conditions by hand" below.</p>';
       return;
     }
-    var c = ctxFor(inp, spot);
-    $('sunline').innerHTML = '<span>Sunrise ' + hm(c.sun.rise) + '</span><span>Sunset ' + hm(c.sun.set) + '</span><span>Now: ' + c.phase + '</span><span>Effective wave at ' + spot.name + ': ' + c.eff.toFixed(1) + ' m</span><span>' + moonInfo(inp.y, inp.month, inp.d) + '</span>';
+    var r = c.raw, rt = c.rating;
+    var tideLine = tideText(c.tide) + (state.tideAuto ? '' : ' (You set the tide to ' + $('f-tide').selectedOptions[0].textContent.toLowerCase() + ' by hand.)');
+    var src = r.src === 'live' ? 'Forecast for ' + when.local.replace('T', ' ') : (r.src === 'manual' ? 'Values entered by hand' : 'Example values: load the live forecast for real conditions');
+    var maps = 'https://www.google.com/maps/search/?api=1&query=' + spot.lat + ',' + spot.lon;
+    $('detail').innerHTML =
+      '<div class="head-row"><div><h3>' + spot.place + '</h3><div class="sub">' + spot.coast + ' · faces ' + compass16(spot.face) + ' · <a href="' + maps + '" target="_blank" rel="noopener">open in Maps</a></div></div>' +
+      '<span class="badge l' + rt.level + '" style="font-size:1rem;padding:3px 12px">Fishable: ' + rt.label + '</span></div>' +
+      '<ul class="condlist">' +
+      '<li><b>Wind</b>' + Math.round(r.wind) + ' km/h from ' + compass16(r.windDir) + ' (' + c.rel + ')' + (r.gust ? ', gusts ' + Math.round(r.gust) : '') + '</li>' +
+      '<li><b>Swell</b>' + c.swellH.toFixed(1) + ' m from ' + compass16(c.swellDir) + (c.swellPer ? ', ' + Math.round(c.swellPer) + ' s' : '') +
+        (r.windWaveH ? ', plus ' + r.windWaveH.toFixed(1) + ' m wind chop from ' + compass16(r.windWaveDir) : '') + '</li>' +
+      '<li><b>Here</b>about ' + c.eff.toFixed(1) + ' m at the spot (' + (c.exposure >= 1 ? 'open to this swell' : (c.exposure <= 0.2 ? 'sheltered from this swell' : 'partly sheltered from this swell')) + ')</li>' +
+      '<li><b>Tide</b>' + tideLine + '</li>' +
+      '<li><b>Sea</b>' + (r.sst != null ? r.sst.toFixed(1) + ' °C' : 'temperature unknown') + ' · ' + (c.night ? 'after dark' : (c.phase === 'day' ? 'daylight' : c.phase)) + '</li>' +
+      '</ul>' +
+      '<div><div class="eyebrow">Why ' + rt.label + '</div><ul class="reasons">' + (rt.why.length ? rt.why : [rt.ok]).map(function (w) { return '<li>' + w + '</li>'; }).join('') + '</ul></div>' +
+      (spot.hazard ? '<p class="hazard">' + spot.hazard + '</p>' : '') +
+      '<p class="spotnote">' + spot.note + ' ' + spot.depth + '</p>' +
+      '<details><summary>Limits used here</summary><p class="limits">Unsafe: waves ' + L.unsafeWave + ' m (' + L.unsafeWaveLong + ' m if swell period ' + L.longPeriod + ' s or more), wind ' + L.unsafeWind + ', gusts ' + L.unsafeGust + ' km/h.<br>' +
+        'Poor: waves ' + L.poorWave + ' m, wind ' + L.poorWind + ' (' + L.poorOnshoreWind + ' onshore), gusts ' + L.poorGust + ' km/h.<br>' +
+        'Fair: waves ' + L.fairWave + ' m, wind ' + L.fairWind + ' (' + L.fairOnshoreWind + ' onshore), gusts ' + L.fairGust + ' km/h.<br>' +
+        'After dark every wave limit is ' + L.nightWaveCut + ' m lower.</p><p class="msg">These are cautious starting numbers. Tell Claude what to change and they will be updated.</p></details>' +
+      '<p class="fine">' + src + '. The rating describes the forecast, not the rocks on the day.</p>';
+  }
 
-    $('banner').innerHTML = c.danger
-      ? '<div class="banner"><strong>Stay off the rocks.</strong> Waves reaching ' + c.eff.toFixed(1) + ' m at ' + spot.name + ' with ' + inp.wind + ' km/h wind are dangerous for shore fishing. Scores are capped.</div>'
-      : '';
+  function renderWarnBanner(when) {
+    var w = activeWarnings(when);
+    $('warnbanner').innerHTML = w.length ? '<div class="banner"><strong>IPMA warning in force:</strong> ' + w.map(function (x) {
+      return (/Agita/.test(x.awarenessTypeName) ? 'sea state' : 'wind') + ' (' + x.awarenessLevelID + ') until ' + x.endTime.slice(5, 16).replace('T', ' ');
+    }).join('; ') + '.</div>' : '';
+  }
 
-    var rows = SPECIES.map(function (sp) { var r = scoreFor(sp, spot, c); return { sp: sp, r: r }; })
+  function render() {
+    var when = readWhen();
+    if (!when || !SPOTS.length) return;
+    var spot = currentSpot();
+    var conds = SPOTS.map(function (s, i) { return spotCond(s, i, when); });
+    var idx = SPOTS.indexOf(spot), c = conds[idx];
+    /* A hand-set tide overrides the computed one for the species scores. */
+    if (c && c.tide && state.tideAuto) $('f-tide').value = c.tide.state;
+    $('b-tide').hidden = state.tideAuto;
+    drawMap(conds);
+    renderSpots(conds);
+    renderWarnBanner(when);
+    renderDetail(spot, c, when);
+    setStatus(conds);
+
+    if (!c) {
+      $('rank').innerHTML = '<li><span class="msg">No conditions for this time, so no species scores.</span></li>';
+      $('grid').innerHTML = ''; $('sunline').textContent = ''; $('besttimes').innerHTML = '';
+      return;
+    }
+    $('sunline').innerHTML = '<span>Sunrise ' + hm(c.sun.rise) + '</span><span>Sunset ' + hm(c.sun.set) + '</span><span>' + moonInfo(when.y, when.month, when.d) + '</span>';
+    $('spotnote').textContent = 'At ' + spot.name + ', ' + when.local.replace('T', ' ') + '.';
+
+    function ctx(cc) {
+      var tideState = state.tideAuto ? (cc.tide ? cc.tide.state : 'rising') : $('f-tide').value;
+      return { month: when.month, temp: cc.raw.sst != null ? cc.raw.sst : 19, wind: Math.round(cc.raw.wind), eff: cc.eff, phase: cc.phase,
+        moving: tideState === 'rising' || tideState === 'falling', danger: cc.rating.level === 3, sun: cc.sun };
+    }
+    var cx = ctx(c);
+    var rows = SPECIES.map(function (sp) { return { sp: sp, r: scoreFor(sp, spot, cx) }; })
       .sort(function (a, b) { return b.r.score - a.r.score; });
-    $('rank').innerHTML = rows.map(function (x) {
-      var l = labelOf(x.r.score);
-      return '<li class="' + l[0] + '"><div class="rowtop"><div class="sid">' + fishSvg(x.sp.id) + '<div class="sname">' + x.sp.name + '<span>' + x.sp.pt + '</span></div></div>' +
-        '<div class="score">' + x.r.score + '<small>' + l[1] + '</small></div></div>' +
-        '<div class="track" aria-hidden="true"><div class="fill" style="width:' + x.r.score + '%"></div></div>' +
-        '<div class="why">' + x.r.why + '</div></li>';
-    }).join('');
+    $('rank').innerHTML = (c.rating.level === 3 ? '<li class="banner"><strong>Stay off the rocks.</strong> ' + spot.name + ' is rated Unsafe at this time, so species scores are capped.</li>' : '') +
+      rows.map(function (x) {
+        var l = labelOf(x.r.score);
+        return '<li class="' + l[0] + '"><div class="rowtop"><div class="sid">' + fishSvg(x.sp.id) + '<div class="sname">' + x.sp.name + '<span>' + x.sp.pt + '</span></div></div>' +
+          '<div class="score">' + x.r.score + '<small>' + l[1] + '</small></div></div>' +
+          '<div class="track" aria-hidden="true"><div class="fill" style="width:' + x.r.score + '%"></div></div>' +
+          '<div class="why">' + x.r.why + '</div></li>';
+      }).join('');
 
     var head = '<thead><tr><th scope="col">Species</th>' + SPOTS.map(function (s) {
       return '<th scope="col" class="' + (s.id === state.spot ? 'sel' : '') + '"><button type="button" data-spot="' + s.id + '">' + s.name + '</button></th>';
     }).join('') + '</tr></thead>';
-    var body = '<tbody>' + SPECIES.map(function (sp) {
-      return '<tr><td>' + sp.name + '</td>' + SPOTS.map(function (s) {
-        var cc = ctxFor(inp, s), sc = scoreFor(sp, s, cc).score;
+    var fishRow = '<tr><td>Fishable</td>' + SPOTS.map(function (s, i) {
+      var cc = conds[i];
+      return '<td class="' + (s.id === state.spot ? 'sel' : '') + '">' + (cc ? '<span class="badge l' + cc.rating.level + '">' + cc.rating.label + '</span>' : '–') + '</td>';
+    }).join('') + '</tr>';
+    var body = '<tbody>' + fishRow + SPECIES.map(function (sp) {
+      return '<tr><td>' + sp.name + '</td>' + SPOTS.map(function (s, i) {
+        if (!conds[i]) return '<td>–</td>';
+        var sc = scoreFor(sp, s, ctx(conds[i])).score;
         return '<td class="c ' + labelOf(sc)[0] + (s.id === state.spot ? ' sel' : '') + '">' + sc + '</td>';
       }).join('') + '</tr>';
     }).join('') + '</tbody>';
     $('grid').innerHTML = head + body;
-    renderBest(inp, spot, c);
+    renderBest(when, spot, c);
   }
 
-  function setStatus() {
-    $('status').textContent = state.source === 'example' ? 'Example conditions' : (state.source === 'live' ? state.liveText : 'Entered by hand');
+  function setStatus(conds) {
+    var c = conds.filter(Boolean)[0], s = $('status');
+    if (!c) { s.textContent = 'No conditions'; return; }
+    if (c.raw.src === 'live') {
+      var age = (Date.now() - state.live.at) / 60000;
+      s.textContent = 'Forecast loaded ' + (age < 90 ? hmLocal(state.live.at) : Math.round(age / 60) + ' h ago');
+    } else if (c.raw.src === 'manual') s.textContent = 'Entered by hand';
+    else s.textContent = state.live ? 'Outside the forecast range' : 'Example conditions';
   }
-  function toCompass(deg) { return String(Math.round((((deg % 360) + 360) % 360) / 45) % 8 * 45); }
 
+  /* ---------- Live data ---------- */
   function loadLive() {
-    var s = currentSpot(), msg = $('livemsg');
-    msg.hidden = false; msg.textContent = 'Loading conditions for ' + s.name + '…';
-    var at = state.gps || s;
-    var qs = function (p) { return 'latitude=' + p.lat + '&longitude=' + p.lon + '&timezone=Atlantic%2FAzores'; };
-    var marineUrl = function (p) { return 'https://marine-api.open-meteo.com/v1/marine?' + qs(p) + '&current=wave_height,wave_direction,sea_surface_temperature'; };
+    var msg = $('livemsg');
+    msg.hidden = false; msg.textContent = 'Loading the forecast for every spot…';
     var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }); };
-    var marine = get(marineUrl(at)).then(function (r) {
-      var c = r.current || {};
-      return (c.sea_surface_temperature == null || c.wave_height == null) ? get(marineUrl(s)) : r;
-    });
-    Promise.all([
-      marine,
-      get('https://api.open-meteo.com/v1/forecast?' + qs(at) + '&current=wind_speed_10m&wind_speed_unit=kmh')
-    ]).then(function (res) {
-      var m = res[0].current || {}, w = res[1].current || {};
-      if (m.sea_surface_temperature == null || m.wave_height == null) {
-        msg.textContent = 'Open-Meteo has no sea data at this point. Try another spot or enter the conditions by hand.';
-        return;
-      }
-      $('f-temp').value = (+m.sea_surface_temperature).toFixed(1);
-      $('f-wave').value = (+m.wave_height).toFixed(1);
-      if (m.wave_direction != null) $('f-dir').value = toCompass(m.wave_direction);
-      if (w.wind_speed_10m != null) $('f-wind').value = Math.round(w.wind_speed_10m);
-      state.tideAuto = true;
-      setNow();
-      var p = azParts(new Date());
-      state.source = 'live'; state.liveText = 'Live from Open-Meteo, ' + pad(p.hour) + ':' + pad(p.minute);
-      msg.textContent = 'Loaded sea temperature, waves and wind.';
-      setStatus(); render();
+    var lat = function (k) { return SPOTS.map(function (s) { return k ? s.wavePt[0] : s.lat; }).join(','); };
+    var lon = function (k) { return SPOTS.map(function (s) { return k ? s.wavePt[1] : s.lon; }).join(','); };
+    var common = '&timezone=GMT&timeformat=unixtime&past_days=1&forecast_days=7';
+    var marine = 'https://marine-api.open-meteo.com/v1/marine?latitude=' + lat(1) + '&longitude=' + lon(1) + common +
+      '&hourly=wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,swell_wave_period,wind_wave_height,wind_wave_direction,sea_surface_temperature';
+    var weather = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat(0) + '&longitude=' + lon(0) + common +
+      '&cell_selection=sea&wind_speed_unit=kmh&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m';
+    get('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json').then(function (j) {
+      state.warn = j.filter(function (w) { return w.idAreaAviso === 'ACE'; }); render();
+    }).catch(function () { state.warn = null; });
+    Promise.all([get(marine), get(weather)]).then(function (res) {
+      var m = [].concat(res[0]), w = [].concat(res[1]);
+      state.live = { at: Date.now(), m: m.map(function (x) { return x.hourly; }), w: w.map(function (x) { return x.hourly; }) };
+      try { localStorage.setItem(LIVE_KEY, JSON.stringify(state.live)); } catch (e) {}
+      state.source = 'live'; state.tideAuto = true;
+      msg.textContent = 'Loaded wind and wave forecasts for the next 7 days. Change the date or time to look ahead.';
+      render();
     }).catch(function () {
-      msg.textContent = 'Could not reach Open-Meteo. Check your connection and try again, or enter the conditions by hand.';
+      msg.textContent = state.live ? 'Could not reach Open-Meteo, so the forecast saved on this phone is shown.' :
+        'Could not reach Open-Meteo. Check your connection, or enter conditions by hand below.';
+      if (state.live && state.source !== 'manual') state.source = 'live';
+      render();
     });
   }
+  function restoreLive() {
+    try {
+      var j = JSON.parse(localStorage.getItem(LIVE_KEY) || 'null');
+      if (j && j.m && j.m.length === SPOTS.length && Date.now() - j.at < 7 * 864e5) { state.live = j; state.source = 'live'; }
+    } catch (e) {}
+  }
 
-  function markManual() { if (state.source !== 'manual') { state.source = 'manual'; setStatus(); } render(); }
+  function markManual() { state.source = 'manual'; render(); }
 
-  $('f-temp').value = '19.0'; $('f-wave').value = '1.8'; $('f-dir').value = '315'; $('f-wind').value = '20'; $('f-tide').value = 'rising';
-  setNow();
-  ['input', 'change'].forEach(function (ev) { $('f-tide').addEventListener(ev, function () { state.tideAuto = false; }); });
-  $('b-tide').addEventListener('click', function () { state.tideAuto = true; render(); });
-  ['f-date', 'f-time', 'f-temp', 'f-wave', 'f-dir', 'f-wind', 'f-tide'].forEach(function (id) {
-    $(id).addEventListener('input', markManual);
-    $(id).addEventListener('change', markManual);
+  function init() {
+    $('f-temp').value = '19.0'; $('f-wave').value = '1.8'; $('f-dir').value = '315'; $('f-per').value = '10'; $('f-wind').value = '20'; $('f-wdir').value = '270'; $('f-tide').value = 'rising';
+    setNow();
+    restoreLive();
+    ['input', 'change'].forEach(function (ev) {
+      $('f-tide').addEventListener(ev, function () { state.tideAuto = false; render(); });
+      ['f-date', 'f-time'].forEach(function (id) { $(id).addEventListener(ev, render); });
+      ['f-temp', 'f-wave', 'f-dir', 'f-per', 'f-wind', 'f-wdir'].forEach(function (id) { $(id).addEventListener(ev, markManual); });
+    });
+    $('b-tide').addEventListener('click', function () { state.tideAuto = true; render(); });
+    $('b-now').addEventListener('click', function () { setNow(); render(); });
+    $('b-gps').addEventListener('click', function () {
+      var msg = $('livemsg'); msg.hidden = false;
+      if (!navigator.geolocation) { msg.textContent = 'This browser cannot share a location.'; return; }
+      msg.textContent = 'Finding your position…';
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        state.gps = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        var best = SPOTS.slice().sort(function (a, b) { return km(state.gps, a) - km(state.gps, b); })[0];
+        var d = km(state.gps, best);
+        if (d > 30) msg.textContent = 'You are ' + Math.round(d) + ' km from the nearest spot (' + best.name + '). Sun times use your position.';
+        else { state.spot = best.id; msg.textContent = 'Nearest spot: ' + best.name + ', ' + d.toFixed(1) + ' km away.'; }
+        render();
+      }, function (err) {
+        msg.textContent = (err && err.code === 1) ? 'Location permission was declined. Allow location for this site in the browser settings, or pick a spot on the map.' : 'Could not get a position. Move to open sky and try again.';
+      }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
+    });
+    $('f-moon').addEventListener('change', render);
+    $('b-live').addEventListener('click', loadLive);
+    function pick(t) { state.spot = t.getAttribute('data-spot'); render(); }
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest ? e.target.closest('[data-spot]') : null;
+      if (t) pick(t);
+    });
+    $('map').addEventListener('keydown', function (e) {
+      var t = e.target.closest ? e.target.closest('[data-spot]') : null;
+      if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(t); var g = document.querySelector('.mk[data-spot="' + state.spot + '"]'); if (g) g.focus(); }
+    });
+    render();
+    if (location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive();
+  }
+
+  function getJSON(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u); return r.json(); }); }
+  Promise.all([getJSON('data/spots.json'), getJSON('data/species.json')]).then(function (res) {
+    SPOTS = res[0].spots; LIMITS = res[0].limits; SPECIES = res[1];
+    init();
+  }).catch(function () {
+    $('detail').innerHTML = '<p class="msg">Could not load the spot data. Open the app from a web address (not as a file), and check the connection the first time.</p>';
   });
-  $('b-now').addEventListener('click', function () { setNow(); markManual(); });
-  $('b-gps').addEventListener('click', function () {
-    var msg = $('livemsg'); msg.hidden = false;
-    if (!navigator.geolocation) { msg.textContent = 'This browser cannot share a location.'; return; }
-    msg.textContent = 'Finding your position\u2026';
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      state.gps = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-      var best = SPOTS.slice().sort(function (a, b) { return km(state.gps, a) - km(state.gps, b); })[0];
-      var d = km(state.gps, best);
-      if (d > 30) {
-        msg.textContent = 'You are ' + Math.round(d) + ' km from the nearest listed spot (' + best.name + '). Scores use that spot. Sun times and live data use your position.';
-      } else {
-        state.spot = best.id;
-        msg.textContent = 'Nearest spot: ' + best.name + ', ' + d.toFixed(1) + ' km away.';
-      }
-      render();
-      loadLive();
-    }, function (err) {
-      msg.textContent = (err && err.code === 1) ? 'Location permission was declined. Allow location for this site in the browser settings, or pick a spot by hand.' : 'Could not get a position. Move to open sky and try again.';
-    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
-  });
-  $('f-moon').addEventListener('change', render);
-  $('b-live').addEventListener('click', loadLive);
-  document.addEventListener('click', function (e) {
-    var t = e.target.closest ? e.target.closest('[data-spot]') : null;
-    if (t) { state.spot = t.getAttribute('data-spot'); render(); }
-  });
-  setStatus(); render();
-  if (location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive();
   if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }
 })();
 </script>

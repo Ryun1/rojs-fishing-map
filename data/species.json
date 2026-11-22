@@ -1,0 +1,9 @@
+[
+  {"id":"amberjack","name":"Amberjack / almaco jack","pt":"írio","t":[19,24,4],"wave":[0.4,2,1.5],"wind":30,"season":[0.1,0.1,0.1,0.15,0.25,0.4,0.7,0.9,1,1,0.7,0.3],"time":{"dawn":1,"dusk":1,"day":0.6,"night":0.4},"tide":{"move":1,"slack":0.6},"kind":{"rock":1,"harbour":0.55}},
+  {"id":"bluefish","name":"Bluefish","pt":"anchova","t":[18,23,4],"wave":[0.5,2,1.5],"wind":28,"season":[0.05,0.05,0.1,0.2,0.4,0.7,0.9,1,1,0.9,0.5,0.15],"time":{"dawn":1,"dusk":1,"day":0.4,"night":0.7},"tide":{"move":1,"slack":0.5},"kind":{"rock":1,"harbour":0.9}},
+  {"id":"barracuda","name":"Barracuda","pt":"bicuda","t":[16,24,4],"wave":[0.4,2,1.5],"wind":30,"season":[0.25,0.2,0.55,0.65,0.75,0.8,0.85,1,0.95,0.95,0.8,0.35],"time":{"dawn":0.9,"dusk":1,"day":0.5,"night":0.9},"tide":{"move":1,"slack":0.5},"kind":{"rock":1,"harbour":0.7}},
+  {"id":"bonito","name":"Atlantic bonito","pt":"serra","t":[17,22,4],"wave":[0.3,1.8,1.5],"wind":28,"season":[0.1,0.1,0.2,0.4,0.7,0.9,1,1,0.9,0.7,0.4,0.15],"time":{"dawn":1,"dusk":0.9,"day":0.6,"night":0.1},"tide":{"move":1,"slack":0.6},"kind":{"rock":1,"harbour":0.6}},
+  {"id":"sargo","name":"White seabream","pt":"sargo","t":[15,22,5],"wave":[0.8,2,1.2],"wind":35,"season":[0.7,0.7,0.7,0.8,0.8,0.7,0.7,0.7,0.8,0.9,0.9,0.8],"time":{"dawn":0.9,"dusk":0.9,"day":0.7,"night":0.5},"tide":{"move":1,"slack":0.7},"kind":{"rock":1,"harbour":0.85}},
+  {"id":"veja","name":"Parrotfish","pt":"veja","t":[19,24,3],"wave":[0.2,1.2,1],"wind":25,"season":[0.2,0.2,0.2,0.3,0.5,0.8,1,1,1,0.8,0.5,0.3],"time":{"dawn":0.6,"dusk":0.6,"day":1,"night":0.1},"tide":{"move":1,"slack":0.8},"kind":{"rock":1,"harbour":0.6}},
+  {"id":"moray","name":"Moray eel","pt":"moreia","t":[17,24,4],"wave":[0,0.8,1],"wind":25,"season":[0.4,0.4,0.4,0.5,0.6,0.8,0.9,1,1,0.9,0.6,0.5],"time":{"dawn":0.4,"dusk":0.7,"day":0.2,"night":1},"tide":{"move":0.9,"slack":1},"kind":{"rock":1,"harbour":0.8}}
+]
