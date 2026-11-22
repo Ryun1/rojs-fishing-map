@@ -509,10 +509,13 @@ var FISH = {
     for (i = 0; i < N; i++) {
       var tmid = base + (i * 30 + 15) * MIN, lmin = i * 30 + 15;
       var ph = phaseOf(lmin, c.sun.rise, c.sun.set);
-      var light = ph === 'dawn' || ph === 'dusk' ? 1 : (ph === 'night' ? 0.55 : 0.45);
+      /* Light and moon taper in and out rather than switching on and off, so one half hour does not jump above its neighbours. */
+      var dSun = Math.min(Math.abs(lmin - c.sun.rise), Math.abs(lmin - c.sun.set));
+      var lbase = (lmin < c.sun.rise || lmin > c.sun.set) ? 0.55 : 0.45;
+      var light = lbase + (1 - lbase) * clamp(1 - (dSun - 45) / 75, 0, 1);
       var moon = 0.4, mtag = '';
       ev.forEach(function (e) {
-        var dm = Math.abs(tmid - e.t) / MIN, v = (e.type === 'upper' || e.type === 'lower') ? (dm <= 60 ? 1 : 0) : (dm <= 30 ? 0.7 : 0);
+        var dm = Math.abs(tmid - e.t) / MIN, v = (e.type === 'upper' || e.type === 'lower') ? 1 - dm / 150 : 0.7 * (1 - dm / 90);
         if (v > moon) { moon = v; mtag = MOONNAME[e.type].toLowerCase(); }
       });
       moon *= pf;
