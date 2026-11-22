@@ -33,7 +33,7 @@ Full detail and sources are in the research notes. The findings that shape the d
 
 ### Species
 
-- **Season can be grounded.** The Azores statistics service (SREA) publishes monthly fish-auction landings by species and island, including Pico. Twenty months are in hand (March 2025 to October 2026). Timing repeats across the two summers; amounts do not.
+- **Season can be grounded.** The Azores statistics service (SREA) publishes monthly fish-auction landings by species and island, including Pico. The full monthly series from January 1994 to October 2026 is in hand (`docs/research/landings.md`). Each species' timing is the same in 1994–2009 as in 2010–2025; amounts change a lot over the years.
 
   | Species | Months with most landings on Pico |
   |---|---|
@@ -114,7 +114,7 @@ Others:
 
 Three ways to build this were considered.
 
-**A. Static app plus data files (chosen, call).** Keep the app as it is, and move the reference data (spots, species, season curves, tide constants) into JSON files under `data/` that `index.html` loads and the service worker caches. Small one-off scripts under `tools/` regenerate those files from the sources (for example season curves from the SREA spreadsheets). The scripts are run by hand and are not a build step. Catch logs stay on the phone.
+**A. Static app plus data files (chosen, call).** Keep the app as it is, and move the reference data (spots, species, season curves, tide constants) into JSON files under `data/` that `index.html` loads and the service worker caches. Small one-off scripts under `tools/` regenerate those files from the sources (for example season curves from the SREA landings export). The scripts are run by hand and are not a build step. Catch logs stay on the phone.
 
 - For: fits the no-build, no-backend constraint; data can be updated without touching app code; the sources and the derivation are reproducible.
 - Against: a few more files to keep in the service worker list; logs do not sync between devices.
@@ -231,7 +231,7 @@ The scale is comparable across species **(call)**: five dots means "one of the l
 **Factors, in order of weight:**
 
 0. **Base rate.** How often the species is taken from the shore at all, from the species research.
-1. **Season.** A 12-month curve per species from the SREA Pico landings, smoothed and cross-checked against the Azores-wide totals and the published biology. Morays have no landings line and keep a biology-based curve.
+1. **Season.** A 12-month curve per species from the SREA Pico landings for 1994–2025 (`docs/research/data/srea/season_profiles.json`), cross-checked against the published biology. Species landed in tiny amounts on Pico (under about 500 kg a year, for example salema and most morays) use Faial or Azores-wide landings or a biology-based curve instead.
 2. **Time of day.** From the measured activity pattern of each species.
 3. **Habitat fit.** How well the spot's geography suits the species: steep and deep close in for the pelagics (bicuda, anchova, írio, serra), shallow rocky reef for sargo and veja, harbour walls and lights for night species. This replaces the current "harbour or rock" flag.
 4. **Conditions.** A small adjustment only. Sea temperature is used as "warmer or cooler than normal for the date" against the 1991 to 2020 baseline, and only a difference of about 1 °C or more counts. Swell and tide keep a light, clearly labelled "angler lore" weight.
@@ -243,7 +243,7 @@ The scale is comparable across species **(call)**: five dots means "one of the l
 - Moon influence is removed from scoring; the phase is still shown.
 - Each factor carries an evidence label (measured, estimated, lore) that the "why" line and the "how the scores work" section use.
 
-**Species.** Phase 3 keeps the seven current species with corrected names: sargo, veja, bicuda, anchova, írio (was "charuteiro"), serra (was "bonito"), moreia. A later phase adds the candidates with Pico landings data and a real shore presence **(call)**: garoupa, chicharro, cavala, encharéu, then salema, tainha, peixe-porco and the small wrasses. Mero and badejo are shown as release-only if added.
+**Species.** Roj's photo upload (7.8) sets the species list: every species he has caught gets an entry, and he confirms the list. Until that import is done the app keeps the seven current species with corrected names: sargo, veja, bicuda, anchova, írio (was "charuteiro"), serra (was "bonito"), moreia. A current species that is not in Roj's photos is kept only if he says he fishes for it. Each species on the list gets a season curve from the landings where Pico has one, and a biology-based curve otherwise. Mero and badejo are shown as release-only if they appear.
 
 ### 7.6 Tides
 
@@ -270,6 +270,25 @@ The scale is comparable across species **(call)**: five dots means "one of the l
 - Blank sessions are logged too. Without them the log only shows what was caught, never how often.
 - Stored on the phone only, with export to and import from a JSON file as the backup **(call)**.
 - Effect on ratings: per spot and species, the logged catch rate nudges the rating once there are enough sessions. The size of the nudge grows with the number of sessions. The exact rule is left to the builder.
+
+**Roj's photo archive.**
+
+Roj's past catch photos are the best record we have of what is caught where and when. They are processed once, in a Claude session, not in the app.
+
+- Roj uploads his catch photos to his own Claude session. They must be unmodified originals: photos sent through WhatsApp or Facebook, and many shared albums, have their location and time removed.
+- Claude reads the location, time and camera details from each photo, and identifies the species from the picture. Roj confirms or corrects the species.
+- The upload is also how Roj names every species he catches. At the end Claude lists all the species found, Roj confirms the list and adds any he catches but has no photo of, and that list becomes the app's species list (7.5).
+- Each photo is placed by its location:
+  - **Close to the sea** (within about 300 m of the coastline): matched to the nearest spot in the spot list. A location close to the sea but more than about 500 m from any listed spot is shown to Roj, who names the place, and it can be added to the spot backlog.
+  - **Not close to the sea, or no location** (for example the photo was taken at home after the trip): Claude asks Roj where the fish was caught and when. The photo time is kept only if Roj says it is roughly right.
+- Photo times are local time (Azores, UTC−1, or UTC in summer) and are converted to UTC before conditions are looked up.
+- Each record gets the conditions at the time it was caught:
+  - Weather from the Open-Meteo archive.
+  - Swell from the Open-Meteo marine history from October 2021, and from ERA5 for older photos.
+  - Tide computed from the Horta constants.
+  - Sea temperature compared with its 1991–2020 average.
+- Records go into `data/catches.json` with spot ID, species, date and time, rough size where it can be seen, and where the place came from (photo location or Roj's answer). Exact coordinates and the photos themselves are not committed. Any photo added to `img/` has its location and other metadata stripped first.
+- Photos only record days when something was caught. These records feed the species list per spot and the season curves. They do not feed catch rates, which need the blank sessions from the own log.
 
 **Other people's catches.**
 
@@ -344,13 +363,14 @@ Each phase leaves the app working and is worth using on its own.
    - Fishability rating, warnings, hazard notes.
    - Map markers coloured by fishability, with wind and swell arrows.
 3. **Evidence-based species model.**
-   - Season curves generated from the SREA files by a script in `tools/`.
+   - Season curves generated from the SREA 1994–2026 landings export by a script in `tools/` (starting from `docs/research/scripts/srea.py`).
    - Time-of-day and habitat factors; conditions demoted; evidence labels.
 4. **Forecast.**
    - Seven days, ranked spots for a chosen window, offline copy.
 5. **Catch log.**
    - Logging, export and import, the nudge to ratings.
    - Import of pasted community reports.
+   - Import of Roj's photo archive into `data/catches.json` (7.8). This can be done before the other phases because it needs no app changes, and its records improve the season curves and species lists per spot. It also sets the app's species list (7.5), so ideally it comes before phase 3.
 6. **Rules.**
    - Only after the legal checks in 7.9 are done.
 
@@ -387,13 +407,14 @@ Decisions made in writing this document that the owner has not confirmed:
 - The embedded 2026 tide table is removed in favour of computed tides.
 - Forecast horizon of seven days.
 - Catch log stored on the phone only, with file export as the backup.
+- Photo catches are stored by spot ID only, with no exact coordinates, because the repository is public. The distances for "close to the sea" (300 m) and "a new place" (500 m) are first guesses.
 - The map is a drawn outline of the island shipped with the app, not a zoomable tiled map.
-- New species are added after the model is rebuilt, not before.
+- The species list is whatever Roj confirms from his photo upload; new species are added after the model is rebuilt, not before.
 
 ## 11. Left to the builder
 
 - The swell-reduction curve and the fishability thresholds.
-- How the season curve is smoothed from 20 months of landings, and how it is blended with the biology.
+- How the season curve is taken from the 1994–2025 landings (all years, or recent years weighted more), and how it is blended with the biology.
 - The habitat-fit scoring from the spot's geography.
 - Factor weights in the species model.
 - The rule that turns logged sessions into a rating nudge.
@@ -403,10 +424,9 @@ Decisions made in writing this document that the owner has not confirmed:
 
 ## 12. Not verified
 
-- Licence of the SREA landings spreadsheets kept in `docs/research/data/srea/`. They are official public statistics, but no licence statement was seen. Remove them from the repository if that is a concern; the monthly figures used are also in `docs/research/species.md`.
+- Licence of the SREA landings spreadsheets and the 1994–2026 CSV export kept in `docs/research/data/srea/`. They are official public statistics, but no licence statement was seen. Remove them from the repository if that is a concern; the monthly figures used are also in `docs/research/species.md`.
 - The +28 minute tide offset for Cais do Pico (see 7.6).
 - Rate limits for IPMA and the other keyless services.
-- Whether the SREA report viewer offers a longer landings history; it sits behind a browser check.
-- The Faial and Pico shore-angling catch study (Diogo and Pereira 2014) was read as an abstract only.
+- The Faial and Pico shore-angling catch study (Diogo and Pereira 2014) has no open copy; its open companion paper (Diogo and Pereira 2016) was read instead, see `docs/research/recreational-catch.md`.
 - Open-Meteo wind was compared with the Pico airport station on one calm day only.
 - All spot geometry is derived from maps and has not been checked on the ground.

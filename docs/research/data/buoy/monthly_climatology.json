@@ -1,0 +1,420 @@
+{
+ "meta": {
+  "source": "EMODnet Physics ERDDAP dataset TS_70_6202404_MO_UND (Copernicus Marine In Situ TAC), platform 6202404 'Faial Pico' wave buoy, 38.5877 N 28.5377 W, 2012-05-04 to 2021-10-10",
+  "producer": "University of the Azores, Department of Oceanography and Fisheries (IMAR network) / CLIMAAT",
+  "licence": "Creative Commons Attribution Share-Alike (CC BY-SA), per dataset metadata",
+  "citation": "Data are the property of the producer/owner distributed through EMODnet Physics. EMODnet Physics and the partners are not responsible for improper use",
+  "era5": "Open-Meteo marine API, models=era5_ocean (ERA5 0.5 deg; Hersbach et al. 2020, Copernicus C3S), CC BY 4.0",
+  "qc": "QC flags 1 or 2 only; Hs 0.05-20 m, TEMP 12-28 C; samples within +-30 min averaged to the hour; isolated Hs spikes removed",
+  "qc_stats": {
+   "rows": 719708,
+   "hs_total": 359854,
+   "hs_good": 359722,
+   "hs_range_drop": 0,
+   "temp_total": 358890,
+   "temp_good": 358725,
+   "temp_range_drop": 0,
+   "hs_spike_hours_dropped": 0
+  },
+  "coverage_by_year": {
+   "2012": {
+    "hs_hours": 4739,
+    "temp_hours": 4745
+   },
+   "2013": {
+    "hs_hours": 8386,
+    "temp_hours": 8383
+   },
+   "2014": {
+    "hs_hours": 8538,
+    "temp_hours": 8534
+   },
+   "2015": {
+    "hs_hours": 2781,
+    "temp_hours": 2781
+   },
+   "2016": {
+    "hs_hours": 4216,
+    "temp_hours": 4216
+   },
+   "2017": {
+    "hs_hours": 3544,
+    "temp_hours": 3544
+   },
+   "2018": {
+    "hs_hours": 7286,
+    "temp_hours": 7286
+   },
+   "2019": {
+    "hs_hours": 6827,
+    "temp_hours": 6846
+   },
+   "2020": {
+    "hs_hours": 8778,
+    "temp_hours": 8778
+   },
+   "2021": {
+    "hs_hours": 6772,
+    "temp_hours": 6772
+   }
+  }
+ },
+ "monthly": {
+  "1": {
+   "hs_years": [
+    2013,
+    2014,
+    2015,
+    2017,
+    2019,
+    2020,
+    2021
+   ],
+   "hs_mean": 2.07,
+   "hs_median": 1.84,
+   "hs_p90": 3.45,
+   "hs_frac_gt_2m": 0.42,
+   "temp_years": [
+    2013,
+    2014,
+    2015,
+    2017,
+    2019,
+    2020,
+    2021
+   ],
+   "temp_mean": 15.7,
+   "temp_min_monthly_mean": 15.3,
+   "temp_max_monthly_mean": 16.0,
+   "temp_p05": 15.1,
+   "temp_p95": 16.2
+  },
+  "2": {
+   "hs_years": [
+    2013,
+    2014,
+    2015,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "hs_mean": 2.36,
+   "hs_median": 2.21,
+   "hs_p90": 3.77,
+   "hs_frac_gt_2m": 0.56,
+   "temp_years": [
+    2013,
+    2014,
+    2015,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "temp_mean": 15.3,
+   "temp_min_monthly_mean": 14.6,
+   "temp_max_monthly_mean": 15.8,
+   "temp_p05": 14.3,
+   "temp_p95": 15.9
+  },
+  "3": {
+   "hs_years": [
+    2013,
+    2014,
+    2015,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "hs_mean": 2.0,
+   "hs_median": 1.85,
+   "hs_p90": 3.27,
+   "hs_frac_gt_2m": 0.44,
+   "temp_years": [
+    2013,
+    2014,
+    2015,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "temp_mean": 15.2,
+   "temp_min_monthly_mean": 14.9,
+   "temp_max_monthly_mean": 15.7,
+   "temp_p05": 14.6,
+   "temp_p95": 15.9
+  },
+  "4": {
+   "hs_years": [
+    2013,
+    2014,
+    2015,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "hs_mean": 1.91,
+   "hs_median": 1.7,
+   "hs_p90": 3.2,
+   "hs_frac_gt_2m": 0.36,
+   "temp_years": [
+    2013,
+    2014,
+    2015,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "temp_mean": 15.4,
+   "temp_min_monthly_mean": 14.9,
+   "temp_max_monthly_mean": 16.0,
+   "temp_p05": 14.6,
+   "temp_p95": 16.1
+  },
+  "5": {
+   "hs_years": [
+    2012,
+    2013,
+    2014,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "hs_mean": 1.45,
+   "hs_median": 1.36,
+   "hs_p90": 2.27,
+   "hs_frac_gt_2m": 0.16,
+   "temp_years": [
+    2012,
+    2013,
+    2014,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "temp_mean": 16.6,
+   "temp_min_monthly_mean": 15.9,
+   "temp_max_monthly_mean": 17.3,
+   "temp_p05": 15.4,
+   "temp_p95": 17.8
+  },
+  "6": {
+   "hs_years": [
+    2012,
+    2013,
+    2014,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "hs_mean": 1.08,
+   "hs_median": 0.96,
+   "hs_p90": 1.71,
+   "hs_frac_gt_2m": 0.06,
+   "temp_years": [
+    2012,
+    2013,
+    2014,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "temp_mean": 18.7,
+   "temp_min_monthly_mean": 17.7,
+   "temp_max_monthly_mean": 19.9,
+   "temp_p05": 17.1,
+   "temp_p95": 20.9
+  },
+  "7": {
+   "hs_years": [
+    2012,
+    2013,
+    2014,
+    2016,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "hs_mean": 0.89,
+   "hs_median": 0.82,
+   "hs_p90": 1.46,
+   "hs_frac_gt_2m": 0.02,
+   "temp_years": [
+    2012,
+    2013,
+    2014,
+    2016,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "temp_mean": 20.8,
+   "temp_min_monthly_mean": 20.4,
+   "temp_max_monthly_mean": 21.2,
+   "temp_p05": 19.6,
+   "temp_p95": 22.1
+  },
+  "8": {
+   "hs_years": [
+    2012,
+    2013,
+    2014,
+    2016,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "hs_mean": 0.97,
+   "hs_median": 0.85,
+   "hs_p90": 1.57,
+   "hs_frac_gt_2m": 0.03,
+   "temp_years": [
+    2012,
+    2013,
+    2014,
+    2016,
+    2018,
+    2019,
+    2020,
+    2021
+   ],
+   "temp_mean": 22.3,
+   "temp_min_monthly_mean": 21.7,
+   "temp_max_monthly_mean": 22.8,
+   "temp_p05": 21.3,
+   "temp_p95": 23.5
+  },
+  "9": {
+   "hs_years": [
+    2013,
+    2014,
+    2016,
+    2018,
+    2020,
+    2021
+   ],
+   "hs_mean": 1.47,
+   "hs_median": 1.28,
+   "hs_p90": 2.52,
+   "hs_frac_gt_2m": 0.18,
+   "temp_years": [
+    2013,
+    2014,
+    2016,
+    2018,
+    2020,
+    2021
+   ],
+   "temp_mean": 21.8,
+   "temp_min_monthly_mean": 21.2,
+   "temp_max_monthly_mean": 22.8,
+   "temp_p05": 20.2,
+   "temp_p95": 23.4
+  },
+  "10": {
+   "hs_years": [
+    2012,
+    2013,
+    2014,
+    2016,
+    2018,
+    2020
+   ],
+   "hs_mean": 2.12,
+   "hs_median": 1.88,
+   "hs_p90": 3.62,
+   "hs_frac_gt_2m": 0.45,
+   "temp_years": [
+    2012,
+    2013,
+    2014,
+    2016,
+    2018,
+    2020
+   ],
+   "temp_mean": 20.1,
+   "temp_min_monthly_mean": 19.5,
+   "temp_max_monthly_mean": 20.8,
+   "temp_p05": 18.7,
+   "temp_p95": 21.4
+  },
+  "11": {
+   "hs_years": [
+    2012,
+    2013,
+    2014,
+    2016,
+    2018,
+    2019,
+    2020
+   ],
+   "hs_mean": 2.24,
+   "hs_median": 2.06,
+   "hs_p90": 3.81,
+   "hs_frac_gt_2m": 0.52,
+   "temp_years": [
+    2012,
+    2013,
+    2014,
+    2016,
+    2018,
+    2019,
+    2020
+   ],
+   "temp_mean": 18.1,
+   "temp_min_monthly_mean": 17.7,
+   "temp_max_monthly_mean": 18.5,
+   "temp_p05": 16.9,
+   "temp_p95": 18.9
+  },
+  "12": {
+   "hs_years": [
+    2012,
+    2013,
+    2014,
+    2016,
+    2018,
+    2019,
+    2020
+   ],
+   "hs_mean": 2.34,
+   "hs_median": 2.16,
+   "hs_p90": 3.71,
+   "hs_frac_gt_2m": 0.57,
+   "temp_years": [
+    2012,
+    2013,
+    2014,
+    2016,
+    2018,
+    2019,
+    2020
+   ],
+   "temp_mean": 16.6,
+   "temp_min_monthly_mean": 15.8,
+   "temp_max_monthly_mean": 17.1,
+   "temp_p05": 15.6,
+   "temp_p95": 17.7
+  }
+ }
+}
