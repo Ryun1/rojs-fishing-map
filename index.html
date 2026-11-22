@@ -187,7 +187,7 @@ body{margin:0}
       <li>Each species is scored from 0 to 100 on season, sea temperature, wave height at the spot, wind, time of day against sunrise and sunset, tide movement and the kind of spot.</li>
       <li>Wave height is adjusted for each spot. Swell coming from the direction a coast faces counts in full, swell from behind the island counts for much less, and harbours get a little extra shelter.</li>
       <li>Species pictures are from your own catches, except the moray, which is a drawing. Species windows and spot facings are starting estimates. Spot positions are approximate. They are meant to be corrected with local knowledge and, later, with catch logs.</li>
-      <li>Moon phase is shown for planning and feeds the best-times timeline, but it does not change the species scores yet. Tide state comes from the official Instituto Hidrográfico table for Horta (2026), and from the Open-Meteo model for other dates. You can override it with the dropdown. Madalena is within 7 minutes of Horta in the table, and the other Pico ports are treated as Horta. Tide tables: <a href="https://www.hidrografico.pt" target="_blank" rel="noopener">Instituto Hidrográfico</a>. Live sea data: <a href="https://open-meteo.com/en/docs/marine-weather-api" target="_blank" rel="noopener">Open-Meteo Marine</a>.</li>
+      <li>Moon phase is shown for planning and feeds the best-times timeline, but it does not change the species scores yet. Tide is computed on the phone for Horta from published tidal constants, for any date and with no connection, and matches the official Instituto Hidrográfico table to within a few minutes and about 5 cm. It is the astronomical tide only: wind and air pressure can move the real sea level. You can override it with the dropdown. Madalena is within 7 minutes of Horta, and the other Pico spots are treated as Horta. Tidal constants: <a href="https://www.seanoe.org/data/00980/109129/" target="_blank" rel="noopener">TICON-4</a> (Hart-Davis, Dettmering and Seitz, CC BY 4.0). Live sea data: <a href="https://open-meteo.com/en/docs/marine-weather-api" target="_blank" rel="noopener">Open-Meteo Marine</a>.</li>
     </ul>
   </details>
 </div>
@@ -198,23 +198,25 @@ body{margin:0}
   var COMPASS = ['N','NE','E','SE','S','SW','W','NW'];
 
   /* Spots: face is the bearing the coast looks toward. Positions are approximate. */
+  /* tideLag: minutes the spot's tide runs after Horta. The Instituto Hidrográfico gives 0 for Lajes and Santo António and
+     -7 to +7 for Madalena. It lists +28 for Cais do Pico (São Roque), which is still to be checked against the printed table, so 0 for now. */
   var SPOTS = [
-    { id: 'madalena', name: 'Madalena', type: 'harbour', face: 260, lat: 38.535, lon: -28.53, note: 'Harbour and breakwater on the Faial channel side. Sheltered from easterly swell, open to the west.' },
-    { id: 'saoroque', name: 'São Roque', type: 'harbour', face: 350, lat: 38.52, lon: -28.32, note: 'North coast harbour. Open to northerly swell and often calmer in a southerly blow.' },
-    { id: 'lajes', name: 'Lajes do Pico', type: 'harbour', face: 175, lat: 38.385, lon: -28.26, note: 'South coast harbour. Takes southerly swell and is sheltered when the wind is from the north.' },
-    { id: 'calheta', name: 'Calheta de Nesquim', type: 'rock', face: 130, lat: 38.41, lon: -28.1, note: 'Rocky points on the south-east coast with deep water close in.' },
-    { id: 'ponta', name: 'Ponta da Ilha', type: 'rock', face: 90, lat: 38.41, lon: -28.03, note: 'Eastern tip of the island. Takes any easterly swell and a lot of current.' }
+    { id: 'madalena', name: 'Madalena', type: 'harbour', face: 260, lat: 38.535, lon: -28.53, tideLag: 0, note: 'Harbour and breakwater on the Faial channel side. Sheltered from easterly swell, open to the west.' },
+    { id: 'saoroque', name: 'São Roque', type: 'harbour', face: 350, lat: 38.52, lon: -28.32, tideLag: 0, note: 'North coast harbour. Open to northerly swell and often calmer in a southerly blow.' },
+    { id: 'lajes', name: 'Lajes do Pico', type: 'harbour', face: 175, lat: 38.385, lon: -28.26, tideLag: 0, note: 'South coast harbour. Takes southerly swell and is sheltered when the wind is from the north.' },
+    { id: 'calheta', name: 'Calheta de Nesquim', type: 'rock', face: 130, lat: 38.41, lon: -28.1, tideLag: 0, note: 'Rocky points on the south-east coast with deep water close in.' },
+    { id: 'ponta', name: 'Ponta da Ilha', type: 'rock', face: 90, lat: 38.41, lon: -28.03, tideLag: 0, note: 'Eastern tip of the island. Takes any easterly swell and a lot of current.' }
   ];
 
   /* Species: t = sea temp [low, high, soft margin]; wave = effective metres [low, high, soft]; wind = comfort limit km/h. */
   var SPECIES = [
-    { id: 'amberjack', name: 'Amberjack / almaco jack', pt: 'charuteiro', t: [19, 24, 4], wave: [0.4, 2.0, 1.5], wind: 30,
+    { id: 'amberjack', name: 'Amberjack / almaco jack', pt: 'írio', t: [19, 24, 4], wave: [0.4, 2.0, 1.5], wind: 30,
       season: [.1,.1,.1,.15,.25,.4,.7,.9,1,1,.7,.3], time: { dawn: 1, dusk: 1, day: .6, night: .4 }, tide: { move: 1, slack: .6 }, kind: { rock: 1, harbour: .55 } },
     { id: 'bluefish', name: 'Bluefish', pt: 'anchova', t: [18, 23, 4], wave: [0.5, 2.0, 1.5], wind: 28,
       season: [.05,.05,.1,.2,.4,.7,.9,1,1,.9,.5,.15], time: { dawn: 1, dusk: 1, day: .4, night: .7 }, tide: { move: 1, slack: .5 }, kind: { rock: 1, harbour: .9 } },
     { id: 'barracuda', name: 'Barracuda', pt: 'bicuda', t: [16, 24, 4], wave: [0.4, 2.0, 1.5], wind: 30,
       season: [.25,.2,.55,.65,.75,.8,.85,1,.95,.95,.8,.35], time: { dawn: .9, dusk: 1, day: .5, night: .9 }, tide: { move: 1, slack: .5 }, kind: { rock: 1, harbour: .7 } },
-    { id: 'bonito', name: 'Atlantic bonito', pt: 'bonito', t: [17, 22, 4], wave: [0.3, 1.8, 1.5], wind: 28,
+    { id: 'bonito', name: 'Atlantic bonito', pt: 'serra', t: [17, 22, 4], wave: [0.3, 1.8, 1.5], wind: 28,
       season: [.1,.1,.2,.4,.7,.9,1,1,.9,.7,.4,.15], time: { dawn: 1, dusk: .9, day: .6, night: .1 }, tide: { move: 1, slack: .6 }, kind: { rock: 1, harbour: .6 } },
     { id: 'sargo', name: 'White seabream', pt: 'sargo', t: [15, 22, 5], wave: [0.8, 2.0, 1.2], wind: 35,
       season: [.7,.7,.7,.8,.8,.7,.7,.7,.8,.9,.9,.8], time: { dawn: .9, dusk: .9, day: .7, night: .5 }, tide: { move: 1, slack: .7 }, kind: { rock: 1, harbour: .85 } },
@@ -326,7 +328,7 @@ var FISH = {
   }
   function labelOf(s) { return s >= 70 ? ['good', 'Good'] : (s >= 45 ? ['fair', 'Fair'] : ['poor', 'Poor']); }
 
-  var state = { spot: 'madalena', source: 'example', gps: null, tideData: null, tideAuto: true };
+  var state = { spot: 'madalena', source: 'example', gps: null, tideAuto: true };
 
   function currentSpot() { return SPOTS.filter(function (s) { return s.id === state.spot; })[0]; }
 
@@ -354,67 +356,76 @@ var FISH = {
   }
 
   function hmUTC(ms) { var d = new Date(ms); return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()); }
-  function setTideData(h) {
-    state.tideData = null;
-    if (!h || !h.time || !h.sea_level_height_msl) return;
-    var ts = [], vs = [];
-    h.time.forEach(function (t, i) {
-      var v = h.sea_level_height_msl[i], p = String(t).match(/(\d+)-(\d+)-(\d+)T(\d+):(\d+)/);
-      if (v == null || !p) return;
-      ts.push(Date.UTC(+p[1], +p[2] - 1, +p[3], +p[4], +p[5])); vs.push(v);
-    });
-    if (vs.length < 6) return;
-    var mean = vs.reduce(function (a, b) { return a + b; }, 0) / vs.length;
-    state.tideData = { ts: ts, vs: vs, mean: mean };
-    state.tideAuto = true;
+  function hmLocal(ms) { return hmUTC(ms + azOffsetMin(new Date(ms)) * 60000); }
+
+  /* TIDE START: tide for Horta computed from harmonic constants, valid for any year.
+     Constants: TICON-4 (Hart-Davis, Dettmering and Seitz 2025, doi 10.17882/109129, CC BY 4.0), Horta gauge UHSLC 212a,
+     amplitude in metres and Greenwich phase lag in degrees (UTC). The seasonal SA and SSA terms are left out and the mean level
+     is 0.96 m above chart datum: that combination matched the Instituto Hidrográfico predictions for 2026 and 2027 to within
+     a few minutes and a few centimetres (docs/research/conditions.md section 4.3).
+     Each row: name, amplitude, phase, then the Doodson multipliers of T, s, h, p, p1, a constant in degrees, and the nodal family. */
+  var TIDE_Z0 = 0.96;
+  var TIDE_CONS = [['M2', 0.4137, 59.47, 2, -2, 2, 0, 0, 0, 'm2'], ['S2', 0.15267, 78.44, 2, 0, 0, 0, 0, 0, '1'], ['N2', 0.09125, 44.71, 2, -3, 2, 1, 0, 0, 'm2'], ['K2', 0.04247, 75.14, 2, 0, 2, 0, 0, 0, 'k2'], ['K1', 0.04155, 84.26, 1, 0, 1, 0, 0, -90, 'k1'], ['O1', 0.01993, 326.81, 1, -2, 1, 0, 0, 90, 'o1'], ['P1', 0.01277, 76.65, 1, 0, -1, 0, 0, 90, '1'], ['Q1', 0.00829, 247.74, 1, -3, 1, 1, 0, 90, 'o1'], ['MU2', 0.01835, 13.57, 2, -4, 4, 0, 0, 0, 'm2'], ['NU2', 0.01647, 45.05, 2, -3, 4, -1, 0, 0, 'm2'], ['2N2', 0.0136, 28.04, 2, -4, 2, 2, 0, 0, 'm2'], ['T2', 0.00968, 77.34, 2, 0, -1, 0, 1, 0, '1'], ['R2', 0.00364, 43.42, 2, 0, 1, 0, -1, 180, '1'], ['L2', 0.00851, 59.74, 2, -1, 2, -1, 0, 180, 'm2'], ['LAMBDA2', 0.00114, 78.51, 2, -1, 0, 1, 0, 180, 'm2'], ['MM', 0.00909, 279.25, 0, 1, 0, -1, 0, 0, 'mm'], ['MF', 0.00276, 317.21, 0, 2, 0, 0, 0, 0, 'mf'], ['MSF', 0.00043, 60.88, 0, 2, -2, 0, 0, 0, 'm2'], ['J1', 0.00104, 75.79, 1, 1, 1, -1, 0, -90, 'j1'], ['OO1', 0.00112, 205.43, 1, 2, 1, 0, 0, -90, 'oo1'], ['2Q1', 0.00222, 199.23, 1, -4, 1, 2, 0, 90, 'o1'], ['RHO1', 0.00144, 262.7, 1, -3, 3, -1, 0, 90, 'o1'], ['M4', 0.00516, 131.05, 4, -4, 4, 0, 0, 0, 'm4'], ['MS4', 0.00187, 184.62, 4, -2, 2, 0, 0, 0, 'm2'], ['MN4', 0.00262, 93.0, 4, -5, 4, 1, 0, 0, 'm4'], ['M3', 0.00313, 147.65, 3, -3, 3, 0, 0, 0, 'm3'], ['S1', 0.00273, 9.23, 1, 0, 0, 0, 0, 0, '1']];
+  var TIDE_D = Math.PI / 180;
+  function tideAstro(ms) {
+    var Tc = (ms - 946728000000) / 864e5 / 36525, hrs = (((ms % 864e5) + 864e5) % 864e5) / 3600000;
+    return { s: 218.3164477 + 481267.88123421 * Tc, h: 280.4664567 + 36000.76982779 * Tc, p: 83.3532465 + 4069.0137287 * Tc,
+      N: 125.0445479 - 1934.1362891 * Tc, p1: 282.93768 + 1.71946 * Tc, T: 15 * hrs + 180 };
   }
-  function tideLevel(td, ms) {
-    var ts = td.ts;
-    if (ms < ts[0] || ms > ts[ts.length - 1]) return null;
-    for (var i = 1; i < ts.length; i++) {
-      if (ms <= ts[i]) { var f = (ms - ts[i - 1]) / (ts[i] - ts[i - 1]); return td.vs[i - 1] + f * (td.vs[i] - td.vs[i - 1]); }
+  function tideNodal(N) {
+    var n = N * TIDE_D, c1 = Math.cos(n), c2 = Math.cos(2 * n), c3 = Math.cos(3 * n), s1 = Math.sin(n), s2 = Math.sin(2 * n), s3 = Math.sin(3 * n);
+    var fm2 = 1.0004 - 0.0373 * c1 + 0.0002 * c2, um2 = -2.14 * s1;
+    return { '1': [1, 0], m2: [fm2, um2], m4: [fm2 * fm2, 2 * um2], m3: [Math.pow(fm2, 1.5), 1.5 * um2],
+      k1: [1.0060 + 0.1150 * c1 - 0.0088 * c2 + 0.0006 * c3, -8.86 * s1 + 0.68 * s2 - 0.07 * s3],
+      o1: [1.0089 + 0.1871 * c1 - 0.0147 * c2 + 0.0014 * c3, 10.80 * s1 - 1.34 * s2 + 0.19 * s3],
+      k2: [1.0241 + 0.2863 * c1 + 0.0083 * c2 - 0.0015 * c3, -17.74 * s1 + 0.68 * s2 - 0.04 * s3],
+      mm: [1.0 - 0.1300 * c1 + 0.0013 * c2, 0],
+      mf: [1.0429 + 0.4135 * c1 - 0.004 * c2, -23.74 * s1 + 2.68 * s2 - 0.38 * s3],
+      j1: [1.0129 + 0.1676 * c1 - 0.0170 * c2 + 0.0016 * c3, -12.94 * s1 + 1.34 * s2 - 0.19 * s3],
+      oo1: [1.1027 + 0.6504 * c1 + 0.0317 * c2 - 0.0014 * c3, -36.68 * s1 + 4.02 * s2 - 0.57 * s3] };
+  }
+  /* Height above chart datum (m) and rate of change (m per hour) at a UTC time in ms. */
+  function tideCalc(ms) {
+    var a = tideAstro(ms), nod = tideNodal(a.N), h = TIDE_Z0, r = 0;
+    for (var i = 0; i < TIDE_CONS.length; i++) {
+      var c = TIDE_CONS[i], fu = nod[c[9]];
+      var arg = (c[3] * a.T + c[4] * a.s + c[5] * a.h + c[6] * a.p + c[7] * a.p1 + c[8] + fu[1] - c[2]) * TIDE_D;
+      var sp = (c[3] * 15 + c[4] * 0.54901653 + c[5] * 0.04106864 + c[6] * 0.00464183 + c[7] * 0.00000196) * TIDE_D;
+      h += fu[0] * c[1] * Math.cos(arg); r -= fu[0] * c[1] * sp * Math.sin(arg);
     }
-    return null;
+    return { h: h, r: r };
   }
-  function tideState(td, ms) {
-    var a = tideLevel(td, ms - 3600000), b = tideLevel(td, ms + 3600000), c = tideLevel(td, ms);
-    if (a == null || b == null || c == null) return null;
-    var sl = b - a;
-    if (Math.abs(sl) < 0.08) return c >= td.mean ? 'high' : 'low';
-    return sl > 0 ? 'rising' : 'falling';
-  }
-  function tideExtrema(td, ms) {
-    var out = { high: null, low: null }, ts = td.ts, vs = td.vs;
-    for (var i = 1; i < ts.length - 1; i++) {
-      if (ts[i] < ms) continue;
-      var hi = vs[i] > vs[i - 1] && vs[i] >= vs[i + 1], lo = vs[i] < vs[i - 1] && vs[i] <= vs[i + 1];
-      if (!hi && !lo) continue;
-      var dd = vs[i - 1] - 2 * vs[i] + vs[i + 1], off = dd !== 0 ? 0.5 * (vs[i - 1] - vs[i + 1]) / dd : 0;
-      var t = ts[i] + off * 3600000, v = vs[i] - 0.25 * (vs[i - 1] - vs[i + 1]) * off, k = hi ? 'high' : 'low';
-      if (!out[k] && t >= ms) out[k] = { t: t, v: v };
+  function tideHeight(ms) { return tideCalc(ms).h; }
+  /* High and low waters between two UTC times: { t, h, high }. */
+  function tideExtremes(fromMs, toMs) {
+    var out = [], step = 600000, prev = tideCalc(fromMs).r;
+    for (var t = fromMs + step; t <= toMs; t += step) {
+      var cur = tideCalc(t).r;
+      if ((prev > 0) !== (cur > 0)) {
+        var lo = t - step, hi = t;
+        while (hi - lo > 1000) { var mid = (lo + hi) / 2; if ((tideCalc(mid).r > 0) === (prev > 0)) lo = mid; else hi = mid; }
+        var tm = Math.round((lo + hi) / 2);
+        out.push({ t: tm, h: tideHeight(tm), high: prev > 0 });
+      }
+      prev = cur;
     }
     return out;
   }
-  function hmLocal(ms) { return hmUTC(ms + azOffsetMin(new Date(ms)) * 60000); }
-  /* Official predictions for Horta, 2026, from the Instituto Hidrográfico tide table. t = minutes after 2026-01-01 00:00 UTC, h = height in tenths of a metre above chart zero. */
-  var HORTA = { t: [6,378,743,1123,1498,1874,2238,2613,2987,3366,3729,4100,4475,4856,5217,5585,5962,6344,6703,7068,7448,7830,8188,8551,8933,9316,9671,10033,10418,10801,11156,11517,11905,12288,12646,13007,13396,13781,14145,14509,14895,15283,15660,16028,16405,16792,17178,17550,17915,18297,18682,19056,19415,19789,20172,20546,20903,21273,21652,22027,22384,22750,23127,23504,23860,24224,24600,24977,25334,25697,26072,26450,26807,27169,27544,27922,28280,28642,29018,29396,29755,30117,30494,30872,31234,31594,31972,32352,32716,33076,33454,33836,34204,34563,34943,35328,35702,36063,36442,36833,37214,37581,37957,38355,38739,39114,39484,39878,40258,40638,41002,41387,41762,42143,42505,42882,43254,43636,43997,44368,44741,45123,45483,45851,46224,46605,46964,47330,47705,48085,48443,48807,49184,49562,49920,50283,50662,51038,51396,51758,52139,52513,52872,53234,53616,53988,54351,54713,55095,55468,55837,56202,56584,56961,57343,57717,58097,58481,58882,59268,59636,60017,60413,60798,61156,61527,61911,62292,62649,63015,63393,63772,64129,64492,64867,65245,65602,65965,66338,66716,67074,67437,67809,68186,68545,68908,69280,69658,70018,70381,70754,71130,71493,71855,72229,72605,72970,73332,73707,74083,74451,74813,75188,75565,75937,76300,76676,77054,77433,77800,78177,78561,78949,79328,79703,80098,80487,80880,81247,81637,82014,82405,82768,83145,83516,83904,84264,84635,85005,85389,85748,86116,86487,86869,87227,87593,87965,88344,88703,89068,89441,89817,90177,90541,90915,91288,91650,92013,92388,92758,93122,93485,93860,94228,94594,94957,95332,95699,96068,96432,96807,97173,97547,97916,98289,98658,99042,99422,99795,100171,100575,100981,101349,101727,102128,102526,102887,103253,103636,104022,104382,104744,105119,105501,105860,106222,106593,106973,107333,107696,108065,108444,108805,109168,109537,109915,110278,110641,111010,111387,111752,112116,112486,112862,113229,113593,113964,114338,114708,115072,115444,115818,116190,116556,116929,117301,117678,118048,118421,118793,119178,119557,119929,120306,120699,121097,121466,121852,122239,122645,123009,123387,123762,124159,124521,124890,125260,125650,126010,126376,126745,127130,127489,127855,128224,128604,128964,129330,129699,130075,130437,130802,131172,131545,131909,132274,132644,133013,133380,133745,134116,134482,134851,135216,135587,135951,136323,136689,137059,137422,137796,138166,138533,138896,139275,139650,140016,140379,140766,141154,141518,141885,142283,142694,143057,143427,143824,144232,144596,144958,145340,145734,146097,146457,146829,147216,147580,147940,148309,148692,149056,149418,149785,150166,150532,150894,151262,151640,152008,152372,152740,153117,153486,153851,154220,154595,154967,155333,155702,156076,156449,156819,157188,157559,157936,158309,158679,159048,159429,159809,160177,160545,160933,161325,161690,162062,162453,162859,163222,163596,163980,164387,164750,165119,165494,165893,166255,166621,166991,167382,167743,168108,168476,168860,169222,169588,169955,170333,170697,171063,171430,171804,172171,172537,172903,173273,173643,174010,174376,174743,175115,175483,175848,176213,176588,176957,177321,177684,178061,178432,178796,179157,179537,179912,180274,180634,181017,181398,181758,182118,182506,182897,183255,183616,184008,184411,184770,185133,185522,185929,186292,186654,187033,187433,187799,188159,188531,188923,189292,189652,190019,190406,190776,191138,191504,191887,192259,192622,192988,193368,193741,194106,194473,194851,195224,195592,195960,196335,196710,197081,197449,197821,198198,198573,198940,199309,199689,200070,200435,200802,201184,201573,201935,202300,202686,203083,203442,203807,204195,204598,204956,205322,205707,206110,206471,206836,207214,207613,207976,208340,208712,209103,209469,209834,210201,210585,210953,211320,211684,212061,212432,212800,213162,213535,213909,214278,214639,215008,215384,215754,216115,216480,216858,217230,217590,217954,218332,218706,219066,219427,219807,220184,220542,220903,221284,221663,222021,222380,222763,223146,223503,223862,224247,224635,224992,225351,225736,226130,226489,226849,227232,227630,227994,228354,228733,229131,229501,229861,230234,230629,231004,231364,231732,232123,232499,232862,233228,233614,233991,234356,234722,235104,235481,235850,236216,236593,236970,237343,237709,238083,238460,238837,239202,239572,239950,240331,240694,241062,241441,241827,242187,242552,242934,243323,243681,244044,244428,244820,245176,245539,245925,246318,246675,247038,247424,247819,248179,248544,248926,249319,249686,250053,250427,250816,251190,251558,251924,252307,252685,253055,253416,253792,254171,254544,254902,255273,255653,256027,256383,256751,257130,257505,257862,258227,258606,258982,259339,259701,260080,260458,260814,261175,261554,261933,262289,262649,263028,263408,263765,264125,264504,264885,265243,265602,265982,266365,266724,267083,267463,267849,268212,268571,268950,269339,269707,270066,270444,270837,271212,271572,271947,272342,272722,273086,273456,273849,274231,274599,274965,275353,275733,276106,276471,276852,277230,277606,277970,278346,278722,279101,279464,279836,280212,280593,280955,281323,281700,282083,282443,282808,283186,283570,283929,284293,284673,285057,285414,285777,286159,286542,286899,287261,287645,288029,288387,288750,289134,289518,289882,290247,290630,291015,291389,291759,292136,292522,292907,293283,293649,294031,294419,294798,295155,295530,295915,296293,296648,297017,297399,297777,298132,298497,298876,299254,299610,299973,300350,300728,301084,301446,301821,302200,302556,302917,303293,303671,304028,304389,304764,305143,305501,305862,306237,306616,306976,307337,307712,308091,308455,308815,309191,309570,309938,310298,310674,311056,311429,311790,312167,312553,312934,313299,313674,314066,314454,314827,315197,315591,315977,316356,316721,317108,317487,317869,318231,318609,318984,319366,319728,320100,320473,320856,321217,321585,321959,322341,322701,323067,323442,323823,324182,324547,324923,325303,325662,326025,326403,326781,327140,327503,327882,328258,328619,328981,329361,329735,330099,330462,330843,331215,331586,331952,332332,332706,333089,333465,333841,334221,334621,335011,335376,335755,336153,336541,336898,337268,337654,338037,338394,338758,339137,339518,339875,340237,340612,340991,341349,341710,342083,342461,342820,343181,343553,343931,344290,344651,345023,345400,345761,346122,346494,346870,347233,347595,347967,348343,348708,349070,349443,349818,350186,350548,350922,351296,351670,352032,352406,352782,353161,353527,353902,354281,354669,355046,355419,355807,356201,356592,356959,357350,357732,358125,358488,358867,359241,359629,359991,360362,360733,361119,361479,361847,362218,362601,362961,363327,363698,364079,364439,364804,365177,365555,365916,366280,366654,367029,367391,367755,368130,368501,368865,369229,369604,369973,370340,370704,371079,371445,371816,372182,372556,372921,373298,373668,374041,374407,374795,375179,375549,375921,376328,376735,377099,377472,377874,378272,378633,378995,379380,379767,380127,380487,380863,381245,381606,381965,382337,382717,383078,383438,383808,384187,384548,384909,385278,385656,386019,386381,386749,387126,387491,387853,388223,388598,388965,389328,389698,390072,390442,390806,391177,391549,391923,392289,392660,393031,393409,393778,394149,394520,394905,395282,395652,396026,396420,396814,397181,397564,397955,398361,398725,399104,399482,399882,400244,400614,400986,401377,401739,402105,402474,402861,403221,403587,403956,404338,404699,405064,405434,405812,406175,406540,406910,407284,407649,408014,408384,408755,409122,409487,409858,410225,410595,410961,411331,411695,412069,412436,412805,413167,413545,413914,414281,414642,415025,415401,415765,416127,416518,416907,417269,417633,418036,418448,418808,419174,419573,419981,420344,420703,421086,421480,421844,422201,422575,422962,423326,423684,424053,424436,424800,425160,425527,425908,426274,426635,427001,427380,427748,428110,428477,428853,429223,429587,429955,430329,430702,431067,431435,431808,432183,432551,432919,433290,433668,434040,434408,434777,435159,435537,435904,436271,436659,437048,437412,437782,438174,438577,438938,439312,439700,440108,440470,440840,441218,441619,441982,442348,442720,443113,443475,443840,444209,444596,444959,445324,445691,446072,446436,446802,447169,447545,447912,448279,448645,449016,449386,449753,450119,450487,450860,451228,451593,451958,452334,452703,453067,453430,453808,454179,454542,454903,455285,455659,456020,456380,456765,457145,457504,457863,458252,458642,458998,459358,459752,460154,460510,460871,461264,461671,462032,462392,462775,463177,463542,463900,464273,464667,465035,465394,465761,466149,466519,466879,467245,467629,468000,468362,468727,469107,469480,469845,470210,470588,470962,471329,471695,472070,472445,472815,473182,473554,473931,474305,474671,475041,475421,475799,476164,476531,476914,477299,477661,478027,478413,478805,479164,479530,479918,480318,480675,481042,481429,481833,482192,482559,482940,483342,483704,484070,484444,484840,485204,485571,485939,486327,486694,487062,487426,487807,488177,488546,488908,489283,489656,490026,490386,490757,491132,491503,491863,492230,492607,492979,493339,493703,494082,494455,494815,495176,495556,495931,496290,496650,497031,497409,497767,498126,498508,498889,499246,499605,499989,500373,500729,501088,501473,501863,502220,502580,502965,503360,503722,504082,504463,504862,505231,505591,505966,506364,506738,507099,507467,507861,508238,508600,508965,509354,509731,510096,510460,510843,511220,511589,511953,512332,512708,513081,513445,513820,514196,514572,514937,515308,515685,516064,516427,516796,517174,517557,517918,518284,518664,519050,519409,519773,520156,520544,520902,521265,521651,522042,522398,522761,523149,523542,523901,524267,524652,525048,525413], h: [14,5,14,4,15,4,15,4,16,4,15,3,16,3,15,3,17,4,15,4,16,4,14,4,16,5,14,5,15,5,13,6,14,6,12,7,13,7,12,7,12,7,11,8,12,7,12,8,12,7,12,7,12,6,13,7,12,6,13,6,13,5,14,6,13,5,15,5,14,5,15,5,14,4,15,5,14,4,16,4,14,4,16,4,14,4,15,5,14,5,15,5,13,6,14,6,13,6,13,6,12,7,13,6,12,7,13,6,13,6,13,5,14,5,14,5,15,4,14,4,16,4,15,3,17,3,15,3,17,3,15,3,17,4,15,4,16,4,14,4,15,5,13,5,14,6,13,6,13,7,12,7,12,7,11,8,11,8,11,8,11,8,12,8,11,7,12,7,12,6,13,6,13,6,14,5,14,5,15,5,14,4,16,4,15,4,16,4,15,3,16,3,15,3,16,3,15,4,16,4,15,4,15,5,14,5,14,5,13,6,13,6,12,7,12,7,12,7,12,7,13,6,13,6,14,5,13,5,15,4,14,4,16,4,15,4,17,3,15,3,17,3,15,3,16,4,15,4,16,4,15,4,15,5,14,5,14,6,13,6,13,6,12,7,12,7,12,8,11,8,11,8,11,8,11,8,11,7,12,7,12,7,13,6,13,6,14,5,14,5,15,4,15,4,16,4,15,3,16,3,16,3,17,3,16,3,17,3,16,3,16,4,15,4,15,4,14,5,14,6,13,6,12,7,13,7,12,7,13,7,12,7,13,6,13,6,14,5,13,5,15,4,14,4,16,4,15,4,16,4,15,4,16,4,15,4,16,4,15,4,15,4,15,5,14,5,14,5,14,5,14,6,13,6,13,7,12,7,12,8,11,8,12,8,11,8,12,8,11,8,12,7,12,7,13,6,13,6,14,5,14,5,15,4,15,4,16,3,16,4,16,3,16,3,17,3,16,3,16,3,16,4,16,4,16,4,15,5,15,5,13,6,14,6,12,7,13,6,12,7,13,6,12,7,14,6,12,6,14,5,13,6,15,5,14,5,15,5,14,5,15,4,15,5,15,4,15,5,15,4,15,5,14,5,15,5,14,5,14,6,13,5,14,6,13,6,13,7,12,7,13,7,11,7,12,7,11,8,12,7,11,7,13,7,12,7,13,6,13,6,14,5,14,5,15,4,15,5,15,3,15,4,16,3,16,4,16,3,16,3,16,3,16,4,15,4,16,4,14,5,15,5,13,5,15,5,12,6,14,6,12,7,14,6,12,7,14,6,12,6,14,6,13,6,14,6,13,6,14,5,14,6,14,5,14,6,14,5,14,6,14,5,14,6,14,5,14,6,13,5,14,6,13,5,14,6,13,6,14,6,12,6,14,6,12,7,13,7,12,7,13,7,12,7,13,6,12,7,13,6,13,6,14,5,13,6,14,5,14,5,15,4,15,5,15,4,16,4,15,3,16,4,15,3,16,4,15,4,16,4,14,4,16,4,14,5,15,5,13,6,15,6,12,6,14,6,12,7,13,6,12,7,13,6,12,7,13,6,13,7,13,6,13,7,13,6,14,6,13,5,14,6,13,5,14,6,13,5,14,5,13,5,15,5,13,5,15,5,13,5,15,5,13,5,14,6,13,6,14,6,13,6,14,6,12,7,13,6,12,7,13,6,13,7,13,6,13,6,13,5,14,6,14,5,15,5,14,4,16,4,15,4,16,3,15,3,17,3,15,3,17,3,15,4,17,4,14,4,16,5,13,5,15,5,13,6,14,6,12,7,13,7,12,7,12,7,12,8,12,7,12,7,12,7,13,7,12,6,13,6,13,6,14,6,13,5,14,5,13,5,15,5,14,5,15,5,14,4,15,5,14,4,15,5,14,5,15,5,14,5,15,5,13,6,14,5,13,6,13,6,13,7,13,6,12,7,13,6,13,7,13,6,14,6,13,5,15,5,14,4,16,4,15,4,17,3,15,3,17,3,15,3,17,3,15,3,17,4,15,4,16,5,14,5,15,5,13,6,13,6,12,7,12,7,12,8,11,8,11,8,11,8,12,8,11,7,12,7,12,6,13,6,13,6,14,6,13,5,15,5,14,5,15,4,14,4,16,4,15,4,16,4,15,4,16,4,15,4,16,4,15,4,15,4,14,5,14,5,13,6,13,6,13,7,12,7,12,7,12,7,13,6,12,6,14,5,13,5,15,4,14,4,16,4,15,4,17,3,15,3,17,3,15,3,17,3,15,4,16,4,15,4,15,5,14,5,14,5,13,6,13,6,13,7,12,7,12,8,11,8,11,8,11,8,12,8,11,7,12,7,12,7,13,6,13,6,14,5,14,5,15,5,14,4,15,4,15,4,16,3,15,4,16,3,16,3,16,3,16,4,16,4,15,4,15,4,15,5,14,5,14,6,13,6,13,7,12,7,13,7,12,7,13,6,12,6,14,5,13,5,15,4,14,4,16,4,15,4,16,4,15,4,16,4,15,4,16,4,15,4,15,4,15,5,14,5,14,5,14,5,14,6,13,6,13,7,12,7,12,8,11,8,12,8,11,8,12,8,11,8,12,7,12,7,13,6,13,6,14,5,14,5,15,4,14,5,15,4,15,4,16,3,16,4,16,3,16,3,16,3,16,4,16,4,16,4,15,4,15,5,14,5,14,6,13,6,14,6,12,7,13,6,12,7,14,6,12,6,14,5,13,6,15,5,14,5,15,4,14,5,15,4,15,5,15,4,15,5,15,4,15,5,14,4,15,5,14,5,14,6,13,5,14,6,13,6,13,7,12,7,13,7,11,7,12,7,11,8,12,7,11,8,12,7,12,7,13,6,12,7,14,5,13,6,14,5,14,5,15,4,15,4,15,3,16,4,16,3,16,4,16,3,16,4,15,4,16,4,15,4,16,5,14,5,15,5,13,6,14,6,12,6,14,6,12,7,14,6,12,7,14,6,13,6,14,6,13,6,14,5,14,6,14,5,14,6,14,5,14,5,14,5,15,5,14,5,15,5,13,5,14,6,13,5,14,6,13,5,14,6,13,6,14,6,12,6,13,7,12,7,13,7,12,7,13,7,12,7,13,6,12,7,13,6,13,6,14,5,14,6,14,4,15,5,15,4,15,4,15,3,16,4,15,3,17,3,15,3,17,3,15,4,17,4,14,4,16,4,13,5,15,5,13,6,14,6,12,7,13,6,12] };
-  var HORTA_BASE = Date.UTC(2026, 0, 1);
-  function officialTide(utc) {
-    var T = HORTA.t, H = HORTA.h, m = (utc - HORTA_BASE) / 60000;
-    if (m < T[0] || m >= T[T.length - 1]) return null;
-    var lo = 0, hi = T.length - 1;
-    while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (T[mid] <= m) lo = mid; else hi = mid; }
-    var a = T[lo], b = T[hi], ha = H[lo] / 10, hb = H[hi] / 10, st;
-    if (m - a < 30) st = ha > hb ? 'high' : 'low';
-    else if (b - m <= 30) st = hb > ha ? 'high' : 'low';
-    else st = hb > ha ? 'rising' : 'falling';
+  /* Tide at a spot: lag shifts Horta's curve later by that many minutes. */
+  function tideAt(utc, lag) {
+    var L = (lag || 0) * 60000, m = utc - L;
+    var ex = tideExtremes(m - 14 * 3600000, m + 26 * 3600000), prev = null, nxt = null, i;
+    for (i = 0; i < ex.length; i++) { if (ex[i].t <= m) prev = ex[i]; else if (!nxt) nxt = ex[i]; }
+    if (!prev || !nxt) return null;
+    var st = m - prev.t < 1800000 ? (prev.high ? 'high' : 'low') : (nxt.t - m <= 1800000 ? (nxt.high ? 'high' : 'low') : (nxt.high ? 'rising' : 'falling'));
     var next = { high: null, low: null };
-    for (var i = hi; i < T.length && !(next.high && next.low); i++) {
-      var k = H[i] > H[i - 1] ? 'high' : 'low';
-      if (!next[k]) next[k] = { t: HORTA_BASE + T[i] * 60000, h: H[i] / 10 };
+    for (i = 0; i < ex.length; i++) {
+      var k = ex[i].high ? 'high' : 'low';
+      if (ex[i].t > m && !next[k]) next[k] = { t: ex[i].t + L, h: ex[i].h };
     }
-    return { state: st, next: next, level: ha + (hb - ha) * (1 - Math.cos(Math.PI * (m - a) / (b - a))) / 2 };
+    return { state: st, next: next, level: tideHeight(m) };
   }
+  /* TIDE END */
   function applyTide() {
     var line = $('tideline'), btn = $('b-tide');
     var date = $('f-date').value, time = $('f-time').value;
@@ -423,29 +434,17 @@ var FISH = {
     var guess = Date.UTC(dp[0], dp[1] - 1, dp[2], tp[0], tp[1]);
     var utc = guess - azOffsetMin(new Date(guess)) * 60000;
     var names = { rising: 'rising', falling: 'falling', high: 'slack high', low: 'slack low' };
-    var o = officialTide(utc), st = null, text = '';
-    if (o) {
-      st = o.state;
-      var parts = [o.next.high && ['High', o.next.high], o.next.low && ['Low', o.next.low]].filter(Boolean)
-        .sort(function (x, y) { return x[1].t - y[1].t; })
-        .map(function (p) { return p[0] + ' ' + hmLocal(p[1].t) + ' (' + p[1].h.toFixed(1) + ' m)'; });
-      text = names[st] + ', about ' + o.level.toFixed(1) + ' m. ' + (parts.length ? 'Next: ' + parts.join(', ') + '. ' : '') +
-        'Instituto Hidrográfico table for Horta in local time, heights above chart zero.';
-    } else if (state.tideData) {
-      st = tideState(state.tideData, guess);
-      if (st != null) {
-        var ex = tideExtrema(state.tideData, guess);
-        var ps = [ex.high && ['High', ex.high], ex.low && ['Low', ex.low]].filter(Boolean).sort(function (x, y) { return x[1].t - y[1].t; })
-          .map(function (p) { return p[0] + ' ' + hmUTC(p[1].t) + ' (' + (p[1].v >= 0 ? '+' : '') + p[1].v.toFixed(2) + ' m)'; });
-        text = names[st] + '. ' + (ps.length ? 'Next: ' + ps.join(', ') + ' against mean sea level. ' : '') +
-          'The official table covers 2026 only, so this is the Open-Meteo model, which is less accurate near coasts.';
-      }
-    }
-    if (st == null) { line.hidden = true; btn.hidden = true; return; }
+    var spot = currentSpot(), o = tideAt(utc, spot.tideLag);
+    if (!o) { line.hidden = true; btn.hidden = true; return; }
+    var parts = [o.next.high && ['High', o.next.high], o.next.low && ['Low', o.next.low]].filter(Boolean)
+      .sort(function (x, y) { return x[1].t - y[1].t; })
+      .map(function (p) { return p[0] + ' ' + hmLocal(p[1].t) + ' (' + p[1].h.toFixed(1) + ' m)'; });
+    var text = names[o.state] + ', about ' + o.level.toFixed(1) + ' m. ' + (parts.length ? 'Next: ' + parts.join(', ') + '. ' : '') +
+      'Predicted astronomical tide for Horta in local time, heights above chart zero; wind and air pressure can shift the real level.';
     line.hidden = false;
     btn.hidden = state.tideAuto;
-    if (state.tideAuto) $('f-tide').value = st;
-    line.textContent = (state.tideAuto ? 'Tide: ' : 'Tide set by hand. The source says ') + text;
+    if (state.tideAuto) $('f-tide').value = o.state;
+    line.textContent = (state.tideAuto ? 'Tide: ' : 'Tide set by hand. The prediction says ') + text;
   }
 
   var RAD = Math.PI / 180;
@@ -473,17 +472,6 @@ var FISH = {
     }
     return ev;
   }
-  function levelAt(utc) {
-    var T = HORTA.t, H = HORTA.h, m = (utc - HORTA_BASE) / 60000;
-    if (m >= T[0] && m < T[T.length - 1]) {
-      var lo = 0, hi = T.length - 1;
-      while (hi - lo > 1) { var mid = (lo + hi) >> 1; if (T[mid] <= m) lo = mid; else hi = mid; }
-      var ha = H[lo] / 10, hb = H[hi] / 10;
-      return ha + (hb - ha) * (1 - Math.cos(Math.PI * (m - T[lo]) / (T[hi] - T[lo]))) / 2;
-    }
-    if (state.tideData) return tideLevel(state.tideData, utc + azOffsetMin(new Date(utc)) * 60000);
-    return null;
-  }
   var MOONNAME = { upper: 'Moon overhead', lower: 'Moon underfoot', rise: 'Moonrise', set: 'Moonset' };
 
   function renderBest(inp, spot, c) {
@@ -495,6 +483,7 @@ var FISH = {
     var age = (((jd - 2451550.1) % syn) + syn) % syn;
     var pf = 0.85 + 0.15 * (1 + Math.cos(4 * Math.PI * age / syn)) / 2;
 
+    var lag = (spot.tideLag || 0) * MIN, levelAt = function (t) { return tideHeight(t - lag); };
     var rate = [], lvls = [], maxRate = 0;
     for (i = 0; i < N; i++) {
       var tc = base + (i * 30 + 15) * MIN, a = levelAt(tc - 15 * MIN), b = levelAt(tc + 15 * MIN), m0 = levelAt(tc);
@@ -542,10 +531,9 @@ var FISH = {
 
     var keys = [{ t: base + c.sun.rise * MIN - (base - base), n: 'Sunrise', lm: c.sun.rise }, { n: 'Sunset', lm: c.sun.set }].map(function (k) { return { m: k.lm, n: k.n }; });
     ev.forEach(function (e) { var lm = (e.t - base) / MIN; if (lm >= 0 && lm < 1440) keys.push({ m: lm, n: MOONNAME[e.type] }); });
-    for (i = 1; i < HORTA.t.length; i++) {
-      var ut = HORTA_BASE + HORTA.t[i] * MIN, lm2 = (ut - base) / MIN;
-      if (lm2 >= 0 && lm2 < 1440) keys.push({ m: lm2, n: (HORTA.h[i] > HORTA.h[i - 1] ? 'High tide ' : 'Low tide ') + (HORTA.h[i] / 10).toFixed(1) + ' m' });
-    }
+    tideExtremes(base - lag, base - lag + 1440 * MIN).forEach(function (e) {
+      keys.push({ m: (e.t + lag - base) / MIN, n: (e.high ? 'High tide ' : 'Low tide ') + e.h.toFixed(1) + ' m' });
+    });
     keys.sort(function (x, y) { return x.m - y.m; });
     var keyHtml = '<div class="keys">' + keys.map(function (k) { return '<div><b>' + hm(k.m) + '</b>' + k.n + '</div>'; }).join('') + '</div>';
 
@@ -610,7 +598,7 @@ var FISH = {
     msg.hidden = false; msg.textContent = 'Loading conditions for ' + s.name + '…';
     var at = state.gps || s;
     var qs = function (p) { return 'latitude=' + p.lat + '&longitude=' + p.lon + '&timezone=Atlantic%2FAzores'; };
-    var marineUrl = function (p) { return 'https://marine-api.open-meteo.com/v1/marine?' + qs(p) + '&current=wave_height,wave_direction,sea_surface_temperature&hourly=sea_level_height_msl&forecast_days=2'; };
+    var marineUrl = function (p) { return 'https://marine-api.open-meteo.com/v1/marine?' + qs(p) + '&current=wave_height,wave_direction,sea_surface_temperature'; };
     var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }); };
     var marine = get(marineUrl(at)).then(function (r) {
       var c = r.current || {};
@@ -629,7 +617,7 @@ var FISH = {
       $('f-wave').value = (+m.wave_height).toFixed(1);
       if (m.wave_direction != null) $('f-dir').value = toCompass(m.wave_direction);
       if (w.wind_speed_10m != null) $('f-wind').value = Math.round(w.wind_speed_10m);
-      setTideData(res[0].hourly);
+      state.tideAuto = true;
       setNow();
       var p = azParts(new Date());
       state.source = 'live'; state.liveText = 'Live from Open-Meteo, ' + pad(p.hour) + ':' + pad(p.minute);

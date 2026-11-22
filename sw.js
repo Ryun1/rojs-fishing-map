@@ -1,4 +1,4 @@
-const CACHE = 'pico-fc-v8'; // bump this number whenever any file changes
+const CACHE = 'pico-fc-v9'; // bump this number whenever any file changes
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png',
   'img/barracuda.jpg', 'img/amberjack.jpg', 'img/bluefish.jpg', 'img/bonito.jpg', 'img/sargo.jpg', 'img/veja.jpg'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
