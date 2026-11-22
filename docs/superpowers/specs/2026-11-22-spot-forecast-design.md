@@ -68,7 +68,7 @@ Full detail and sources are in the research notes. The findings that shape the d
 - **Geography that can be derived from open data:** coordinates, facing, which wind and swell directions reach a spot, distance offshore to the 20, 50 and 100 m depths, navigation lights, bathing-water status.
 - **Geography that needs local knowledge:** depth within casting range, seabed, footing and access, lighting, night practicality, species seen there.
 - **The app's current facings are off.** By open-water fetch Madalena faces north-west, Lajes south-west, São Roque north-north-east.
-- **Two of the spots have records of shore anglers lost**, one in swell and one at night.
+- **Two of the candidate spots have records of shore anglers lost:** Manhenha in January 2024 (cause not reported) and São Miguel Arcanjo in October 2021 (went out at night). Neither is in the starting set.
 
 ## 4. Goals, non-goals, anti-goals
 
@@ -165,8 +165,10 @@ Coordinates and geometry come from OpenStreetMap and are inferred from maps, not
 - offshore sample point for wave data, and one for weather, chosen by hand 5 to 8 km off the correct coast and checked against the cell the service returns
 - distance to the 20, 50 and 100 m depths, with a flag where it is unreliable
 - tide time offset against Horta
-- local-knowledge fields, empty until the owner fills them: depth in casting range, seabed, access, lighting, night practicality
+- local-knowledge fields, empty until the owner supplies them: depth in casting range, seabed, access, lighting, night practicality
 - notes: hazards, bathing-place status, restrictions
+
+**Where this data is edited (call).** In the repository's data files, not in the app. The owner tells Claude what to change (local knowledge, corrected thresholds, a new spot) and the data file is updated and pushed. The only thing entered in the app is the catch log. This avoids building an editing layer on the phone.
 
 ### 7.2 Map
 
@@ -211,17 +213,24 @@ The wave reduction replaces today's `effWave`, which uses a single facing and a 
 A per-spot rating of **Good, Fair, Poor or Unsafe**, separate from species.
 
 - Inputs: effective wave height and period at the spot, wind speed and gusts, whether the wind is onshore, any active warning, and daylight.
-- **Unsafe** when an official sea or wind warning is active for the central group, or the effective swell at the spot passes a threshold. Unsafe overrides everything else and is shown first.
+- **Unsafe** overrides everything else and is shown first. It applies when the effective swell at the spot passes a threshold, or on an official IPMA warning for the central group **(call, to be confirmed by the owner)**:
+  - orange or red sea-state warning: every spot is Unsafe;
+  - yellow sea-state warning: spots whose open sector includes the swell direction are Unsafe, and the rest can be no better than Poor;
+  - wind warnings of any level: no spot can be better than Poor;
+  - green entries in the feed mean no warning and are ignored.
 - Spots with a recorded fatality or loss carry a standing hazard note.
 - Starting thresholds are the builder's to set and should err on the cautious side; the owner corrects them from experience.
 - The app states in plain words that the rating describes the forecast, not the rocks on the day.
 
 ### 7.5 Species likelihood
 
-A relative rating per species per spot, shown as a five-step scale with a one-line reason, not as a percentage **(call)**.
+A rating per species per spot, shown as a five-step scale with a one-line reason, not as a percentage **(call)**.
+
+The scale is comparable across species **(call)**: five dots means "one of the likeliest catches here now", so a species that is rarely taken from the shore, such as írio, does not sit beside sargo just because it is in season. This needs a base-rate factor per species (how common it is in shore catches), taken from the tiering in the species research. Spots are ranked for a chosen window by fishability first, then by the rating of the species the owner picks, or by the best-rated species if none is picked.
 
 **Factors, in order of weight:**
 
+0. **Base rate.** How often the species is taken from the shore at all, from the species research.
 1. **Season.** A 12-month curve per species from the SREA Pico landings, smoothed and cross-checked against the Azores-wide totals and the published biology. Morays have no landings line and keep a biology-based curve.
 2. **Time of day.** From the measured activity pattern of each species.
 3. **Habitat fit.** How well the spot's geography suits the species: steep and deep close in for the pelagics (bicuda, anchova, írio, serra), shallow rocky reef for sargo and veja, harbour walls and lights for night species. This replaces the current "harbour or rock" flag.
@@ -239,7 +248,7 @@ A relative rating per species per spot, shown as a five-step scale with a one-li
 ### 7.6 Tides
 
 - Compute the Horta tide in the app from the TICON-4 constituents, using the 27-constituent set without the seasonal SA and SSA terms and a mean level of 0.96 m above chart datum, as validated in the research.
-- Apply the per-spot time offset.
+- Apply the per-spot time offset. The +28 minutes for Cais do Pico is the outlier among Pico ports: the same table gives Santo António, 1.4 km along the same coast, as 0. Recheck it against the printed table before use.
 - Remove the embedded 2026 table **(call)**. The computed tide matches it closely, works for every year, and avoids the open question of whether embedding a table published under CC BY-NC-ND 4.0 is allowed in a public repository.
 - Remove the Open-Meteo sea-level fallback.
 - Show the result as a prediction of the astronomical tide; weather can shift the real level.
@@ -249,7 +258,8 @@ A relative rating per species per spot, shown as a five-step scale with a one-li
 
 - Hourly data for the next 7 days **(call)**; the wave forecast reaches 10 days and the weather 16, but skill drops off.
 - A view that ranks the spots for a chosen day and time window, by fishability first and then by the species the owner selects or by overall likelihood.
-- The existing "best times" timeline stays, driven by the new model.
+- The "best times" timeline stays **(call)**. For the selected spot it shows fishability through the day with sunrise, sunset and tide turns marked, and, when a species is picked, that species' rating through the day. The moon-influence selector goes, because moon leaves the scoring.
+- Hand-entered conditions stay as a collapsed "what if" panel **(call)**. It is already built and is useful with no connection. Values typed there apply island-wide and replace the fetched ones until cleared.
 - The last successful forecast is kept on the phone and shown, with its age, when offline.
 
 ### 7.8 Catch log and other people's catches
@@ -266,11 +276,12 @@ A relative rating per species per spot, shown as a five-step scale with a one-li
 - The owner asked for Facebook and forum reports to be used. The research found no public forum, blog or video corpus for Pico, so the material is in Facebook groups.
 - Automated scraping of Facebook is out: it needs a login, breaks Meta's terms and risks the owner's account.
 - Instead: the owner pastes or screenshots posts, and they are turned into records of species, spot, date and method. No names or photos of the people posting are kept.
+- The conversion happens in a Claude session, not in the app: the owner shares the posts, and Claude writes the records and pushes the file.
 - Records go into a `data/reports.json` file and feed the species checklist per spot and the season curves. They do not feed likelihood directly, because people post good days and hide their marks.
 
 ### 7.9 Rules and safety notes
 
-Shown per spot or per species where they apply. Each must be checked against the current legal text before the app states it.
+Shown per spot or per species where they apply. Each must be checked against the current legal text before the app states it. Until then, a spot where the research found a possible restriction carries only a neutral line, "Local restrictions may apply here; check before fishing", with no rule stated **(call)**.
 
 | Rule | Status |
 |---|---|
@@ -280,7 +291,7 @@ Shown per spot or per species where they apply. Each must be checked against the
 | Daily bag limit | **Conflicting readings**: 7.5 kg of fish under 40 cm plus 5 larger fish (2007 decree) against 3.5 kg plus 3 (later proposal text). Unresolved |
 | Veja fishing closes on an island when its commercial quota is used up | Read in the October 2026 order; the app cannot know the quota status live |
 | Fishing limits around the Madalena islets (Portaria 53/2016) | Seen only as a search summary; the permitted stretch of shore is unknown |
-| Resource-management areas at Lajes and Ponta da Ilha | Exist; their angling rules were not retrieved |
+| Three resource-management areas in the Pico Nature Park (Faial–Pico channel off Madalena, Porto das Lajes, Ponta da Ilha) | The park decree was read and contains no angling ban for any of them; any rules made under it were not retrieved |
 
 The Azores government sites refuse automated requests, so these need the owner or a manual browser session.
 
@@ -366,7 +377,12 @@ Decisions made in writing this document that the owner has not confirmed:
 - Approach A: data files under `data/` and scripts under `tools/`, with `CLAUDE.md` updated to match.
 - "São Roque" becomes the old quay at Cais do Pico, not the commercial port breakwater, whose access may be controlled.
 - Spots without a published tide difference use the nearest port's.
-- Likelihood is a five-step relative scale, not a percentage.
+- Likelihood is a five-step scale, not a percentage, and is comparable across species through a base-rate factor.
+- Which official warnings make a spot Unsafe (7.4). This is a safety decision and most needs the owner's eye.
+- Spot data, local knowledge and community reports are edited in the repository through Claude, not in the app.
+- Hand-entered conditions are kept as a "what if" panel.
+- "Best times" shows fishability and one picked species through the day.
+- Before the legal checks, restricted spots show only a neutral "check locally" line.
 - Moon is removed from scoring.
 - The embedded 2026 tide table is removed in favour of computed tides.
 - Forecast horizon of seven days.
@@ -387,6 +403,8 @@ Decisions made in writing this document that the owner has not confirmed:
 
 ## 12. Not verified
 
+- Licence of the SREA landings spreadsheets kept in `docs/research/data/srea/`. They are official public statistics, but no licence statement was seen. Remove them from the repository if that is a concern; the monthly figures used are also in `docs/research/species.md`.
+- The +28 minute tide offset for Cais do Pico (see 7.6).
 - Rate limits for IPMA and the other keyless services.
 - Whether the SREA report viewer offers a longer landings history; it sits behind a browser check.
 - The Faial and Pico shore-angling catch study (Diogo and Pereira 2014) was read as an abstract only.
