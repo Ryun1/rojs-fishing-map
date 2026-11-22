@@ -65,8 +65,8 @@ Full detail and sources are in the research notes. The findings that shape the d
 
 - **43 candidate shore points** were identified with coordinates, facing and exposure computed from the coastline.
 - **Only a handful are documented as fished.** No forum, blog, app listing or video naming Pico shore marks was found.
-- **Geography that can be derived from open data:** coordinates, facing, which wind and swell directions reach a spot, distance offshore to the 20, 50 and 100 m depths, navigation lights, bathing-water status.
-- **Geography that needs local knowledge:** depth within casting range, seabed, footing and access, lighting, night practicality, species seen there.
+- **Geography that can be derived from open data:** coordinates, facing, which wind and swell directions reach a spot, distance offshore to the 20, 50 and 100 m depths, navigation lights, bathing-water status. Seabed type (rock, sand, mixed) should also come from open data: seabed substrate and habitat maps (for example EMODnet Geology and Seabed Habitats) and the bathymetry grid's slope. How fine these are close to the Pico shore has not been checked.
+- **Geography that needs local knowledge:** the exact place on the wall or rocks where Roj stands, depth within casting range, footing and access, lighting, night practicality, snags, species seen there.
 - **The app's current facings are off.** By open-water fetch Madalena faces north-west, Lajes south-west, São Roque north-north-east.
 - **Two of the candidate spots have records of shore anglers lost:** Manhenha in January 2024 (cause not reported) and São Miguel Arcanjo in October 2021 (went out at night). Neither is in the starting set.
 
@@ -165,8 +165,11 @@ Coordinates and geometry come from OpenStreetMap and are inferred from maps, not
 - offshore sample point for wave data, and one for weather, chosen by hand 5 to 8 km off the correct coast and checked against the cell the service returns
 - distance to the 20, 50 and 100 m depths, with a flag where it is unreliable
 - tide time offset against Horta
-- local-knowledge fields, empty until the owner supplies them: depth in casting range, seabed, access, lighting, night practicality
+- seabed type near the spot, scraped from open seabed substrate and habitat maps, with its source and resolution; Roj's own description overrides it where he gives one
+- local-knowledge fields, empty until Roj supplies them: exact fishing position, depth in casting range, access, lighting, night practicality, snags
 - notes: hazards, bathing-place status, restrictions
+
+**Roj's precise positions and local geography.** Roj will give a more exact location for each spot (where on the breakwater, quay or rocks he actually fishes), along with the geography that cannot be scraped: depth in casting range, footing and access, lighting, snags, night practicality and what he has seen caught there. His position replaces the OpenStreetMap one, and facing, sectors, depth distances and seabed are recomputed from it. A spot with a position from Roj is marked as checked on the ground. The seabed is scraped first so Roj only has to confirm or correct it.
 
 **Where this data is edited (call).** In the repository's data files, not in the app. The owner tells Claude what to change (local knowledge, corrected thresholds, a new spot) and the data file is updated and pushed. The only thing entered in the app is the catch log. This avoids building an editing layer on the phone.
 
@@ -362,6 +365,8 @@ Each phase leaves the app working and is worth using on its own.
    - Sector-based swell reduction.
    - Fishability rating, warnings, hazard notes.
    - Map markers coloured by fishability, with wind and swell arrows.
+   - Seabed type per spot scraped from open seabed maps.
+   - Roj's precise positions and local geography loaded into `data/spots.json`, with the derived geometry recomputed (7.1). This needs no app changes and can be done whenever he supplies them.
 3. **Evidence-based species model.**
    - Season curves generated from the SREA 1994–2026 landings export by a script in `tools/` (starting from `docs/research/scripts/srea.py`).
    - Time-of-day and habitat factors; conditions demoted; evidence labels.
@@ -387,7 +392,7 @@ Later: more species, more spots from the backlog.
 **Open**
 
 1. **Facebook groups and forums for Azores fishing.** The owner follows some and will provide them. Until then the import of community reports (7.8) stays unscoped.
-2. **Local knowledge for each spot:** depth in casting range, seabed, access, lighting, whether you would fish it at night.
+2. **Local knowledge for each spot:** Roj will supply the exact position he fishes from, plus depth in casting range, access, lighting, snags, whether he would fish it at night, and a check of the scraped seabed type.
 3. **The legal items in 7.9** that need a person to open the government sites.
 
 ## 10. Calls to check
@@ -429,4 +434,5 @@ Decisions made in writing this document that the owner has not confirmed:
 - Rate limits for IPMA and the other keyless services.
 - The Faial and Pico shore-angling catch study (Diogo and Pereira 2014) has no open copy; its open companion paper (Diogo and Pereira 2016) was read instead, see `docs/research/recreational-catch.md`.
 - Open-Meteo wind was compared with the Pico airport station on one calm day only.
-- All spot geometry is derived from maps and has not been checked on the ground.
+- All spot geometry is derived from maps and has not been checked on the ground, until Roj supplies precise positions.
+- Whether open seabed substrate and habitat maps resolve the seabed within casting range of the Pico shore.
