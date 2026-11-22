@@ -1,14 +1,14 @@
 # Pico spot forecast: design and plan
 
 - **Date:** 2026-11-22
-- **Status:** draft, waiting for the owner's approval. Nothing here is built yet.
+- **Status:** draft, waiting for the owner's approval. Nothing here is built yet. Owner's answers of 2026-11-22 are folded in (section 9).
 - **Research behind it:** [`docs/research/`](../../research/README.md) (species, conditions, spots)
 
 Items marked **(call)** are decisions made while writing this document, not ones the owner made. They are listed together in [Calls to check](#calls-to-check).
 
 ## 1. Intent
 
-A phone-friendly web app that helps one shore angler decide where to fish on Pico. For each spot it answers two questions:
+A phone-friendly web app that helps one shore angler, fishing with lures and bait, decide where to fish on Pico. For each spot it answers two questions:
 
 1. **What are the conditions at this spot?** Wind, swell, tide and sea temperature there, and whether it is fishable.
 2. **Which species are likely at this spot?** A likelihood for each fish, given the season, the time of day, the spot's geography and the conditions.
@@ -135,7 +135,7 @@ A was chosen because nothing in the research needs a server, and separating data
 
 ### 7.1 Spots
 
-**Starting set (call):** the five spots already in the app plus the five the research found documented as fished. The owner said to "start with the spots we have documented"; this is the reading taken. The other 33 candidates stay in [`docs/research/spots.md`](../../research/spots.md) as the backlog.
+**Starting set:** the five spots already in the app. The owner confirmed this on 2026-11-22; others are added later. The five further spots that the research found documented as fished are listed second, as the first to add. The remaining 33 candidates stay in [`docs/research/spots.md`](../../research/spots.md) as the backlog.
 
 | Spot | Position | Faces | Open ocean from | Offshore to 20 / 50 / 100 m depth | Tide vs Horta | Notes |
 |---|---|---|---|---|---|---|
@@ -144,13 +144,18 @@ A was chosen because nothing in the research needs a server, and separating data
 | Lajes do Pico breakwater | 38.39780, -28.25637 | 228° SW | S–W | 440 m / 840 m / 1.0 km | 0 | Shallow lava shelf. Two bathing places. In a resource-management area. |
 | Calheta de Nesquim port | 38.40257, -28.07973 | 150° SSE | E–SSW | deep within about 250 m | as Lajes | Nearshore depth unknown; deep water close in. |
 | Ponta da Ilha | 38.41251, -28.03047 | 147° SSE | ENE–WSW | 290 m / 370 m / 680 m | as Lajes | Low lava point open through 190°. Dangerous in any swell. |
+
+**Next to add (documented as fished):**
+
+| Spot | Position | Faces | Open ocean from | Offshore to 20 / 50 / 100 m depth | Tide vs Horta | Notes |
+|---|---|---|---|---|---|---|
 | Coxos (São Caetano) | 38.42019, -28.43587 | 183° S | ESE–W | 130 m / 130 m / 240 m | as Lajes | Mapped as a fishing place. Very steep. |
 | Pesqueiro Pedro (São Caetano) | 38.42043, -28.43400 | 183° S | ESE–W | 170 m / 170 m / 360 m | as Lajes | Mapped as a fishing place. 170 m from Coxos. |
 | Pontinha (São Caetano) | 38.42152, -28.42677 | 179° S | ESE–WSW | 170 m / 170 m / 400 m | as Lajes | Mapped as a fishing place. |
 | Manhenha | 38.41025, -28.03748 | 160° SSE | E–WSW | 450 m / 690 m / 1.2 km | as Lajes | Small port and sea pool. Angler lost here in January 2024. Bathing place. |
 | São Miguel Arcanjo shore | 38.507, -28.289 (approximate) | 17° NNE | NW–N | 260 m / 490 m / 1.1 km | as Cais do Pico | Open rock. Night-fishing fatality in October 2021. |
 
-Coordinates and geometry come from OpenStreetMap and are inferred from maps, not checked on the ground. Where the three depth distances are equal, the bathymetry grid jumps from the coast straight to deep survey data, so only "deep water within that distance" can be concluded. The three São Caetano marks will share identical forecast conditions.
+Coordinates and geometry come from OpenStreetMap and are inferred from maps, not checked on the ground. Where the three depth distances are equal, the bathymetry grid jumps from the coast straight to deep survey data, so only "deep water within that distance" can be concluded. The three São Caetano marks would share identical forecast conditions.
 
 **Data held per spot:**
 
@@ -174,7 +179,7 @@ The owner asked for a geographical map at the top of the page to navigate by. It
 - Marker colour follows the spot's fishability (7.4) once that exists, always paired with a shape or label so it does not rely on colour alone.
 - An arrow each for wind and swell direction, so it is plain at a glance which coasts are sheltered.
 - The selected spot is highlighted; with location turned on, the owner's own position is shown.
-- A list of the same spots stays below the map for screen readers and for small markers that are hard to tap, such as the three São Caetano marks, which sit within 800 m of each other.
+- A list of the same spots stays below the map for screen readers and for markers that are hard to tap once spots close to each other are added.
 
 **How it is built (call).** An inline SVG drawn from the OpenStreetMap coastline, simplified to a few kilobytes and shipped with the app.
 
@@ -284,12 +289,12 @@ The Azores government sites refuse automated requests, so these need the owner o
 ```
         wind SW ↗            swell NW ↘
                  ______________________
-   Faial )   ___/ ▲ Cais do Pico   ◆ S. Miguel Arcanjo
+   Faial )   ___/      ◆ Cais do Pico (São Roque)
             /                              \___
-  Madalena ●          P I C O                   \
-            \__                              ___● Manhenha
-               \__●●●___________●_______●___/   ● Ponta da Ilha
-              São Caetano     Lajes   Calheta
+  Madalena ▲          P I C O                   \
+            \__                              ___/
+               \____________●________●______/   ● Ponta da Ilha
+                           Lajes    Calheta de Nesquim
 
    ● good   ▲ fair   ◆ selected   ✕ unsafe
 ```
@@ -297,14 +302,14 @@ The Azores government sites refuse automated requests, so these need the owner o
 Tapping a marker opens that spot below the map:
 
 ```
-São Miguel Arcanjo · north coast              Fishable: Fair
+Cais do Pico · north coast                    Fishable: Good
 Wind 14 km/h SW (offshore) · gusts 22
-Swell 1.4 m NW, 11 s · about 1.1 m here
+Swell 1.4 m NW, 11 s · about 0.8 m here
 Tide rising, high 18:42 (+28 min on Horta) · Sea 19.1 °C (normal)
-! Open rock. Do not fish alone at night.
+Deep water close in: about 40 m at 300 m out
 
 Likely now
-  sargo    ●●●●○  in season, daytime, rocky shelf
+  sargo    ●●●●○  in season, daytime
   bicuda   ●●○○○  late in its season
   veja     ●●○○○  out of season
   moreia   ●○○○○  feeds at night
@@ -318,7 +323,7 @@ Each phase leaves the app working and is worth using on its own.
 
 1. **Correct the foundations.**
    - Rename the two misnamed species.
-   - Move spots and species into data files; load the ten starting spots with corrected positions, facings and sectors.
+   - Move spots and species into data files; load the five starting spots with corrected positions, facings and sectors.
    - Compute tides in the app with per-spot offsets; remove the embedded table and the fallback.
    - Fetch weather from sea cells and waves from hand-picked offshore points.
    - The island map at the top of the page as the spot selector.
@@ -342,19 +347,23 @@ Later: more species, more spots from the backlog.
 
 ## 9. Questions for the owner
 
-1. **How do you fish?** The plan assumes shore fishing with spinning and bait. This was asked and not yet answered.
-2. **Which fish is in `img/bonito.jpg`?** If it is a skipjack it is not *Sarda sarda*, and the species entry needs to change, not only its name.
-3. **Is the starting set of ten spots the one you meant** by "the spots we have documented"?
-4. **Local knowledge for each spot:** depth in casting range, seabed, access, lighting, whether you would fish it at night.
-5. **Which Facebook groups or forums do you follow** for Azores fishing? This decides whether importing reports is worth building.
-6. **The legal items in 7.9** that need a person to open the government sites.
+**Answered on 2026-11-22**
+
+- **How do you fish?** From the shore, with lures and bait.
+- **Which fish is in `img/bonito.jpg`?** The owner confirmed the photo when asked. It shows barred markings on the upper sides and no stripes on the belly, which fits Atlantic bonito (*Sarda sarda*, "serra" in the Azores) and not skipjack. The species entry stays *Sarda sarda*; only its Portuguese name changes.
+- **Which spots to start with?** The five already in the app.
+
+**Open**
+
+1. **Facebook groups and forums for Azores fishing.** The owner follows some and will provide them. Until then the import of community reports (7.8) stays unscoped.
+2. **Local knowledge for each spot:** depth in casting range, seabed, access, lighting, whether you would fish it at night.
+3. **The legal items in 7.9** that need a person to open the government sites.
 
 ## 10. Calls to check
 
 Decisions made in writing this document that the owner has not confirmed:
 
 - Approach A: data files under `data/` and scripts under `tools/`, with `CLAUDE.md` updated to match.
-- The starting spots are the five in the app plus the five documented as fished.
 - "São Roque" becomes the old quay at Cais do Pico, not the commercial port breakwater, whose access may be controlled.
 - Spots without a published tide difference use the nearest port's.
 - Likelihood is a five-step relative scale, not a percentage.
