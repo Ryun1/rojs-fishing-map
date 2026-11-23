@@ -185,6 +185,7 @@ details.whatif > div { margin-top: 12px; display: flex; flex-direction: column; 
 .catches .field label { font-size: 0.68rem; }
 .catches .grid .field:nth-last-child(-n+2) { grid-column: 1 / -1; }
 .catches input, .catches select { padding: 7px 8px; }
+.catches .actions { align-items: center; }
 .linkbtn { background: none; border: 0; color: var(--bad); padding: 4px 0; font-size: 0.85rem; text-decoration: underline; text-underline-offset: 3px; justify-self: start; }
 body{margin:0}
 [hidden]{display:none!important}
@@ -1191,7 +1192,28 @@ var FISH = {
       if (stats.noTime) t += ' ' + stats.noTime + ' had no time inside the photo, so the file date was used: check it.';
       if (stats.notJpeg) t += ' ' + stats.notJpeg + ' could not be read (not a JPEG photo).';
       logMsg(t);
+      var fresh = catches.filter(function (c) { return c.lat == null && !c.spot && Date.now() - c.utc < FRESH_MS && Date.now() - c.added < 60000; });
+      if (fresh.length) {
+        logMsg(t + ' Those photos were taken in the last few hours, so the app is using where your phone is now…');
+        hereFor(fresh, function (n, err) {
+          logMsg(t + (n ? ' Placed ' + n + ' of them from where your phone is now: check the spot.' :
+            err === 'denied' ? ' The app could not use your location because permission was declined.' : ' The app could not get your position either.'));
+        });
+      }
     });
+  }
+  /* When a photo has lost its location, the phone's own position can stand in, if the catch is being logged on the spot. */
+  var FRESH_MS = 3 * 3600000;
+  function hereFor(list, done, fresh) {
+    if (!list.length || !navigator.geolocation) { done(0, !navigator.geolocation ? 'nogeo' : null); return; }
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var lat = +pos.coords.latitude.toFixed(5), lon = +pos.coords.longitude.toFixed(5);
+      list.forEach(function (c) {
+        var pl = placeFor(lat, lon); c.lat = lat; c.lon = lon; c.spot = pl.spot; c.near = pl.near; c.km = pl.km; c.placeFrom = 'phone';
+        c.cond = catchConditions(c);
+      });
+      saveLog(); renderLog(); done(list.length, null);
+    }, function (err) { done(0, err && err.code === 1 ? 'denied' : 'failed'); }, { enableHighAccuracy: true, timeout: 20000, maximumAge: fresh ? 0 : 120000 });
   }
   function spotName(id) { var s = SPOTS.filter(function (x) { return x.id === id; })[0]; return s ? s.name : id; }
   function renderLog() {
@@ -1199,10 +1221,11 @@ var FISH = {
     $('log-count').textContent = n ? n + ' catch' + (n === 1 ? '' : 'es') + ' on this phone' : 'No catches yet';
     $('log-list').innerHTML = catches.map(function (c) {
       var where;
-      if (c.lat == null) where = '<span class="where ask">No location in the photo: choose the spot.</span>';
-      else if (!c.spot) where = '<span class="where ask">Photo taken ' + c.km.toFixed(1) + ' km from the nearest spot (' + esc(spotName(c.near)) + '). Choose the spot, or Other place.</span>';
-      else if (c.km > NEAR_KM) where = '<span class="where">Photo taken ' + c.km.toFixed(1) + ' km from ' + esc(spotName(c.near)) + ': check the spot.</span>';
-      else where = '<span class="where">Photo taken ' + Math.round(c.km * 1000) + ' m from ' + esc(spotName(c.near)) + '.</span>';
+      var from = c.placeFrom === 'phone' ? 'Your phone was ' : 'Photo taken ';
+      if (c.lat == null) where = '<span class="where ask">No location in the photo: choose the spot, or tap "Use where I am now" if you are there.</span>';
+      else if (!c.spot) where = '<span class="where ask">' + from + c.km.toFixed(1) + ' km from the nearest spot (' + esc(spotName(c.near)) + '). Choose the spot, or Other place.</span>';
+      else if (c.km > NEAR_KM) where = '<span class="where">' + from + c.km.toFixed(1) + ' km from ' + esc(spotName(c.near)) + ': check the spot.</span>';
+      else where = '<span class="where">' + from + Math.round(c.km * 1000) + ' m from ' + esc(spotName(c.near)) + '.</span>';
       var opt = function (v, t, sel) { return '<option value="' + esc(v) + '"' + (v === sel ? ' selected' : '') + '>' + esc(t) + '</option>'; };
       var spots = opt('', 'Choose…', c.spot) + SPOTS.map(function (s) { return opt(s.id, s.name, c.spot); }).join('') + opt('other', 'Other place', c.spot);
       var sps = opt('', 'Choose…', c.species) + SPECIES.map(function (s) { return opt(s.id, s.name, c.species); }).join('') + opt('other', 'Other (say in notes)', c.species);
@@ -1218,7 +1241,8 @@ var FISH = {
         f('Size', '<input data-k="size" type="text" placeholder="e.g. 1.2 kg" value="' + esc(c.size) + '">') +
         f('Notes', '<input data-k="notes" type="text" placeholder="Bait, method…" value="' + esc(c.notes) + '">') +
         f('Time (Azores)', '<input data-k="when" type="datetime-local" value="' + localStr(c.utc) + '">') +
-        '</div><button class="linkbtn" type="button" data-del="' + c.id + '">Delete</button></li>';
+        '</div><div class="actions">' + (c.lat == null ? '<button class="btn ghost" type="button" data-here="' + c.id + '">Use where I am now</button>' : '') +
+        '<button class="linkbtn" type="button" data-del="' + c.id + '">Delete</button></div></li>';
     }).join('');
   }
   function localToUtc(str) {
@@ -1242,6 +1266,16 @@ var FISH = {
       if (k === 'spot' || k === 'when') { c.cond = catchConditions(c); saveLog(); renderLog(); } else saveLog();
     });
     $('log-list').addEventListener('click', function (e) {
+      var h = e.target.closest('[data-here]');
+      if (h) {
+        var hc = catches.filter(function (x) { return x.id === h.getAttribute('data-here'); });
+        h.textContent = 'Finding your position…';
+        hereFor(hc, function (n, err) {
+          if (!n) { h.textContent = 'Use where I am now'; logMsg(err === 'denied' ? 'Location permission was declined. Allow location for this site in Chrome\'s settings, or choose the spot.' : 'Could not get your position. Move to open sky and try again, or choose the spot.'); }
+          else logMsg('Placed from where your phone is now.');
+        }, true);
+        return;
+      }
       var b = e.target.closest('[data-del]'); if (!b) return;
       if (b.getAttribute('data-sure')) {
         catches = catches.filter(function (x) { return x.id !== b.getAttribute('data-del'); }); saveLog(); renderLog(); logMsg('Deleted.');
