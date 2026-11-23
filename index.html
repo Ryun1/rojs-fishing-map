@@ -310,7 +310,7 @@ body{margin:0}
             <option value="180">S</option><option value="225">SW</option><option value="270">W</option><option value="315">NW</option>
           </select></div>
         <div class="field"><label for="f-per">Swell period s</label><input type="number" id="f-per" step="1" min="2" max="25" inputmode="numeric"></div>
-        <div class="field"><label for="f-wind">Wind km/h</label><input type="number" id="f-wind" step="1" min="0" max="150" inputmode="numeric"></div>
+        <div class="field"><label for="f-wind">Wind (Beaufort)</label><select id="f-wind"><option value="0">F0</option><option value="1">F1</option><option value="2">F2</option><option value="3">F3</option><option value="4">F4</option><option value="5">F5</option><option value="6">F6</option><option value="7">F7</option><option value="8">F8</option><option value="9">F9</option><option value="10">F10</option><option value="11">F11</option><option value="12">F12</option></select></div>
         <div class="field"><label for="f-wdir">Wind from</label>
           <select id="f-wdir">
             <option value="0">N</option><option value="45">NE</option><option value="90">E</option><option value="135">SE</option>
@@ -333,7 +333,7 @@ body{margin:0}
     <ul id="howto">
       <li><b>Fishability</b> (Good, Fair, Poor, Unsafe) describes the forecast for the open sea near each spot, reduced for the spot's shelter. It cannot see a rogue set, a wet ledge or surge in a gully. Look at the sea before you go down, and more so at night.</li>
       <li>Waves: each spot has the wind and swell directions that reach it from open ocean, and those that only cross a channel to Faial or São Jorge. Swell from the open sector counts in full; swell across a channel counts about a third, and swell from behind the island counts for little, because some always wraps around headlands. Wind waves count a little more across a channel.</li>
-      <li>Wind is called onshore when it blows within 60 degrees of straight at the spot, offshore when it blows from behind, and cross otherwise. Onshore wind has lower limits.</li>
+      <li>Wind is called onshore when it blows within 60 degrees of straight at the spot, offshore when it blows from behind, and cross otherwise. Onshore wind has lower limits. Wind is shown on the Beaufort scale (force 0 to 12); the forecast comes in km/h and is converted.</li>
       <li>Official IPMA warnings for the central group are checked: an orange or red sea warning makes every spot Unsafe; a yellow sea warning makes spots open to the swell Unsafe and the rest no better than Poor; any wind warning makes every spot no better than Poor.</li>
       <li id="limitsline">The limits used are listed with each spot.</li>
       <li>Wind comes from the Open-Meteo forecast over the sea next to each spot. Waves come from the Open-Meteo marine model at a point a few kilometres off the right coast. Both are on grids of about 8 to 9 km, so wind funnelling and shelter behind the mountain are not modelled. Spot positions and facings come from the OpenStreetMap coastline and have not been checked on the ground.</li>
@@ -438,7 +438,7 @@ var FISH = {
         season: Math.min.apply(null, sp.season) >= 0.4 ? 'Here all year, but quieter in ' + MONTHS[c.month - 1] + '.' : 'Out of its usual season in ' + MONTHS[c.month - 1] + '.',
         temp: 'Sea at ' + c.temp + '°C, it prefers ' + sp.t[0] + '–' + sp.t[1] + '°C.',
         wave: c.eff > sp.wave[1] ? 'Too rough here at ' + c.eff.toFixed(1) + ' m effective, it prefers up to ' + sp.wave[1] + ' m.' : 'Too calm here, it prefers at least ' + sp.wave[0] + ' m.',
-        wind: c.wind + ' km/h wind is above its comfort limit.',
+        wind: 'Force ' + bft(c.wind) + ' wind is above its comfort limit.',
         time: 'Weaker at ' + c.phase + '.',
         tide: 'Slack tide, it prefers moving water.',
         kind: spot.type === 'harbour' ? 'A harbour spot suits it less than open rock.' : 'Open rock suits it less than a harbour.'
@@ -668,6 +668,13 @@ var FISH = {
     var n = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
     return n[Math.round((((deg % 360) + 360) % 360) / 22.5) % 16];
   }
+  /* Beaufort force from km/h (upper limits of forces 0 to 11), and a typical km/h for a force. */
+  var BFT_MAX = [1, 5, 11, 19, 28, 38, 49, 61, 74, 88, 102, 117];
+  function bft(kmh) { var f = 0; while (f < 12 && kmh >= BFT_MAX[f] + 0.5) f++; return f; }
+  function bftKmh(f) { var lo = f ? BFT_MAX[f - 1] + 1 : 0, hi = f < 12 ? BFT_MAX[f] : 130; return (lo + hi) / 2; }
+  var BFT_NAME = ['calm', 'light air', 'light breeze', 'gentle breeze', 'moderate breeze', 'fresh breeze', 'strong breeze', 'near gale', 'gale', 'strong gale', 'storm', 'violent storm', 'hurricane force'];
+  function F(kmh) { return 'F' + bft(kmh); }
+
   /* Map projection, the same one used to draw the coastline paths (tools/map.md). */
   function mapXY(lat, lon) { return [(lon + 28.68) * Math.cos(38.5 * Math.PI / 180) * 1000, (38.70 - lat) * 1000]; }
 
@@ -725,11 +732,11 @@ var FISH = {
           wind: w.wind_speed_10m[wi], windDir: w.wind_direction_10m[wi], gust: w.wind_gusts_10m[wi] };
       }
     }
-    var wave = num('f-wave'), wind = num('f-wind');
+    var wave = num('f-wave'), wind = bftKmh(+$('f-wind').value);
     if (wave == null || wind == null || num('f-temp') == null) return null;
     return { src: state.source === 'manual' ? 'manual' : 'example', waveH: wave, waveDir: +$('f-dir').value, wavePer: num('f-per'),
       swellH: wave, swellDir: +$('f-dir').value, swellPer: num('f-per'), windWaveH: 0, windWaveDir: null,
-      sst: num('f-temp'), wind: wind, windDir: +$('f-wdir').value, gust: Math.round(wind * 1.4) };
+      sst: num('f-temp'), wind: wind, windDir: +$('f-wdir').value, gust: bftKmh(Math.min(12, +$('f-wind').value + 1)) };
   }
 
   function activeWarnings(when) {
@@ -767,12 +774,13 @@ var FISH = {
     else if (c.swellPer >= L.longPeriod && e >= L.unsafeWaveLong - cut) hit(3, 'Long swell (' + Math.round(c.swellPer) + ' s) surges up the rocks: ' + f1(e) + ' m here, limit ' + f1(L.unsafeWaveLong - cut) + ' m for swell of ' + L.longPeriod + ' s or more' + dark + '.');
     else if (e >= L.poorWave - cut) hit(2, 'Waves about ' + f1(e) + ' m here; Poor from ' + f1(L.poorWave - cut) + ' m' + dark + '.');
     else if (e >= L.fairWave - cut) hit(1, 'Waves about ' + f1(e) + ' m here; Fair from ' + f1(L.fairWave - cut) + ' m' + dark + '.');
-    if (r.wind >= L.unsafeWind) hit(3, 'Wind ' + Math.round(r.wind) + ' km/h; Unsafe from ' + L.unsafeWind + '.');
-    else if (gust >= L.unsafeGust) hit(3, 'Gusts ' + Math.round(gust) + ' km/h; Unsafe from ' + L.unsafeGust + '.');
-    else if (r.wind >= L.poorWind || (on && r.wind >= L.poorOnshoreWind) || gust >= L.poorGust)
-      hit(2, 'Wind ' + Math.round(r.wind) + ' km/h ' + c.rel + ', gusts ' + Math.round(gust) + '; Poor from ' + (on ? L.poorOnshoreWind + ' onshore' : L.poorWind) + ' or gusts ' + L.poorGust + '.');
-    else if (r.wind >= L.fairWind || (on && r.wind >= L.fairOnshoreWind) || gust >= L.fairGust)
-      hit(1, 'Wind ' + Math.round(r.wind) + ' km/h ' + c.rel + ', gusts ' + Math.round(gust) + '; Fair from ' + (on ? L.fairOnshoreWind + ' onshore' : L.fairWind) + ' or gusts ' + L.fairGust + '.');
+    var bw = bft(r.wind), bg = bft(gust);
+    if (bw >= L.unsafeWind) hit(3, 'Wind force ' + bw + '; Unsafe from force ' + L.unsafeWind + '.');
+    else if (bg >= L.unsafeGust) hit(3, 'Gusts force ' + bg + '; Unsafe from force ' + L.unsafeGust + '.');
+    else if (bw >= L.poorWind || (on && bw >= L.poorOnshoreWind) || bg >= L.poorGust)
+      hit(2, 'Wind force ' + bw + ' ' + c.rel + ', gusts force ' + bg + '; Poor from force ' + (on ? L.poorOnshoreWind + ' onshore' : L.poorWind) + ' or gusts force ' + L.poorGust + '.');
+    else if (bw >= L.fairWind || (on && bw >= L.fairOnshoreWind) || bg >= L.fairGust)
+      hit(1, 'Wind force ' + bw + ' ' + c.rel + ', gusts force ' + bg + '; Fair from force ' + (on ? L.fairOnshoreWind + ' onshore' : L.fairWind) + ' or gusts force ' + L.fairGust + '.');
     warns.forEach(function (w) {
       var lvl = w.awarenessLevelID, sea = /Agita/.test(w.awarenessTypeName), name = (sea ? 'sea' : 'wind') + ' warning (' + lvl + ')';
       if (sea && (lvl === 'orange' || lvl === 'red')) hit(3, 'Official IPMA ' + name + ' for the central group.');
@@ -781,12 +789,12 @@ var FISH = {
     });
     why.sort(function (a, b) { return b[0] - a[0]; });
     return { level: level, label: LEVELS[level], why: why.map(function (w) { return w[1]; }),
-      ok: 'Waves about ' + f1(e) + ' m here and wind ' + Math.round(r.wind) + ' km/h are under every limit' + dark + '.' };
+      ok: 'Waves about ' + f1(e) + ' m here and wind force ' + bft(r.wind) + ' are under every limit' + dark + '.' };
   }
 
   function condSummary(c) {
     var r = c.raw;
-    return 'Wind ' + Math.round(r.wind) + ' ' + compass16(r.windDir) + (r.gust ? ' g' + Math.round(r.gust) : '') + ' · ' +
+    return 'Wind ' + F(r.wind) + ' ' + compass16(r.windDir) + (r.gust ? ' gusts ' + F(r.gust) : '') + ' · ' +
       'Sea ' + c.swellH.toFixed(1) + ' m ' + compass16(c.swellDir) + (c.swellPer ? ' ' + Math.round(c.swellPer) + 's' : '') + ' → ' + c.eff.toFixed(1) + ' m here';
   }
 
@@ -828,7 +836,7 @@ var FISH = {
     }
     if (wn) {
       var wdir = (Math.atan2(wx, wy) * 180 / Math.PI + 360) % 360, wsp = Math.sqrt(wx * wx + wy * wy) / wn;
-      html += arrow(452, 160, wdir, 'wind', 'Wind ' + Math.round(wsp));
+      html += arrow(452, 160, wdir, 'wind', 'Wind ' + F(wsp));
     }
     if (big) html += arrow(538, 160, big.swellDir, 'swell', 'Sea ' + big.swellH.toFixed(1) + ' m');
     $('map-arrows').innerHTML = html;
@@ -870,7 +878,7 @@ var FISH = {
       '<div class="head-row"><div><h3>' + spot.place + '</h3><div class="sub">' + spot.coast + ' · faces ' + compass16(spot.face) + ' · <a href="' + maps + '" target="_blank" rel="noopener">open in Maps</a></div></div>' +
       '<span class="badge l' + rt.level + '" style="font-size:1rem;padding:3px 12px">Fishable: ' + rt.label + '</span></div>' +
       '<ul class="condlist">' +
-      '<li><b>Wind</b>' + Math.round(r.wind) + ' km/h from ' + compass16(r.windDir) + ' (' + c.rel + ')' + (r.gust ? ', gusts ' + Math.round(r.gust) : '') + '</li>' +
+      '<li><b>Wind</b>Force ' + bft(r.wind) + ' (' + BFT_NAME[bft(r.wind)] + ') from ' + compass16(r.windDir) + ', ' + c.rel + (r.gust ? ', gusts force ' + bft(r.gust) : '') + ' <span class="fine">· ' + Math.round(r.wind) + (r.gust ? '–' + Math.round(r.gust) : '') + ' km/h</span></li>' +
       '<li><b>Swell</b>' + c.swellH.toFixed(1) + ' m from ' + compass16(c.swellDir) + (c.swellPer ? ', ' + Math.round(c.swellPer) + ' s' : '') +
         (r.windWaveH ? ', plus ' + r.windWaveH.toFixed(1) + ' m wind chop from ' + compass16(r.windWaveDir) : '') + '</li>' +
       '<li><b>Here</b>about ' + c.eff.toFixed(1) + ' m at the spot (' + (c.exposure >= 1 ? 'open to this swell' : (c.exposure <= 0.2 ? 'sheltered from this swell' : 'partly sheltered from this swell')) + ')</li>' +
@@ -880,9 +888,9 @@ var FISH = {
       '<div><div class="eyebrow">Why ' + rt.label + '</div><ul class="reasons">' + (rt.why.length ? rt.why : [rt.ok]).map(function (w) { return '<li>' + w + '</li>'; }).join('') + '</ul></div>' +
       (spot.hazard ? '<p class="hazard">' + spot.hazard + '</p>' : '') +
       '<p class="spotnote">' + spot.note + ' ' + spot.depth + '</p>' +
-      '<details><summary>Limits used here</summary><p class="limits">Unsafe: waves ' + L.unsafeWave + ' m (' + L.unsafeWaveLong + ' m if swell period ' + L.longPeriod + ' s or more), wind ' + L.unsafeWind + ', gusts ' + L.unsafeGust + ' km/h.<br>' +
-        'Poor: waves ' + L.poorWave + ' m, wind ' + L.poorWind + ' (' + L.poorOnshoreWind + ' onshore), gusts ' + L.poorGust + ' km/h.<br>' +
-        'Fair: waves ' + L.fairWave + ' m, wind ' + L.fairWind + ' (' + L.fairOnshoreWind + ' onshore), gusts ' + L.fairGust + ' km/h.<br>' +
+      '<details><summary>Limits used here</summary><p class="limits">Unsafe: waves ' + L.unsafeWave + ' m (' + L.unsafeWaveLong + ' m if swell period ' + L.longPeriod + ' s or more), wind force ' + L.unsafeWind + ', gusts force ' + L.unsafeGust + '.<br>' +
+        'Poor: waves ' + L.poorWave + ' m, wind force ' + L.poorWind + ' (' + L.poorOnshoreWind + ' onshore), gusts force ' + L.poorGust + '.<br>' +
+        'Fair: waves ' + L.fairWave + ' m, wind force ' + L.fairWind + ' (' + L.fairOnshoreWind + ' onshore), gusts force ' + L.fairGust + '.<br>' +
         'After dark every wave limit is ' + L.nightWaveCut + ' m lower.</p><p class="msg">These are cautious starting numbers. Tell Claude what to change and they will be updated.</p></details>' +
       '<p class="fine">' + src + '. The rating describes the forecast, not the rocks on the day.</p>';
   }
@@ -1002,7 +1010,7 @@ var FISH = {
   function markManual() { state.source = 'manual'; render(); }
 
   function init() {
-    $('f-temp').value = '19.0'; $('f-wave').value = '1.8'; $('f-dir').value = '315'; $('f-per').value = '10'; $('f-wind').value = '20'; $('f-wdir').value = '270'; $('f-tide').value = 'rising';
+    $('f-temp').value = '19.0'; $('f-wave').value = '1.8'; $('f-dir').value = '315'; $('f-per').value = '10'; $('f-wind').value = '4'; $('f-wdir').value = '270'; $('f-tide').value = 'rising';
     setNow();
     restoreLive();
     ['input', 'change'].forEach(function (ev) {
