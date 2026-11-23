@@ -295,7 +295,7 @@ body{margin:0}
       <button class="btn ghost" id="log-import" type="button">Load backup file</button>
       <input type="file" id="log-import-file" accept="application/json,.json" hidden>
     </div>
-    <p class="fine">Use the original photos from the camera. Photos sent through WhatsApp or Facebook have their time and place removed. If the photo picker hides the location, try "Pick from Files instead" and open the Camera folder. The log lives in this browser only, so save a backup file now and then; clearing the browser's data deletes it.</p>
+    <p class="fine">Use the original photos from the camera. Photos sent through WhatsApp or Facebook have their time and place removed. Android's photo picker removes the location from photos it gives to websites. To keep it, tap "Pick from Files instead", open the menu (&#9776;), choose your phone's name or Internal storage, then DCIM, then Camera. The log lives in this browser only, so save a backup file now and then; clearing the browser's data deletes it.</p>
   </section>
 
   <details class="whatif panel" id="whatif">
@@ -1096,7 +1096,7 @@ var FISH = {
       for (var i = 0; i < n; i++) {
         var e = o + 2 + i * 12, tag = u16(e), type = u16(e + 2), cnt = u32(e + 4), vo = e + 8;
         if (type === 2) r[tag] = str(cnt > 4 ? u32(vo) : vo, cnt);
-        else if (type === 5) { var a = u32(vo), xs = []; for (var k = 0; k < cnt; k++) { var d = u32(a + 8 * k + 4); xs.push(d ? u32(a + 8 * k) / d : 0); } r[tag] = xs; }
+        else if (type === 5 || type === 10) { var a = u32(vo), xs = []; for (var k = 0; k < cnt; k++) { var d = u32(a + 8 * k + 4); xs.push(d ? u32(a + 8 * k) / d : 0); } r[tag] = xs; }
         else if (type === 4) r[tag] = u32(vo);
         else if (type === 3) r[tag] = u16(vo);
       }
@@ -1109,8 +1109,8 @@ var FISH = {
       if (g[2] && g[4] && g[2].length === 3 && g[4].length === 3) {
         var dm = function (x) { return x[0] + x[1] / 60 + x[2] / 3600; };
         var lat = dm(g[2]) * (g[1] === 'S' ? -1 : 1), lon = dm(g[4]) * (g[3] === 'W' ? -1 : 1);
-        if (lat || lon) { out.lat = +lat.toFixed(5); out.lon = +lon.toFixed(5); }
-      }
+        if (lat || lon) { out.lat = +lat.toFixed(5); out.lon = +lon.toFixed(5); } else out.gpsBlank = true;
+      } else if (i0[0x8825]) out.gpsBlank = true;
     } catch (e) {}
   }
   /* Camera wall time "YYYY:MM:DD HH:MM:SS" to UTC ms: use the camera's offset if it wrote one, else Azores time. */
@@ -1162,7 +1162,7 @@ var FISH = {
     files = [].slice.call(files || []);
     if (!files.length) return;
     logMsg('Reading ' + files.length + ' photo' + (files.length > 1 ? 's' : '') + '…');
-    var stats = { added: 0, dup: 0, noLoc: 0, noTime: 0, notJpeg: 0 };
+    var stats = { added: 0, dup: 0, noLoc: 0, blank: 0, noTime: 0, notJpeg: 0 };
     var seen = {}; catches.forEach(function (c) { seen[c.key] = 1; });
     var chain = Promise.resolve();
     files.forEach(function (f) {
@@ -1178,7 +1178,7 @@ var FISH = {
           var c = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), key: key, utc: utc, timeFrom: timeFrom,
             spot: '', species: '', count: 1, size: '', notes: '', added: Date.now() };
           if (ex.lat != null) { var pl = placeFor(ex.lat, ex.lon); c.lat = ex.lat; c.lon = ex.lon; c.spot = pl.spot; c.near = pl.near; c.km = pl.km; }
-          else stats.noLoc++;
+          else { stats.noLoc++; if (ex.gpsBlank) stats.blank++; }
           return thumbOf(f).then(function (t) { c.thumb = t; c.cond = catchConditions(c); catches.push(c); stats.added++; });
         }).catch(function () { stats.notJpeg++; });
       });
@@ -1188,7 +1188,8 @@ var FISH = {
       saveLog(); renderLog();
       var t = 'Added ' + stats.added + ' catch' + (stats.added === 1 ? '' : 'es') + '.';
       if (stats.dup) t += ' ' + stats.dup + ' already in the log.';
-      if (stats.noLoc) t += ' ' + stats.noLoc + ' had no location, so choose the spot for ' + (stats.noLoc > 1 ? 'those' : 'that one') + (stats.noLoc === stats.added ? '. If your photos do have a location, the phone may have hidden it: try "Pick from Files instead".' : '.');
+      if (stats.noLoc) t += ' ' + stats.noLoc + ' had no location, so choose the spot for ' + (stats.noLoc > 1 ? 'those' : 'that one') + '.' + (stats.blank ? ' Android removed the location from ' + (stats.blank === stats.noLoc ? (stats.noLoc > 1 ? 'these photos' : 'this photo') : stats.blank + ' of them') + ' before handing ' + (stats.blank > 1 ? 'them' : 'it') + ' to the app.' : '') +
+        (stats.noLoc === stats.added ? ' To keep the location, tap "Pick from Files instead", open the menu (☰), choose your phone\'s name or Internal storage, then DCIM, then Camera. Don\'t pick from Images, Recent or Gallery.' : '');
       if (stats.noTime) t += ' ' + stats.noTime + ' had no time inside the photo, so the file date was used: check it.';
       if (stats.notJpeg) t += ' ' + stats.notJpeg + ' could not be read (not a JPEG photo).';
       logMsg(t);
