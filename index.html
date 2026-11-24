@@ -228,11 +228,13 @@ body{margin:0}
       <button class="btn ghost" id="b-gps" type="button">Use my location</button>
     </div>
     <p class="msg" id="livemsg" hidden></p>
+    <p class="msg" id="warnnote" hidden></p>
     <div class="sunline" id="sunline"></div>
   </section>
 
   <section aria-labelledby="h-rank" style="display:flex;flex-direction:column;gap:12px">
     <h2 id="h-rank">Best spots</h2>
+    <p class="msg" id="rankmsg" hidden></p>
     <ol class="spotlist ranked" id="ranked"></ol>
   </section>
 
@@ -318,7 +320,7 @@ body{margin:0}
   <details class="whatif panel" id="whatif">
     <summary>Enter conditions by hand</summary>
     <div>
-      <p class="msg">For when there is no connection, or to try "what if". These open-sea values are applied to every spot, then reduced for each spot's shelter. They replace the forecast until you press "Use the forecast again" or load the live forecast.</p>
+      <p class="msg">For when there is no connection, or to try "what if". These open-sea values are applied to every spot, then reduced for each spot's shelter. They replace the forecast until you load the live forecast, or press "Use the forecast again" when a saved forecast is available.</p>
       <div class="grid">
         <div class="field"><label for="f-temp">Sea temp &deg;C</label><input type="number" id="f-temp" step="0.1" min="8" max="30" inputmode="decimal"></div>
         <div class="field"><label for="f-wave">Swell height m</label><input type="number" id="f-wave" step="0.1" min="0" max="12" inputmode="decimal"></div>
@@ -547,7 +549,7 @@ var FISH = {
   var SPOTS = [], SPECIES = [], LIMITS = {};
   var LEVELS = ['Good', 'Fair', 'Poor', 'Unsafe'];
   var LIVE_KEY = 'pico-live-v1';
-  var state = { smonth: null, spot: 'madalena', source: 'example', gps: null, tideAuto: true, live: null, warn: null, fish: '', len: 3 };
+  var state = { smonth: null, spot: 'madalena', source: 'example', gps: null, tideAuto: true, live: null, warn: null, warnAt: null, fish: '', len: 3 };
   var PREFS_KEY = 'pico-prefs-v1', LENS = [1, 2, 3, 4, 6];
 
   /* Seasons: browse the 12-month curves in data/species.json. state.smonth is null while it follows the chosen date. */
@@ -832,6 +834,16 @@ var FISH = {
     }).join('; ') + '.</div>' : '';
   }
 
+  /* Saved or fetched official warnings can be missing or older than the forecast in use; say so. */
+  function renderWarnNote() {
+    var n = $('warnnote'), at = state.warnAt, txt = '';
+    if (!at) txt = 'Official warnings not checked.';
+    else if (state.live && at < state.live.at - 15 * 60000) {
+      var day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Atlantic/Azores', weekday: 'short' }).format(new Date(at));
+      txt = 'Official warnings not checked since ' + day + ' ' + hmLocal(at) + '.';
+    }
+    n.hidden = !txt; n.textContent = txt;
+  }
   function ctxFor(when, cc) {
     var tideState = state.tideAuto ? (cc.tide ? cc.tide.state : 'rising') : $('f-tide').value;
     return { month: when.month, temp: cc.raw.sst != null ? cc.raw.sst : 19, wind: Math.round(cc.raw.wind), eff: cc.eff, phase: cc.phase,
@@ -855,8 +867,8 @@ var FISH = {
     for (k = 0; k < hours * 2; k++) out.push(fromUtc + k * 1800000);
     return out;
   }
-  /* No usable forecast for a sample: nothing, or (with a forecast loaded) the form's example values standing in outside its range. */
-  function noForecast(c) { return !c || !!(state.live && state.source !== 'manual' && c.raw.src !== 'live'); }
+  /* No usable forecast for a sample: nothing, or the form's made-up example values standing in for one. Typed (manual) values do count. */
+  function noForecast(c) { return !c || c.raw.src === 'example' || !!(state.live && state.source !== 'manual' && c.raw.src !== 'live'); }
   function spotWindow(spot, i, fromUtc, hours, fishId) {
     var samples = windowSamples(fromUtc, hours), res = { level: null, worstWhy: null, samples: samples.length, missing: 0, score: null, sp: null, at: null };
     var firstWhy = null, pool = fishId ? SPECIES.filter(function (sp) { return sp.id === fishId; }) : SPECIES;
@@ -885,7 +897,7 @@ var FISH = {
       var la = a.level === null ? 9 : a.level, lb = b.level === null ? 9 : b.level;
       if (la !== lb) return la - lb;
       var sa = a.score === null ? -1 : a.score, sb = b.score === null ? -1 : b.score;
-      return sb - sa || a.i - b.i;
+      return sb - sa || a.spot.name.localeCompare(b.spot.name);
     });
   }
   /* ---------- Best times: fishability and the picked fish through one local day ---------- */
@@ -910,9 +922,17 @@ var FISH = {
     var box = $('besttimes'), at = state.gps || spot, MIN = 60000, N, k;
     var tl = dayTimeline(spot, i, when.y, when.month, when.d, state.fish), sp = SPECIES.filter(function (x) { return x.id === state.fish; })[0];
     N = tl.length;
-    var range = function (a, b) { return hmLocal(tl[a].utc) + '\u2013' + hmLocal(tl[b].utc + 1800000); };
+    var range = function (a, b) { return a === 0 && b === N - 1 ? 'All day' : hmLocal(tl[a].utc) + '\u2013' + hmLocal(tl[b].utc + 1800000); };
     var sc = tl.map(function (c) { return c.score === null || c.level === 3 ? 0 : c.score; });
-    var summary;
+    var stretches = [], stretchHtml, summary = '', top = [];
+    tl.forEach(function (c, n) {
+      if (c.level === null) return;
+      var last = stretches[stretches.length - 1];
+      if (last && last.lv === c.level && last.b === n - 1) last.b = n; else stretches.push({ a: n, b: n, lv: c.level });
+    });
+    stretchHtml = stretches.length ? '<ol class="windows">' + stretches.map(function (r) {
+      return '<li><span class="t">' + range(r.a, r.b) + '</span><span class="r">' + LEVELS[r.lv] + '</span></li>';
+    }).join('') + '</ol>' : '<p class="msg">No forecast for this date.</p>';
     if (sp) {
       var mx = Math.max.apply(null, sc), thr = Math.max(55, mx - 10), runs = [], cur = null;
       for (k = 0; k < N; k++) {
@@ -922,29 +942,22 @@ var FISH = {
         r.peak = Math.max.apply(null, sc.slice(r.a, r.b + 1));
         r.lv = Math.max.apply(null, tl.slice(r.a, r.b + 1).map(function (c) { return c.level; }));
       });
-      var top = runs.slice().sort(function (x, y) { return y.peak - x.peak; }).slice(0, 3).sort(function (x, y) { return x.a - y.a; });
+      top = runs.slice().sort(function (x, y) { return y.peak - x.peak; }).slice(0, 3).sort(function (x, y) { return x.a - y.a; });
       summary = top.length ? '<ol class="windows">' + top.map(function (r) {
         return '<li><span class="t">' + range(r.a, r.b) + '</span><span>' + sp.name + ' ' + Math.round(r.peak) + '</span><span class="r">' + LEVELS[r.lv] + '</span></li>';
       }).join('') + '</ol>' : '<p class="msg">No standout window for ' + sp.name + ' on this date.</p>';
-    } else {
-      var stretches = [];
-      tl.forEach(function (c, n) {
-        if (c.level === null) return;
-        var last = stretches[stretches.length - 1];
-        if (last && last.lv === c.level && last.b === n - 1) last.b = n; else stretches.push({ a: n, b: n, lv: c.level });
-      });
-      summary = stretches.length ? '<ol class="windows">' + stretches.map(function (r) {
-        return '<li><span class="t">' + range(r.a, r.b) + '</span><span class="r">' + LEVELS[r.lv] + '</span></li>';
-      }).join('') + '</ol>' : '<p class="msg">No forecast for this date.</p>';
     }
+    summary = stretchHtml + summary;
+    var stripLabel = 'Fishability: ' + (stretches.length ? stretches.map(function (r) { return LEVELS[r.lv] + ' ' + range(r.a, r.b); }).join(', ') : 'no forecast for this date');
+    var barsLabel = sp ? 'Score for ' + sp.name + ' through the day. ' + (top.length ? 'Best windows: ' + top.map(function (r) { return range(r.a, r.b) + ' (' + Math.round(r.peak) + ')'; }).join(', ') : 'No standout window.') : '';
 
     var selCell = -1, winEnd = when.utc + state.len * 3600000;
     tl.forEach(function (c, n) { if (c.utc <= when.utc && when.utc < c.utc + 1800000) selCell = n; });
     var extra = function (n) { return (n === selCell ? ' sel' : '') + (tl[n].utc + 1800000 > when.utc && tl[n].utc < winEnd ? ' inwin' : ''); };
-    var strip = '<div class="strip" role="img" aria-label="Fishability for each half hour of the day">' + tl.map(function (c, n) {
+    var strip = '<div class="strip" role="img" aria-label="' + stripLabel + '">' + tl.map(function (c, n) {
       return '<div class="cell ' + (c.level === null ? 'lx' : 'l' + c.level) + extra(n) + '" title="' + hm(c.t) + ' ' + (c.level === null ? 'no forecast' : LEVELS[c.level]) + '"></div>';
     }).join('') + '</div>';
-    var bars = sp ? '<div class="bars" role="img" aria-label="Score for ' + sp.name + ' for each half hour of the day">' + tl.map(function (c, n) {
+    var bars = sp ? '<div class="bars" role="img" aria-label="' + barsLabel + '">' + tl.map(function (c, n) {
       if (c.level === null) return '<div class="cell lx' + extra(n) + '" style="height:6%" title="' + hm(c.t) + ' no forecast"></div>';
       return '<div class="cell ' + labelOf(sc[n])[0] + extra(n) + '" style="height:' + Math.max(6, Math.round(sc[n])) + '%" title="' + hm(c.t) + ' score ' + Math.round(sc[n]) + '"></div>';
     }).join('') + '</div>' : '';
@@ -969,7 +982,11 @@ var FISH = {
     var clock = function (w) { return pad(Math.floor(w.t / 60)) + ':' + pad(w.t % 60); };
     var dow = DAYS[new Date(Date.UTC(when.y, when.month - 1, when.d)).getUTCDay()];
     $('h-rank').textContent = 'Best spots, ' + dow + ' ' + when.d + ' ' + MONTHS[when.month - 1].slice(0, 3) + ' ' + clock(when) + '\u2013' + clock(end) + (later ? ' next day' : '');
-    $('ranked').innerHTML = rankSpots(when.utc, state.len, state.fish).map(function (r, k) {
+    var ranked = rankSpots(when.utc, state.len, state.fish), msg = $('rankmsg');
+    var allNone = ranked.every(function (r) { return r.level === null; });
+    msg.hidden = !allNone;
+    msg.textContent = !allNone ? '' : state.live ? 'The loaded forecast does not cover this window.' : 'No forecast loaded. Load the live forecast, or enter conditions by hand below.';
+    $('ranked').innerHTML = ranked.map(function (r, k) {
       var badge = r.level === null ? '<span class="badge lx">No data</span>' : '<span class="badge l' + r.level + '">' + LEVELS[r.level] + '</span>';
       var line = r.score !== null ? r.sp.name + ' ' + r.score + ' at ' + hmLocal(r.at) : (r.level === 3 ? 'No species score: unsafe for the whole window' : '');
       return '<li><button type="button" class="spotrow" data-spot="' + r.spot.id + '" aria-pressed="' + (r.spot.id === state.spot) + '"><span class="top"><span class="nm"><span class="rk">' + (k + 1) + '</span>' + r.spot.name + '</span>' + badge + '</span>' +
@@ -1003,6 +1020,7 @@ var FISH = {
     drawMap(conds);
     renderSpots(conds);
     renderWarnBanner(when);
+    renderWarnNote();
     renderDetail(spot, c, when);
     setStatus(conds);
     renderRanked(when);
@@ -1066,10 +1084,12 @@ var FISH = {
 
   /* ---------- Live data ---------- */
   var WARN_KEY = 'pico-warn-v1';
+  /* Saved warnings are kept as long as the saved forecast (7 days); each warning's own times still filter it. */
+  var KEEP_MS = 7 * 864e5;
   function restoreWarn() {
     try {
       var j = JSON.parse(localStorage.getItem(WARN_KEY) || 'null');
-      if (j && j.list && Date.now() - j.at < 48 * 3600000) state.warn = j.list;
+      if (j && Array.isArray(j.list) && typeof j.at === 'number' && Date.now() - j.at < KEEP_MS) { state.warn = j.list; state.warnAt = j.at; }
     } catch (e) {}
   }
   function loadLive(explicit) {
@@ -1084,7 +1104,7 @@ var FISH = {
     var weather = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat(0) + '&longitude=' + lon(0) + common +
       '&cell_selection=sea&wind_speed_unit=kmh&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m';
     get('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json').then(function (j) {
-      state.warn = j.filter(function (w) { return w.idAreaAviso === 'ACE'; });
+      state.warn = j.filter(function (w) { return w.idAreaAviso === 'ACE'; }); state.warnAt = Date.now();
       try { localStorage.setItem(WARN_KEY, JSON.stringify({ at: Date.now(), list: state.warn })); } catch (e) {}
       render();
     }).catch(function () {});
@@ -1097,16 +1117,17 @@ var FISH = {
       render();
     }).catch(function () {
       var ageMin = state.live ? (Date.now() - state.live.at) / 60000 : 0;
-      msg.textContent = state.live ? 'Could not reach Open-Meteo, so the forecast saved on this phone ' + (ageMin < 90 ? 'at ' + hmLocal(state.live.at) : Math.round(ageMin / 60) + ' h ago') + ' is shown.' :
+      if (state.live && (explicit || state.source !== 'manual')) { state.source = 'live'; if (explicit) state.tideAuto = true; }
+      msg.textContent = state.source === 'manual' ? 'Could not reach Open-Meteo. Your typed values are in use.' :
+        state.live ? 'Could not reach Open-Meteo, so the forecast saved on this phone ' + (ageMin < 90 ? 'at ' + hmLocal(state.live.at) : Math.round(ageMin / 60) + ' h ago') + ' is shown.' :
         'Could not reach Open-Meteo. Check your connection, or enter conditions by hand below.';
-      if (state.live && state.source !== 'manual') state.source = 'live';
       render();
     });
   }
   function restoreLive() {
     try {
       var j = JSON.parse(localStorage.getItem(LIVE_KEY) || 'null');
-      if (j && j.m && j.m.length === SPOTS.length && Date.now() - j.at < 7 * 864e5) { state.live = j; state.source = 'live'; }
+      if (j && j.m && j.m.length === SPOTS.length && Date.now() - j.at < KEEP_MS) { state.live = j; state.source = 'live'; }
     } catch (e) {}
   }
 
@@ -1158,11 +1179,14 @@ var FISH = {
       if (t) setSeasonMonth(+t.getAttribute('data-smonth'));
     });
     $('b-live').addEventListener('click', function () { loadLive(true); });
-    $('b-clear').addEventListener('click', function () { state.source = 'live'; render(); });
+    $('b-clear').addEventListener('click', function () { state.source = 'live'; state.tideAuto = true; render(); });
     function pick(t) { state.spot = t.getAttribute('data-spot'); render(); }
     document.addEventListener('click', function (e) {
       var t = e.target.closest ? e.target.closest('[data-spot]') : null;
-      if (t) pick(t);
+      if (!t) return;
+      var inRank = !!(t.closest && t.closest('#ranked'));
+      pick(t);
+      if (inRank) { var b = document.querySelector('#ranked .spotrow[data-spot="' + state.spot + '"]'); if (b) b.focus(); }
     });
     $('map').addEventListener('keydown', function (e) {
       var t = e.target.closest ? e.target.closest('[data-spot]') : null;

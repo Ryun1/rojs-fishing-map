@@ -218,14 +218,93 @@
     eq(pico.state.warn.length, 1);
     localStorage.setItem('pico-warn-v1', JSON.stringify({ at: Date.now() - 49 * 3600000, list: [redWarn()] }));
     pico.state.warn = null; pico.restoreWarn();
+    eq(pico.state.warn.length, 1, 'kept at 49 h');
+  });
+  test('saved warnings dropped after 7 days or when malformed', function () {
+    localStorage.setItem('pico-warn-v1', JSON.stringify({ at: Date.now() - 8 * 864e5, list: [redWarn()] }));
+    pico.state.warn = null; pico.restoreWarn();
     eq(pico.state.warn, null);
+    localStorage.setItem('pico-warn-v1', JSON.stringify({ at: Date.now(), list: 'red' }));
+    pico.restoreWarn();
+    eq(pico.state.warn, null, 'non-array list');
+  });
+  test('restored red warning makes every spot unsafe', function () {
+    calmLive();
+    localStorage.setItem('pico-warn-v1', JSON.stringify({ at: Date.now() - 50 * 3600000, list: [redWarn()] }));
+    pico.state.warn = null; pico.restoreWarn();
+    pico.rankSpots(T12, 3, '').forEach(function (x) { eq(x.level, 3); });
+  });
+  test('warnings note', function () {
+    var n = document.getElementById('warnnote');
+    pico.state.warnAt = null; pico.render();
+    eq(n.textContent, 'Official warnings not checked.');
+    calmLive();
+    pico.state.warnAt = pico.state.live.at - 5 * 3600000; pico.render();
+    ok(/^Official warnings not checked since \w{3} \d\d:\d\d\.$/.test(n.textContent), n.textContent);
+    pico.state.warnAt = pico.state.live.at; pico.render();
+    ok(n.hidden, 'hidden when current');
+  });
+  test('example values are not a forecast', function () {
+    pico.state.live = null; pico.state.source = 'example';
+    pico.rankSpots(T12, 3, '').forEach(function (x) { eq(x.level, null); });
+    pico.state.len = 3; pico.state.fish = '';
+    pico.renderRanked(pico.whenAt(T12));
+    var m = document.getElementById('rankmsg');
+    ok(!m.hidden && m.textContent.indexOf('No forecast loaded.') === 0, 'line shown');
+    pico.dayTimeline(pico.SPOTS[0], 0, 2026, 11, 24, '').forEach(function (c) { eq(c.level, null); });
+  });
+  test('best times keeps stretches with a fish picked, with labels', function () {
+    calmLive();
+    pico.state.fish = pico.SPECIES[0].id;
+    document.getElementById('f-date').value = '2026-11-24';
+    document.getElementById('f-time').value = '10:00';
+    pico.render();
+    var b = document.getElementById('besttimes');
+    ok(b.textContent.indexOf('Good') >= 0, 'stretches present');
+    ok(b.querySelectorAll('.windows').length >= 1, 'windows list');
+    ok(b.querySelector('.strip').getAttribute('aria-label').indexOf('Fishability: ') === 0, 'strip label');
+    ok(b.querySelector('.bars').getAttribute('aria-label').indexOf(pico.SPECIES[0].name) >= 0, 'bars label');
+  });
+  test('all-day stretch reads All day', function () {
+    calmLive(function (s, h) { return CALM; });
+    pico.state.live = liveFixture(Date.UTC(2026, 10, 23, 0), 96, function () { return CALM; });
+    pico.state.fish = '';
+    document.getElementById('f-date').value = '2026-11-24';
+    document.getElementById('f-time').value = '10:00';
+    pico.render();
+    var b = document.getElementById('besttimes');
+    ok(b.textContent.indexOf('All day') >= 0, b.textContent.slice(0, 80));
+    ok(b.textContent.indexOf('00:00\u201300:00') < 0, 'no 00:00-00:00');
+  });
+  test('ranked row press keeps focus', function () {
+    calmLive();
+    pico.render();
+    var rows = document.querySelectorAll('#ranked .spotrow'), r = rows[2];
+    r.focus(); r.click();
+    ok(document.activeElement && document.activeElement.classList.contains('spotrow'), 'focus on a row');
+    eq(document.activeElement.getAttribute('data-spot'), r.getAttribute('data-spot'));
+  });
+  test('explicit failed load switches back to the saved forecast', function () {
+    calmLive(); pico.state.source = 'manual'; pico.state.tideAuto = false;
+    window.fetch = function () { return Promise.reject(new Error('offline')); };
+    return pico.loadLive(true).then(function () {
+      eq(pico.state.source, 'live'); eq(pico.state.tideAuto, true);
+      ok(document.getElementById('livemsg').textContent.indexOf('saved on this phone') >= 0);
+      pico.state.source = 'manual';
+      return pico.loadLive(false);
+    }).then(function () {
+      eq(pico.state.source, 'manual');
+      eq(document.getElementById('livemsg').textContent, 'Could not reach Open-Meteo. Your typed values are in use.');
+    });
   });
   test('clear what-if', function () {
     calmLive(); pico.state.source = 'manual'; pico.render();
     var b = document.getElementById('b-clear');
     ok(!b.hidden, 'visible');
+    pico.state.tideAuto = false;
     b.click();
     eq(pico.state.source, 'live');
+    eq(pico.state.tideAuto, true);
     ok(b.hidden, 'hidden');
   });
   test('auto load keeps manual', function () {
