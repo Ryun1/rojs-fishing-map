@@ -79,15 +79,24 @@
   }
   function runNext(i) {
     if (i >= tests.length) { finish(); return; }
-    var t = tests[i], snap = snapshot(), done = function (err) {
-      restore(snap);
-      if (err) failures.push({ name: t.name, msg: String(err && err.message || err) }); else passed++;
-      runNext(i + 1);
-    };
+    var t = tests[i], snap = null, settled = false;
+    function done(err) {
+      if (settled) return;
+      settled = true;
+      var bad = err ? String(err && err.message || err) : null;
+      try { if (snap) restore(snap); } catch (e) { failures.push({ name: t.name, msg: 'restore: ' + String(e && e.message || e) }); }
+      if (bad) failures.push({ name: t.name, msg: bad }); else if (!failures.length || failures[failures.length - 1].name !== t.name) passed++;
+      Promise.resolve().then(function () { runNext(i + 1); });
+    }
+    try { snap = snapshot(); } catch (e) { failures.push({ name: t.name, msg: 'snapshot: ' + String(e && e.message || e) }); }
     try {
       var p = t.fn();
       if (p && typeof p.then === 'function') p.then(function () { done(); }, done); else done();
     } catch (e) { done(e); }
+  }
+  if (!pico) {
+    window.picoTestResult = { pass: 0, fail: 1, failures: [{ name: 'harness', msg: 'window.pico missing (init failed?)' }] };
+    return;
   }
   Promise.resolve().then(function () { runNext(0); });
 })();
