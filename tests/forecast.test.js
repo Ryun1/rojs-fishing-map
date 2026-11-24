@@ -133,6 +133,67 @@
     eq(pico.state.fish, '');
   });
 
+  /* ---------- Task 3: best times through the day ---------- */
+  test('timeline has 48 cells', function () {
+    calmLive();
+    var tl = pico.dayTimeline(pico.SPOTS[0], 0, 2026, 11, 24, '');
+    eq(tl.length, 48); eq(tl[0].t, 0); eq(tl[47].t, 1410);
+  });
+
+  test('timeline on clock change', function () {
+    calmLive();
+    eq(pico.dayTimeline(pico.SPOTS[0], 0, 2026, 10, 25, '').length, 50);
+  });
+
+  test('timeline levels follow forecast', function () {
+    calmLive(function (s, h) { if (s === 0 && (h === 12 || h === 13)) return unsafeFor(0); });
+    var tl = pico.dayTimeline(pico.SPOTS[0], 0, 2026, 11, 24, ''), at = function (h, m) {
+      return tl.filter(function (c) { return c.utc === Date.UTC(2026, 10, 24, h, m); })[0];
+    };
+    eq(at(12, 0).level, 3); eq(at(12, 30).level, 3); eq(at(13, 0).level, 3); eq(at(16, 0).level, 0);
+  });
+
+  test('timeline species scores', function () {
+    calmLive();
+    var id = pico.SPECIES[0].id;
+    pico.dayTimeline(pico.SPOTS[0], 0, 2026, 11, 24, id).forEach(function (c) { ok(typeof c.score === 'number', 'score at ' + c.t); });
+    pico.dayTimeline(pico.SPOTS[0], 0, 2026, 11, 24, '').forEach(function (c) { eq(c.score, null); });
+  });
+
+  test('timeline outside the forecast has no data', function () {
+    calmLive();
+    var tl = pico.dayTimeline(pico.SPOTS[0], 0, 2026, 11, 26, pico.SPECIES[0].id);
+    tl.forEach(function (c) { eq(c.level, null); eq(c.score, null); });
+  });
+
+  test('timeline manual', function () {
+    pico.state.live = null; pico.state.source = 'manual';
+    pico.dayTimeline(pico.SPOTS[0], 0, 2026, 11, 24, '').forEach(function (c) { ok(c.level !== null, 'level at ' + c.t); });
+  });
+
+  test('no moon selector', function () {
+    ok(document.getElementById('f-moon') === null, 'f-moon present');
+    pico.render();
+    ok(document.getElementById('besttimes').textContent.indexOf('Moon') < 0, 'Moon in best times');
+  });
+
+  test('best times renders strip and bars', function () {
+    calmLive();
+    pico.state.fish = pico.SPECIES[0].id;
+    document.getElementById('f-date').value = '2026-11-24';
+    document.getElementById('f-time').value = '10:00';
+    pico.render();
+    var b = document.getElementById('besttimes');
+    eq(b.querySelectorAll('.strip > *').length, 48);
+    eq(b.querySelectorAll('.bars .cell').length, 48);
+    eq(b.querySelectorAll('.strip .sel').length, 1);
+    ok(b.querySelectorAll('.inwin').length > 0, 'inwin');
+    pico.state.fish = '';
+    pico.render();
+    eq(b.querySelectorAll('.bars').length, 0);
+    ok(b.textContent.indexOf('Good') >= 0, 'stretch label');
+  });
+
   function finish() {
     var r = { pass: passed, fail: failures.length, failures: failures };
     window.picoTestResult = r;

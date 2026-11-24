@@ -110,6 +110,12 @@ a { color: var(--accent); }
 .bars { display: flex; align-items: flex-end; gap: 2px; height: 110px; border-bottom: 1px solid var(--line); }
 .cell { flex: 1; min-width: 0; border-radius: 2px 2px 0 0; background: var(--muted); }
 .cell.good { background: var(--good); } .cell.fair { background: var(--warn); } .cell.poor { background: var(--bad); }
+.cell.lx { background: var(--line); }
+.cell.inwin { border-bottom: 3px solid var(--accent); }
+.strip { display: flex; gap: 2px; height: 14px; }
+.strip .cell { border-radius: 2px; }
+.strip .l0 { background: var(--good); } .strip .l1 { background: var(--warn); } .strip .l2 { background: var(--bad); }
+.strip .l3 { background: repeating-linear-gradient(45deg, var(--bad) 0 3px, var(--surface) 3px 6px); }
 .cell.sel { outline: 2px solid var(--accent); outline-offset: 1px; }
 .axis { display: flex; justify-content: space-between; font-family: var(--font-data); font-size: 0.72rem; color: var(--muted); }
 .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 4px 16px; font-size: 0.88rem; }
@@ -259,11 +265,7 @@ body{margin:0}
   </section>
 
   <section aria-labelledby="h-best" style="display:flex;flex-direction:column;gap:12px">
-    <div class="head-row">
-      <h2 id="h-best">Best times</h2>
-      <div class="field" style="min-width:150px"><label for="f-moon">Moon influence</label>
-        <select id="f-moon"><option value="0">Off</option><option value="0.15" selected>Light</option><option value="0.3">Normal</option></select></div>
-    </div>
+    <h2 id="h-best">Best times</h2>
     <div class="panel" id="besttimes"></div>
   </section>
 
@@ -353,7 +355,7 @@ body{margin:0}
       <li id="limitsline">The limits used are listed with each spot.</li>
       <li>Wind comes from the Open-Meteo forecast over the sea next to each spot. Waves come from the Open-Meteo marine model at a point a few kilometres off the right coast. Both are on grids of about 8 to 9 km, so wind funnelling and shelter behind the mountain are not modelled. Spot positions and facings come from the OpenStreetMap coastline and have not been checked on the ground.</li>
       <li>Each species is scored from 0 to 100 on season, sea temperature, wave height at the spot, wind, time of day against sunrise and sunset, tide movement and the kind of spot. Season comes from 32 years of monthly fish-auction landings on Pico (SREA, 1994 to 2025). These are commercial boat catches, not shore catches, so treat the season part as a rough guide to when each fish is around, not when it bites from the shore. Sargo, veja and moray live on the coast all year, so they never drop below a moderate season score. The other factors are starting estimates, to be corrected with local knowledge and catch logs.</li>
-      <li>Species pictures are from your own catches, except the moray, which is a drawing. Moon phase is shown for planning and feeds the best-times timeline, but does not change the species scores.</li>
+      <li>Species pictures are from your own catches, except the moray, which is a drawing. Moon phase is shown for planning only; it does not change any rating or score.</li>
       <li>Tide is computed on the phone for Horta from published tidal constants, for any date and with no connection, and matches the official Instituto Hidrogr&aacute;fico table to within a few minutes and about 5 cm. It is the astronomical tide only: wind and air pressure can move the real sea level. All five spots use Horta's times. Tidal constants: <a href="https://www.seanoe.org/data/00980/109129/" target="_blank" rel="noopener">TICON-4</a> (Hart-Davis, Dettmering and Seitz, CC BY 4.0).</li>
       <li>Sources: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (wind and waves), <a href="https://www.ipma.pt/" target="_blank" rel="noopener">IPMA</a> (warnings), <a href="https://srea.azores.gov.pt/" target="_blank" rel="noopener">SREA</a> (landings), map &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>.</li>
     </ul>
@@ -536,103 +538,7 @@ var FISH = {
   }
   /* TIDE END */
 
-  var RAD = Math.PI / 180;
-  function normPi(x) { x = x % (2 * Math.PI); if (x > Math.PI) x -= 2 * Math.PI; if (x <= -Math.PI) x += 2 * Math.PI; return x; }
-  /* Low-precision moon position (a few arc minutes to about a degree). Good to roughly 10 minutes for rise, set and transit times. */
-  function moonPos(ms, lat, lon) {
-    var d = ms / 864e5 - 10957.5;
-    var L = RAD * (218.316 + 13.176396 * d), M = RAD * (134.963 + 13.064993 * d), F = RAD * (93.272 + 13.22935 * d);
-    var l = L + RAD * 6.289 * Math.sin(M), b = RAD * 5.128 * Math.sin(F), e = RAD * 23.4397;
-    var ra = Math.atan2(Math.sin(l) * Math.cos(e) - Math.tan(b) * Math.sin(e), Math.cos(l));
-    var dec = Math.asin(Math.sin(b) * Math.cos(e) + Math.cos(b) * Math.sin(e) * Math.sin(l));
-    var st = RAD * (280.16 + 360.9856235 * d) + RAD * lon;
-    var phi = lat * RAD, H = st - ra;
-    return { H: normPi(H), alt: Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H)) / RAD };
-  }
-  function moonEvents(fromMs, toMs, lat, lon) {
-    var ev = [], step = 300000, h0 = 0.125, prev = moonPos(fromMs, lat, lon);
-    for (var t = fromMs + step; t <= toMs; t += step) {
-      var cur = moonPos(t, lat, lon), t0 = t - step;
-      if (prev.alt < h0 && cur.alt >= h0) ev.push({ type: 'rise', t: t0 + step * (h0 - prev.alt) / (cur.alt - prev.alt) });
-      else if (prev.alt >= h0 && cur.alt < h0) ev.push({ type: 'set', t: t0 + step * (prev.alt - h0) / (prev.alt - cur.alt) });
-      if (prev.H < 0 && cur.H >= 0 && cur.H - prev.H < 1) ev.push({ type: 'upper', t: t0 + step * (-prev.H) / (cur.H - prev.H) });
-      if (prev.H > 2 && cur.H < -2) ev.push({ type: 'lower', t: t0 + step * (Math.PI - prev.H) / ((cur.H + 2 * Math.PI) - prev.H) });
-      prev = cur;
-    }
-    return ev;
-  }
-  var MOONNAME = { upper: 'Moon overhead', lower: 'Moon underfoot', rise: 'Moonrise', set: 'Moonset' };
-
-  function renderBest(inp, spot, c) {
-    var box = $('besttimes'), at = state.gps || spot, MIN = 60000, N = 48, i;
-    var base = Date.UTC(inp.y, inp.month - 1, inp.d) - azOffsetMin(new Date(Date.UTC(inp.y, inp.month - 1, inp.d, 12))) * MIN;
-    var moonW = parseFloat($('f-moon').value); if (isNaN(moonW)) moonW = 0.15;
-    var ev = moonEvents(base - 3 * 3600000, base + 27 * 3600000, at.lat, at.lon);
-    var syn = 29.530588, jd = Date.UTC(inp.y, inp.month - 1, inp.d, 12) / 864e5 + 2440587.5;
-    var age = (((jd - 2451550.1) % syn) + syn) % syn;
-    var pf = 0.85 + 0.15 * (1 + Math.cos(4 * Math.PI * age / syn)) / 2;
-
-    var lag = (spot.tideLag || 0) * MIN, levelAt = function (t) { return tideHeight(t - lag); };
-    var rate = [], lvls = [], maxRate = 0;
-    for (i = 0; i < N; i++) {
-      var tc = base + (i * 30 + 15) * MIN, a = levelAt(tc - 15 * MIN), b = levelAt(tc + 15 * MIN), m0 = levelAt(tc);
-      rate.push(a == null || b == null ? null : b - a);
-      if (rate[i] != null) maxRate = Math.max(maxRate, Math.abs(rate[i]));
-      if (m0 != null) lvls.push(m0);
-    }
-    var hasTide = maxRate > 0;
-    var range = lvls.length ? Math.max.apply(null, lvls) - Math.min.apply(null, lvls) : 0;
-    var rf = clamp(0.75 + 0.25 * range / 1.3, 0.75, 1);
-
-    var sc = [], tags = [];
-    for (i = 0; i < N; i++) {
-      var tmid = base + (i * 30 + 15) * MIN, lmin = i * 30 + 15;
-      var ph = phaseOf(lmin, c.sun.rise, c.sun.set);
-      /* Light and moon taper in and out rather than switching on and off, so one half hour does not jump above its neighbours. */
-      var dSun = Math.min(Math.abs(lmin - c.sun.rise), Math.abs(lmin - c.sun.set));
-      var lbase = (lmin < c.sun.rise || lmin > c.sun.set) ? 0.55 : 0.45;
-      var light = lbase + (1 - lbase) * clamp(1 - (dSun - 45) / 75, 0, 1);
-      var moon = 0.4, mtag = '';
-      ev.forEach(function (e) {
-        var dm = Math.abs(tmid - e.t) / MIN, v = (e.type === 'upper' || e.type === 'lower') ? 1 - dm / 150 : 0.7 * (1 - dm / 90);
-        if (v > moon) { moon = v; mtag = MOONNAME[e.type].toLowerCase(); }
-      });
-      moon *= pf;
-      var tv = rate[i] == null || !hasTide ? null : (0.25 + 0.75 * Math.abs(rate[i]) / maxRate) * rf;
-      var wT = tv == null ? 0 : 0.45;
-      sc.push(100 * (wT * (tv || 0) + 0.30 * light + moonW * moon) / (wT + 0.30 + moonW));
-      var tt = tv == null ? '' : (Math.abs(rate[i]) / maxRate < 0.3 ? 'slack tide' : (rate[i] > 0 ? 'incoming tide' : 'outgoing tide'));
-      tags.push([tt, ph === 'dawn' ? 'at dawn' : (ph === 'dusk' ? 'at dusk' : (ph === 'night' ? 'after dark' : 'in daylight')), moonW > 0 && mtag ? mtag : ''].filter(Boolean).join(', '));
-    }
-    var mx = Math.max.apply(null, sc), thr = Math.max(55, mx - 10), runs = [], cur = null;
-    for (i = 0; i < N; i++) {
-      if (sc[i] >= thr) { if (cur && i - cur.b <= 2) cur.b = i; else { cur = { a: i, b: i }; runs.push(cur); } }
-    }
-    runs.forEach(function (r) { r.peak = Math.max.apply(null, sc.slice(r.a, r.b + 1)); });
-    var top = runs.slice().sort(function (x, y) { return y.peak - x.peak; }).slice(0, 3).sort(function (x, y) { return x.a - y.a; });
-    var wins = top.length ? '<ol class="windows">' + top.map(function (r) {
-      var ci = Math.round((r.a + r.b) / 2);
-      return '<li><span class="t">' + hm(r.a * 30) + '–' + hm((r.b + 1) * 30) + '</span><span>score ' + Math.round(r.peak) + '</span><span class="r">' + tags[ci] + '</span></li>';
-    }).join('') + '</ol>' : '<p class="msg">No standout window on this date.</p>';
-
-    var selCell = clamp(Math.floor(inp.t / 30), 0, N - 1);
-    var bars = '<div class="bars" role="img" aria-label="Activity score for each half hour of the day">' + sc.map(function (v, k) {
-      var cls = v >= 70 ? 'good' : (v >= 45 ? 'fair' : 'poor');
-      return '<div class="cell ' + cls + (k === selCell ? ' sel' : '') + '" style="height:' + Math.max(6, Math.round(v)) + '%" title="' + hm(k * 30) + ' score ' + Math.round(v) + '"></div>';
-    }).join('') + '</div><div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>';
-
-    var keys = [{ t: base + c.sun.rise * MIN - (base - base), n: 'Sunrise', lm: c.sun.rise }, { n: 'Sunset', lm: c.sun.set }].map(function (k) { return { m: k.lm, n: k.n }; });
-    ev.forEach(function (e) { var lm = (e.t - base) / MIN; if (lm >= 0 && lm < 1440) keys.push({ m: lm, n: MOONNAME[e.type] }); });
-    tideExtremes(base - lag, base - lag + 1440 * MIN).forEach(function (e) {
-      keys.push({ m: (e.t + lag - base) / MIN, n: (e.high ? 'High tide ' : 'Low tide ') + e.h.toFixed(1) + ' m' });
-    });
-    keys.sort(function (x, y) { return x.m - y.m; });
-    var keyHtml = '<div class="keys">' + keys.map(function (k) { return '<div><b>' + hm(k.m) + '</b>' + k.n + '</div>'; }).join('') + '</div>';
-
-    var note = hasTide ? '' : '<p class="msg">No tide data for this date, so tide movement is left out of the scores.</p>';
-    box.innerHTML = '<div class="eyebrow">Best windows at ' + spot.name + '</div>' + wins + bars + keyHtml + note +
-      '<p class="msg">Scores combine tide movement, light and the moon. The moon windows come from solunar tradition and have little scientific backing, so the default influence is light. Your own catch log will show whether they matter at Pico.</p>';
-  }
+  /* renderBest and dayTimeline are defined after the forecast helpers, below. */
 
   /* ---------- Spots, map and per-spot conditions ---------- */
   var TEST = /[?&]test\b/.test(location.search);
@@ -947,13 +853,15 @@ var FISH = {
     for (k = 0; k < hours * 2; k++) out.push(fromUtc + k * 1800000);
     return out;
   }
+  /* No usable forecast for a sample: nothing, or (with a forecast loaded) the form's example values standing in outside its range. */
+  function noForecast(c) { return !c || !!(state.live && state.source !== 'manual' && c.raw.src !== 'live'); }
   function spotWindow(spot, i, fromUtc, hours, fishId) {
     var samples = windowSamples(fromUtc, hours), res = { level: null, worstWhy: null, samples: samples.length, missing: 0, score: null, sp: null, at: null };
     var firstWhy = null, pool = fishId ? SPECIES.filter(function (sp) { return sp.id === fishId; }) : SPECIES;
     samples.forEach(function (utc) {
       var w = whenAt(utc), c = spotCond(spot, i, w);
       /* Outside a loaded forecast the form's example values would be used; they are not a forecast for that time. */
-      if (!c || (state.live && state.source !== 'manual' && c.raw.src !== 'live')) { res.missing++; return; }
+      if (noForecast(c)) { res.missing++; return; }
       var lv = c.rating.level;
       if (res.level === null || lv > res.level) { res.level = lv; firstWhy = c.rating.why[0] || null; }
       if (lv === 3) return;
@@ -978,6 +886,80 @@ var FISH = {
       return sb - sa || a.i - b.i;
     });
   }
+  /* ---------- Best times: fishability and the picked fish through one local day ---------- */
+  function localMidnight(y, month, d) {
+    var guess = Date.UTC(y, month - 1, d);
+    return guess - azOffsetMin(new Date(guess)) * 60000;
+  }
+  function dayTimeline(spot, i, y, month, d, fishId) {
+    var start = localMidnight(y, month, d), end = localMidnight(y, month, d + 1), out = [], utc;
+    var sp = fishId ? SPECIES.filter(function (x) { return x.id === fishId; })[0] : null;
+    for (utc = start; utc < end; utc += 1800000) {
+      var w = whenAt(utc), c = spotCond(spot, i, w), cell = { utc: utc, t: w.t, level: null, score: null };
+      if (!noForecast(c)) {
+        cell.level = c.rating.level;
+        if (sp) cell.score = scoreFor(sp, spot, ctxFor(w, c)).score;
+      }
+      out.push(cell);
+    }
+    return out;
+  }
+  function renderBest(when, spot, i) {
+    var box = $('besttimes'), at = state.gps || spot, MIN = 60000, N, k;
+    var tl = dayTimeline(spot, i, when.y, when.month, when.d, state.fish), sp = SPECIES.filter(function (x) { return x.id === state.fish; })[0];
+    N = tl.length;
+    var range = function (a, b) { return hmLocal(tl[a].utc) + '\u2013' + hmLocal(tl[b].utc + 1800000); };
+    var sc = tl.map(function (c) { return c.score === null || c.level === 3 ? 0 : c.score; });
+    var summary;
+    if (sp) {
+      var mx = Math.max.apply(null, sc), thr = Math.max(55, mx - 10), runs = [], cur = null;
+      for (k = 0; k < N; k++) {
+        if (sc[k] >= thr) { if (cur && k - cur.b <= 2) cur.b = k; else { cur = { a: k, b: k }; runs.push(cur); } }
+      }
+      runs.forEach(function (r) {
+        r.peak = Math.max.apply(null, sc.slice(r.a, r.b + 1));
+        r.lv = Math.max.apply(null, tl.slice(r.a, r.b + 1).map(function (c) { return c.level; }));
+      });
+      var top = runs.slice().sort(function (x, y) { return y.peak - x.peak; }).slice(0, 3).sort(function (x, y) { return x.a - y.a; });
+      summary = top.length ? '<ol class="windows">' + top.map(function (r) {
+        return '<li><span class="t">' + range(r.a, r.b) + '</span><span>' + sp.name + ' ' + Math.round(r.peak) + '</span><span class="r">' + LEVELS[r.lv] + '</span></li>';
+      }).join('') + '</ol>' : '<p class="msg">No standout window for ' + sp.name + ' on this date.</p>';
+    } else {
+      var stretches = [];
+      tl.forEach(function (c, n) {
+        if (c.level === null) return;
+        var last = stretches[stretches.length - 1];
+        if (last && last.lv === c.level && last.b === n - 1) last.b = n; else stretches.push({ a: n, b: n, lv: c.level });
+      });
+      summary = stretches.length ? '<ol class="windows">' + stretches.map(function (r) {
+        return '<li><span class="t">' + range(r.a, r.b) + '</span><span class="r">' + LEVELS[r.lv] + '</span></li>';
+      }).join('') + '</ol>' : '<p class="msg">No forecast for this date.</p>';
+    }
+
+    var selCell = -1, winEnd = when.utc + state.len * 3600000;
+    tl.forEach(function (c, n) { if (c.utc <= when.utc && when.utc < c.utc + 1800000) selCell = n; });
+    var extra = function (n) { return (n === selCell ? ' sel' : '') + (tl[n].utc + 1800000 > when.utc && tl[n].utc < winEnd ? ' inwin' : ''); };
+    var strip = '<div class="strip" role="img" aria-label="Fishability for each half hour of the day">' + tl.map(function (c, n) {
+      return '<div class="cell ' + (c.level === null ? 'lx' : 'l' + c.level) + extra(n) + '" title="' + hm(c.t) + ' ' + (c.level === null ? 'no forecast' : LEVELS[c.level]) + '"></div>';
+    }).join('') + '</div>';
+    var bars = sp ? '<div class="bars" role="img" aria-label="Score for ' + sp.name + ' for each half hour of the day">' + tl.map(function (c, n) {
+      if (c.level === null) return '<div class="cell lx' + extra(n) + '" style="height:6%" title="' + hm(c.t) + ' no forecast"></div>';
+      return '<div class="cell ' + labelOf(sc[n])[0] + extra(n) + '" style="height:' + Math.max(6, Math.round(sc[n])) + '%" title="' + hm(c.t) + ' score ' + Math.round(sc[n]) + '"></div>';
+    }).join('') + '</div>' : '';
+    var axis = '<div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>';
+
+    var sun = sunTimes(when.y, when.month, when.d, at.lat, at.lon), keys = [{ m: sun.rise, n: 'Sunrise' }, { m: sun.set, n: 'Sunset' }];
+    var lag = (spot.tideLag || 0) * MIN;
+    tideExtremes(tl[0].utc - lag, tl[N - 1].utc + 1800000 - lag).forEach(function (e) {
+      keys.push({ m: whenAt(e.t + lag).t, n: (e.high ? 'High tide ' : 'Low tide ') + e.h.toFixed(1) + ' m' });
+    });
+    keys.sort(function (x, y) { return x.m - y.m; });
+    var keyHtml = '<div class="keys">' + keys.map(function (x) { return '<div><b>' + hm(x.m) + '</b>' + x.n + '</div>'; }).join('') + '</div>';
+
+    box.innerHTML = '<div class="eyebrow">Through the day at ' + spot.name + '</div>' + summary + strip + bars + axis + keyHtml +
+      '<p class="msg">Fishability for each half hour from the forecast. Pick a fish above to see its score through the day.</p>';
+  }
+
   var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   function renderRanked(when) {
     if (!when || !SPOTS.length) return;
@@ -1057,7 +1039,7 @@ var FISH = {
       }).join('') + '</tr>';
     }).join('') + '</tbody>';
     $('grid').innerHTML = head + body;
-    renderBest(when, spot, c);
+    renderBest(when, spot, idx);
   }
 
   function setStatus(conds) {
@@ -1141,7 +1123,6 @@ var FISH = {
         msg.textContent = (err && err.code === 1) ? 'Location permission was declined. Allow location for this site in the browser settings, or pick a spot on the map.' : 'Could not get a position. Move to open sky and try again.';
       }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
     });
-    $('f-moon').addEventListener('change', render);
     $('s-prev').addEventListener('click', function () { setSeasonMonth(seasonMonth() - 1); });
     $('s-next').addEventListener('click', function () { setSeasonMonth(seasonMonth() + 1); });
     $('s-months').addEventListener('keydown', function (e) {
@@ -1167,7 +1148,7 @@ var FISH = {
     render();
     if (!TEST && location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive();
     window.pico = { SPOTS: SPOTS, SPECIES: SPECIES, state: state, whenAt: whenAt, readWhen: readWhen, spotCond: spotCond, scoreFor: scoreFor, render: render, setStatus: setStatus,
-      ctxFor: ctxFor, windowSamples: windowSamples, spotWindow: spotWindow, rankSpots: rankSpots, renderRanked: renderRanked, loadPrefs: loadPrefs };
+      dayTimeline: dayTimeline, renderBest: renderBest, ctxFor: ctxFor, windowSamples: windowSamples, spotWindow: spotWindow, rankSpots: rankSpots, renderRanked: renderRanked, loadPrefs: loadPrefs };
   }
 
   /* ---------- Catch log (design 7.8): built from the phone's own photos, kept on this phone only ---------- */
