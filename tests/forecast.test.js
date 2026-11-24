@@ -309,11 +309,16 @@
     pico.state.live = liveFixture(Date.UTC(2026, 10, 23, 0), 96, function () { return CALM; });
     pico.state.source = 'live';
     pico.state.fish = 'sargo';
-    setDay(); pico.render();
-    var t = document.getElementById('besttimes').textContent, nm = pico.SPECIES.filter(function (x) { return x.id === 'sargo'; })[0].name;
-    ok(/scores about the same all day \(\d+–\d+\), so no time stands out\./.test(t), t);
-    ok(t.indexOf(nm + ' scores about') >= 0, 'fish name');
-    ok(t.indexOf('All day ' + nm) < 0, 'no All day window');
+    /* Sargo's time-of-day weights vary, so flatten them for this test. */
+    var sargo = pico.SPECIES.filter(function (x) { return x.id === 'sargo'; })[0], saved = sargo.time;
+    sargo.time = { dawn: 1, day: 1, dusk: 1, night: 1 };
+    try {
+      setDay(); pico.render();
+      var t = document.getElementById('besttimes').textContent, nm = sargo.name;
+      ok(/scores about the same all day \(\d+–\d+\), so no time stands out\./.test(t), t);
+      ok(t.indexOf(nm + ' scores about') >= 0, 'fish name');
+      ok(t.indexOf('All day ' + nm) < 0, 'no All day window');
+    } finally { sargo.time = saved; }
   });
   test('best times note names the picked fish', function () {
     pico.state.live = liveFixture(Date.UTC(2026, 10, 23, 0), 96, function () { return CALM; });
@@ -412,7 +417,7 @@
   test('time-of-day reasons read naturally', function () {
     ['dawn', 'day', 'dusk', 'night'].forEach(function (ph) {
       pico.SPECIES.forEach(function (sp) {
-        var r = pico.scoreFor(sp, pico.SPOTS[0], { month: 11, temp: 19, wind: 5, eff: 0.5, phase: ph, moving: true, danger: false });
+        var r = pico.scoreFor(sp, pico.SPOTS[0], { month: 11, anom: 0, eff: 0.5, phase: ph, moving: true, danger: false });
         ok(!/Weaker at (day|night)/.test(r.why), r.why);
       });
     });
@@ -527,6 +532,85 @@
       ok(sp.ev && ['measured', 'estimated'].indexOf(sp.ev.time) >= 0, sp.id + ' ev.time');
     });
     eq(S('veja').time.night, 0);
+  });
+  function cx(o) {
+    var c = { month: 7, anom: 0, eff: 0.8, phase: 'dawn', moving: true, danger: false };
+    for (var k in o) c[k] = o[k];
+    return c;
+  }
+  var PHASES = ['dawn', 'day', 'dusk', 'night'];
+  test('every fish can reach Possible', function () {
+    pico.SPECIES.forEach(function (sp) {
+      var best = 0;
+      for (var m = 1; m <= 12; m++) PHASES.forEach(function (ph) {
+        pico.SPOTS.forEach(function (spot) { best = Math.max(best, pico.scoreFor(sp, spot, cx({ month: m, phase: ph })).score); });
+      });
+      ok(best >= 45, sp.id + ' best ' + best);
+    });
+  });
+  test('rare fish rank lower out of season', function () {
+    var c = cx({ month: 11, phase: 'day' }), sargo = pico.scoreFor(S('sargo'), P('ponta'), c).score;
+    ok(sargo > pico.scoreFor(S('amberjack'), P('ponta'), c).score, 'amberjack');
+    ok(sargo > pico.scoreFor(S('bonito'), P('ponta'), c).score, 'bonito');
+  });
+  test('veja at night', function () {
+    var r = pico.scoreFor(S('veja'), P('ponta'), cx({ phase: 'night' }));
+    eq(r.score, 0);
+    ok(r.why.indexOf('Does not feed after dark') >= 0, r.why);
+  });
+  test('habitat', function () {
+    var c = cx({ month: 8, phase: 'dusk' });
+    ok(pico.scoreFor(S('barracuda'), P('saoroque'), c).score > pico.scoreFor(S('barracuda'), P('madalena'), c).score, 'bicuda deeper is better');
+    ok(pico.scoreFor(S('sargo'), P('madalena'), c).score >= pico.scoreFor(S('sargo'), P('saoroque'), c).score, 'sargo shelf');
+  });
+  test('temperature only counts from 1 degree', function () {
+    function sc(a) { return pico.scoreFor(S('barracuda'), P('ponta'), cx({ month: 8, phase: 'dawn', anom: a })); }
+    eq(sc(0.9).score, sc(0).score);
+    ok(sc(2).score > sc(0).score, 'warmer helps');
+    ok(sc(-2).score < sc(0).score, 'cooler hurts');
+    ok(sc(-2).why.indexOf('cooler than normal') >= 0, sc(-2).why);
+  });
+  test('missing sea temperature', function () {
+    var r = pico.scoreFor(S('barracuda'), P('ponta'), cx({ anom: null }));
+    ok(isFinite(r.score), 'finite');
+    eq(r.adj.temp, 0);
+  });
+  test('unsafe cap', function () {
+    pico.SPECIES.forEach(function (sp) { ok(pico.scoreFor(sp, P('ponta'), cx({ danger: true })).score <= 15, sp.id); });
+  });
+  test('score range', function () {
+    pico.SPECIES.forEach(function (sp) {
+      pico.SPOTS.forEach(function (spot) {
+        PHASES.forEach(function (ph) {
+          [-3, 0, 3].forEach(function (a) {
+            [0, 1, 3].forEach(function (e) {
+              for (var m = 1; m <= 12; m++) {
+                var s = pico.scoreFor(sp, spot, cx({ month: m, phase: ph, anom: a, eff: e })).score;
+                ok(s === Math.round(s) && s >= 0 && s <= 100, sp.id + ' ' + s);
+              }
+            });
+          });
+        });
+      });
+    });
+  });
+  test('evidence in reasons', function () {
+    PHASES.forEach(function (ph) {
+      pico.SPECIES.forEach(function (sp) {
+        pico.SPOTS.forEach(function (spot) {
+          [1, 7].forEach(function (m) {
+            var w = pico.scoreFor(sp, spot, cx({ month: m, phase: ph })).why;
+            ok(/\((measured|estimated|angler lore)\)\.$|good spot for it\.$/.test(w), w);
+          });
+        });
+      });
+    });
+  });
+  test('no forecast ranks by base and season', function () {
+    pico.state.live = null; pico.state.source = 'live';
+    at('2026-07-15', '10:00'); pico.render();
+    var first = document.querySelector('#rank .sname');
+    ok(first && first.textContent.indexOf(S('amberjack').name) < 0, first && first.textContent);
   });
   function finish() {
     var r = { pass: passed, fail: failures.length, failures: failures };

@@ -514,36 +514,49 @@ var FISH = {
   }
 
   var PHASE_TEXT = { dawn: 'at dawn', dusk: 'at dusk', night: 'after dark', day: 'in full daylight' };
+  /* Species score (spec 7.5): shore catch rate x season x time of day x fit to the spot x a small conditions adjustment.
+     Multiplying keeps fish comparable: one weak part pulls the whole score down. */
   function scoreFor(sp, spot, c) {
-    var f = {
-      season: sp.season[c.month - 1],
-      temp: band(c.temp, sp.t[0], sp.t[1], sp.t[2]),
-      wave: band(c.eff, sp.wave[0], sp.wave[1], sp.wave[2]),
-      wind: clamp(1 - Math.max(0, c.wind - sp.wind) / 25, 0, 1),
-      time: sp.time[c.phase],
-      tide: c.moving ? sp.tide.move : sp.tide.slack,
-      kind: sp.kind[spot.type]
+    var steep = steepOf(spot);
+    var fit = { depth: sp.deep >= 0 ? 1 - sp.deep * (1 - steep) : 1 + sp.deep * steep, kind: sp.kind[spot.type] };
+    var a = c.anom;
+    var adj = {
+      temp: a == null || Math.abs(a) < 1 ? 0 : sp.warm * clamp(a, -2, 2) * 0.05,
+      wave: 0.1 * (band(c.eff, sp.wave[0], sp.wave[1], sp.wave[2]) - 1),
+      tide: 0.05 * ((c.moving ? sp.tide.move : sp.tide.slack) - 1)
     };
-    var base = 0.28 * f.season + 0.22 * f.temp + 0.16 * f.wave + 0.10 * f.wind + 0.10 * f.time + 0.06 * f.tide + 0.08 * f.kind;
-    var gate = 0.25 + 0.75 * Math.min(f.season, f.temp);
-    var score = Math.round(100 * base * gate);
+    var f = {
+      base: sp.base,
+      season: sp.season[c.month - 1],
+      time: sp.time[c.phase],
+      habitat: fit.depth * fit.kind,
+      cond: 1 + adj.temp + adj.wave + adj.tide
+    };
+    var score = clamp(Math.round(100 * f.base * f.season * f.time * f.habitat * f.cond), 0, 100);
     if (c.danger) score = Math.min(score, 15);
-    var worst = Object.keys(f).sort(function (a, b) { return f[a] - f[b]; })[0];
-    var why = 'Season, sea temperature, swell and timing all line up.';
-    if (f[worst] < 0.75) {
-      var o = {
-        /* Resident fish (season never below 0.4: sargo, veja, moray) are here all year, just quieter in some months. */
-        season: Math.min.apply(null, sp.season) >= 0.4 ? 'Here all year, but quieter in ' + MONTHS[c.month - 1] + '.' : 'Out of its usual season in ' + MONTHS[c.month - 1] + '.',
-        temp: 'Sea at ' + c.temp + '°C, it prefers ' + sp.t[0] + '–' + sp.t[1] + '°C.',
-        wave: c.eff > sp.wave[1] ? 'Too rough here at ' + c.eff.toFixed(1) + ' m effective, it prefers up to ' + sp.wave[1] + ' m.' : 'Too calm here, it prefers at least ' + sp.wave[0] + ' m.',
-        wind: 'Force ' + bft(c.wind) + ' wind is above its comfort limit.',
-        time: 'Weaker ' + PHASE_TEXT[c.phase] + '.',
-        tide: 'Slack tide, it prefers moving water.',
-        kind: spot.type === 'harbour' ? 'A harbour spot suits it less than open rock.' : 'Open rock suits it less than a harbour.'
-      };
-      why = o[worst];
+    return { score: score, why: whyOf(sp, spot, c, f, fit, adj), f: f, fit: fit, adj: adj, capped: !!c.danger };
+  }
+  /* The one-line reason: the weakest part of the score, with how solid the evidence for it is. */
+  function whyOf(sp, spot, c, f, fit, adj) {
+    var lim = { season: 0.75, time: 0.75, habitat: 0.75, base: 0.5, cond: 0.95 }, worst = null;
+    ['season', 'time', 'habitat', 'base', 'cond'].forEach(function (k) {
+      if (f[k] < lim[k] && (worst === null || f[k] < f[worst])) worst = k;
+    });
+    /* Resident fish (season never below 0.4: sargo, veja, moray) are here all year, just quieter in some months. */
+    if (worst === 'season') return (Math.min.apply(null, sp.season) >= 0.4 ? 'Here all year, but quieter in ' : 'Out of its usual season in ') + MONTHS[c.month - 1] + ' (measured).';
+    if (worst === 'time') return (f.time === 0 ? 'Does not feed ' : 'Weaker ') + PHASE_TEXT[c.phase] + ' (' + sp.ev.time + ').';
+    if (worst === 'habitat') {
+      if (fit.depth < fit.kind) return sp.deep > 0 ? 'Prefers deep water close in; it is shallow here (estimated).' : 'Prefers a shallow rocky shelf; it gets deep quickly here (estimated).';
+      return spot.type === 'harbour' ? 'A harbour spot suits it less than open rock (estimated).' : 'Open rock suits it less than a harbour (estimated).';
     }
-    return { score: score, why: why, f: f, capped: !!c.danger };
+    if (worst === 'base') return 'Seldom caught from the shore (estimated).';
+    if (worst === 'cond') {
+      var k = ['temp', 'wave', 'tide'].sort(function (x, y) { return adj[x] - adj[y]; })[0];
+      if (k === 'temp') return 'Sea ' + Math.abs(c.anom).toFixed(1) + ' °C ' + (c.anom < 0 ? 'cooler' : 'warmer') + ' than normal for the date (estimated).';
+      if (k === 'wave') return (c.eff > sp.wave[1] ? 'Too rough here at ' + c.eff.toFixed(1) + ' m effective, it prefers up to ' + sp.wave[1] + ' m' : 'Too calm here, it prefers at least ' + sp.wave[0] + ' m') + ' (angler lore).';
+      return 'Slack tide, it prefers moving water (angler lore).';
+    }
+    return 'In season, at a good time of day and a good spot for it.';
   }
   /* Fish likelihood words and classes: deliberately not Good/Fair/Poor, which belong to fishability. */
   function labelOf(s) { return s >= 70 ? ['lk2', 'Likely'] : (s >= 45 ? ['lk1', 'Possible'] : ['lk0', 'Unlikely']); }
@@ -942,7 +955,8 @@ var FISH = {
   }
   function ctxFor(when, cc) {
     var tideState = state.tideAuto ? (cc.tide ? cc.tide.state : 'rising') : $('f-tide').value;
-    return { month: when.month, temp: cc.raw.sst != null ? cc.raw.sst : 19, wind: Math.round(cc.raw.wind), eff: cc.eff, phase: cc.phase,
+    var sst = cc.raw.sst;
+    return { month: when.month, anom: sst == null || sst === '' || isNaN(sst) ? null : Math.round((sst - sstNormal(when.y, when.month, when.d)) * 10) / 10, eff: cc.eff, phase: cc.phase,
       moving: tideState === 'rising' || tideState === 'falling', danger: cc.rating.level === 3, sun: cc.sun };
   }
 
@@ -1166,11 +1180,11 @@ var FISH = {
   }
 
   /* ---------- Species at the chosen spot ---------- */
-  var FACTORS = [['season', 'Season', 28], ['temp', 'Sea temperature', 22], ['wave', 'Waves here', 16], ['wind', 'Wind', 10], ['time', 'Time of day', 10], ['tide', 'Tide', 6], ['kind', 'Kind of spot', 8]];
+  var FACTORS = [['base', 'Caught from the shore', 'x'], ['season', 'Season', 'x'], ['time', 'Time of day', 'x'], ['habitat', 'This spot', 'x'], ['cond', 'Conditions', 'x']];
   var CHEV = '<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
   /* Species ranked at one spot and moment; with no forecast, by season alone (f is then null). */
   function rankAt(spot, c, when) {
-    if (!c.rating) return SPECIES.map(function (sp) { return { sp: sp, r: { score: Math.round(sp.season[when.month - 1] * 100), why: '', f: null } }; })
+    if (!c.rating) return SPECIES.map(function (sp) { return { sp: sp, r: { score: Math.round(sp.base * sp.season[when.month - 1] * 100), why: '', f: null } }; })
       .sort(function (a, b) { return b.r.score - a.r.score || a.sp.name.localeCompare(b.sp.name); });
     var cx = ctxFor(when, c);
     return SPECIES.map(function (sp) { return { sp: sp, r: scoreFor(sp, spot, cx) }; }).sort(function (a, b) { return b.r.score - a.r.score; });
