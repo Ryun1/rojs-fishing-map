@@ -202,18 +202,6 @@ a { color: var(--accent); }
 .saxis { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; font-family: var(--font-data); font-size: 0.7rem; color: var(--muted); text-align: center; }
 .saxis .on { color: var(--accent); font-weight: 500; }
 .speak { color: var(--muted); font-size: 0.85rem; }
-.catches .rowtop { align-items: flex-start; }
-.catches .pic { width: 72px; height: 72px; }
-.catches .title { font-weight: 600; }
-.catches .note { font-size: 0.88rem; }
-.catches .when { font-family: var(--font-data); font-weight: 500; }
-.catches .where { font-size: 0.85rem; color: var(--muted); }
-.catches .where.ask { color: var(--warn); font-weight: 600; }
-.catches .grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
-.catches .field label { font-size: 0.68rem; }
-.catches .grid .field:nth-last-child(-n+2) { grid-column: 1 / -1; }
-.catches input, .catches select { padding: 7px 8px; }
-.catches .actions { align-items: center; }
 .linkbtn { background: none; border: 0; color: var(--bad); padding: 10px 4px; min-height: 44px; font-size: 0.88rem; text-decoration: underline; text-underline-offset: 3px; justify-self: start; }
 .linkbtn.plain { color: var(--accent); padding: 0; min-height: 0; font-size: inherit; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
@@ -282,12 +270,6 @@ html { scroll-padding-top: 12px; scroll-padding-bottom: 84px; }
 .factors .v { font-family: var(--font-data); text-align: right; font-size: 0.8rem; color: var(--muted); }
 .fishrow .more { padding: 0 12px 12px; }
 .fishnote { list-style: none; font-size: 0.9rem; color: var(--muted); }
-/* Catch log */
-.insights { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 0.9rem; margin: 0; }
-.insights dt { color: var(--muted); font-weight: 600; }
-.insights dd { margin: 0; }
-.tip summary { color: var(--accent); }
-.tip p { margin-top: 8px; }
 .howto { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--muted); }
 body{margin:0}
 [hidden]{display:none!important}
@@ -388,35 +370,6 @@ body{margin:0}
   </section>
   </div>
 
-  <div class="tabpanel" id="p-catches" role="tabpanel" aria-labelledby="t-catches" hidden>
-  <section class="stack" aria-labelledby="h-log">
-    <div class="head-row">
-      <h2 id="h-log">My catches</h2>
-      <span class="status" id="log-count">No catches yet</span>
-    </div>
-    <div class="panel">
-      <p class="msg">Pick photos of fish you have caught. The app reads when and where each was taken, puts the catch at the nearest spot and adds the tide and moon. Nothing is uploaded.</p>
-      <div class="actions">
-        <button class="btn" id="log-add" type="button">Add from photos</button>
-        <button class="btn ghost" id="log-add-files" type="button">Pick from Files instead</button>
-      </div>
-      <input type="file" id="log-photos" accept="image/*" multiple hidden>
-      <input type="file" id="log-files" multiple hidden>
-      <p class="msg" id="log-msg" role="status" hidden></p>
-      <details class="tip"><summary>Photos come in without a time or place?</summary>
-        <p>Use the original photos from the camera: photos sent through WhatsApp or Facebook have their time and place removed. Android's photo picker also removes the location from photos it gives to websites. To keep it, tap "Pick from Files instead", open the menu (&#9776;), choose your phone's name or Internal storage, then DCIM, then Camera.</p></details>
-    </div>
-    <div id="log-insights"></div>
-    <ol class="rank catches" id="log-list"></ol>
-    <div class="actions">
-      <button class="btn ghost" id="log-export" type="button" hidden>Save backup file</button>
-      <button class="btn ghost" id="log-import" type="button">Load backup file</button>
-      <input type="file" id="log-import-file" accept="application/json,.json" hidden>
-    </div>
-    <p class="fine">The log lives in this browser only, so save a backup file now and then; clearing the browser's data deletes it.</p>
-  </section>
-  </div>
-
   <div class="tabpanel" id="p-about" role="tabpanel" aria-labelledby="t-about" hidden>
   <section class="panel" id="whatif" aria-labelledby="h-manual">
       <h2 id="h-manual">Enter conditions by hand</h2>
@@ -473,7 +426,6 @@ body{margin:0}
 <nav class="tabbar" aria-label="Sections"><div class="tabs" role="tablist">
   <button type="button" role="tab" id="t-forecast" aria-controls="p-forecast" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 20c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M12 3v6M8.5 6.5 12 10l3.5-3.5"/></svg>Forecast</button>
   <button type="button" role="tab" id="t-seasons" aria-controls="p-seasons" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Seasons</button>
-  <button type="button" role="tab" id="t-catches" aria-controls="p-catches" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-4.5 7-6 11-6 3 0 5 2 6 6-1 4-3 6-6 6-4 0-8-1.5-11-6Z"/><path d="M3 12 1 8.5M3 12l-2 3.5"/><circle cx="16.5" cy="10.5" r="0.8"/></svg>Catches</button>
   <button type="button" role="tab" id="t-about" aria-controls="p-about" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>About</button>
 </div></nav>
 <div id="announce" class="sr-only" aria-live="polite"></div>
@@ -666,7 +618,7 @@ var FISH = {
   var LIVE_KEY = 'pico-live-v1';
   /* source: 'live' (the loaded forecast, or nothing when none covers the time) or 'manual' (typed values). followNow keeps the When fields on the current time. */
   var state = { smonth: null, spot: 'madalena', source: 'live', gps: null, tideAuto: true, live: null, warn: null, warnAt: null, fish: '', len: 3,
-    followNow: true, loading: false, tab: 'forecast', openFish: {}, editing: {}, lastAnn: null, bestCells: [] };
+    followNow: true, loading: false, tab: 'forecast', openFish: {}, lastAnn: null, bestCells: [] };
   var PREFS_KEY = 'pico-prefs-v1', LENS = [1, 2, 3, 4, 6];
 
   /* Seasons: browse the 12-month curves in data/species.json. state.smonth is null while it follows the chosen date. */
@@ -1482,7 +1434,7 @@ var FISH = {
   function markManual() { state.source = 'manual'; render(); }
 
   /* ---------- Tabs ---------- */
-  var TABS = ['forecast', 'seasons', 'catches', 'about'];
+  var TABS = ['forecast', 'seasons', 'about'];
   function tabFromHash() { var h = (location.hash || '').slice(1); return TABS.indexOf(h) >= 0 ? h : 'forecast'; }
   function showTab(name, push) {
     if (TABS.indexOf(name) < 0) name = 'forecast';
@@ -1642,309 +1594,12 @@ var FISH = {
         if (state.live && Date.now() - state.live.at > 3 * 3600000 && !state.loading && navigator.onLine !== false) loadLive(false);
       });
     }
-    initLog();
     render();
     showTab(tabFromHash(), false);
     if (!TEST && location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive(false);
     window.pico = { SPOTS: SPOTS, SPECIES: SPECIES, state: state, whenAt: whenAt, readWhen: readWhen, spotCond: spotCond, scoreFor: scoreFor, render: render, setStatus: setStatus, statusText: statusText, restoreWarn: restoreWarn, loadLive: loadLive,
       dayTimeline: dayTimeline, renderBest: renderBest, ctxFor: ctxFor, windowSamples: windowSamples, spotWindow: spotWindow, rankSpots: rankSpots, renderRanked: renderRanked, loadPrefs: loadPrefs,
-      weekData: weekData, renderWeek: renderWeek, pickWeek: pickWeek, renderSummary: renderSummary, nextStretch: nextStretch, rankAt: rankAt, showTab: showTab, renderLog: renderLog,
-      catches: function () { return catches; }, setCatches: function (list) { catches = list; } };
-  }
-
-  /* ---------- Catch log (design 7.8): built from the phone's own photos, kept on this phone only ---------- */
-  var LOG_KEY = 'pico-catches-v1', NEAR_KM = 0.5, ASK_KM = 2;
-  var catches = [];
-  function loadLog() { try { catches = JSON.parse(localStorage.getItem(LOG_KEY) || '[]') || []; } catch (e) { catches = []; } }
-  function saveLog() {
-    try { localStorage.setItem(LOG_KEY, JSON.stringify(catches)); return true; }
-    catch (e) { logMsg('This phone has run out of room for the log. Save a backup file and delete some old catches.'); return false; }
-  }
-  function logMsg(t) { var m = $('log-msg'); m.hidden = !t; m.textContent = t || ''; }
-  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-
-  /* Minimal EXIF reader for JPEG: date taken, its time zone offset, and GPS position. */
-  function readExif(buf) {
-    var v = new DataView(buf), out = {};
-    if (v.byteLength < 4 || v.getUint16(0) !== 0xFFD8) return null;
-    var p = 2;
-    while (p + 4 <= v.byteLength) {
-      var mk = v.getUint16(p), len = v.getUint16(p + 2);
-      if ((mk & 0xFF00) !== 0xFF00 || mk === 0xFFDA) break;
-      if (mk === 0xFFE1 && v.getUint32(p + 4) === 0x45786966) { parseTiff(v, p + 10, out); break; }
-      p += 2 + len;
-    }
-    return out;
-  }
-  function parseTiff(v, t, out) {
-    var le = v.getUint16(t) === 0x4949;
-    var u16 = function (o) { return v.getUint16(t + o, le); }, u32 = function (o) { return v.getUint32(t + o, le); };
-    var str = function (o, n) { var s = ''; for (var i = 0; i < n; i++) { var c = v.getUint8(t + o + i); if (!c) break; s += String.fromCharCode(c); } return s; };
-    function ifd(o) {
-      var r = {}, n = u16(o);
-      for (var i = 0; i < n; i++) {
-        var e = o + 2 + i * 12, tag = u16(e), type = u16(e + 2), cnt = u32(e + 4), vo = e + 8;
-        if (type === 2) r[tag] = str(cnt > 4 ? u32(vo) : vo, cnt);
-        else if (type === 5 || type === 10) { var a = u32(vo), xs = []; for (var k = 0; k < cnt; k++) { var d = u32(a + 8 * k + 4); xs.push(d ? u32(a + 8 * k) / d : 0); } r[tag] = xs; }
-        else if (type === 4) r[tag] = u32(vo);
-        else if (type === 3) r[tag] = u16(vo);
-      }
-      return r;
-    }
-    try {
-      var i0 = ifd(u32(4)), ex = i0[0x8769] ? ifd(i0[0x8769]) : {}, g = i0[0x8825] ? ifd(i0[0x8825]) : {};
-      out.taken = ex[0x9003] || i0[0x0132] || null;
-      out.offset = ex[0x9011] || ex[0x9010] || null;
-      if (g[2] && g[4] && g[2].length === 3 && g[4].length === 3) {
-        var dm = function (x) { return x[0] + x[1] / 60 + x[2] / 3600; };
-        var lat = dm(g[2]) * (g[1] === 'S' ? -1 : 1), lon = dm(g[4]) * (g[3] === 'W' ? -1 : 1);
-        if (lat || lon) { out.lat = +lat.toFixed(5); out.lon = +lon.toFixed(5); } else out.gpsBlank = true;
-      } else if (i0[0x8825]) out.gpsBlank = true;
-    } catch (e) {}
-  }
-  /* Camera wall time "YYYY:MM:DD HH:MM:SS" to UTC ms: use the camera's offset if it wrote one, else Azores time. */
-  function exifToUtc(taken, offset) {
-    var m = /^(\d{4}):(\d\d):(\d\d) (\d\d):(\d\d)/.exec(taken || '');
-    if (!m) return null;
-    var wall = Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5]);
-    var o = /^([+-])(\d\d):(\d\d)/.exec(offset || '');
-    if (o) return wall - (o[1] === '-' ? -1 : 1) * (o[2] * 60 + +o[3]) * 60000;
-    var u = wall - azOffsetMin(new Date(wall)) * 60000;
-    return wall - azOffsetMin(new Date(u)) * 60000;
-  }
-  function localStr(ms) {
-    var p = azParts(new Date(ms));
-    return p.year + '-' + pad(p.month) + '-' + pad(p.day) + 'T' + pad(p.hour) + ':' + pad(p.minute);
-  }
-  function thumbOf(file) {
-    return new Promise(function (res) {
-      var url = URL.createObjectURL(file), img = new Image();
-      img.onload = function () {
-        var S = 160, sc = S / Math.min(img.naturalWidth, img.naturalHeight), w = img.naturalWidth * sc, h = img.naturalHeight * sc;
-        var cv = document.createElement('canvas'); cv.width = S; cv.height = S;
-        cv.getContext('2d').drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
-        URL.revokeObjectURL(url);
-        try { res(cv.toDataURL('image/jpeg', 0.6)); } catch (e) { res(null); }
-      };
-      img.onerror = function () { URL.revokeObjectURL(url); res(null); };
-      img.src = url;
-    });
-  }
-  /* Tide, light and moon at the catch, worked out on the phone. */
-  function catchConditions(c) {
-    var spot = SPOTS.filter(function (s) { return s.id === c.spot; })[0];
-    var lag = spot ? spot.tideLag : 0, pos = spot || { lat: 38.45, lon: -28.3 };
-    var lp = azParts(new Date(c.utc)), tide = tideAt(c.utc, lag);
-    var sun = sunTimes(lp.year, lp.month, lp.day, pos.lat, pos.lon);
-    var light = phaseOf(lp.hour * 60 + lp.minute, sun.rise, sun.set);
-    var moon = moonInfo(lp.year, lp.month, lp.day).split(', ').slice(0, 2).join(', ');
-    var ts = tide ? { rising: 'Rising tide', falling: 'Falling tide', high: 'High water', low: 'Low water' }[tide.state] : null;
-    return { tide: tide ? tide.state : null, tideM: tide ? +tide.level.toFixed(2) : null, light: light, moon: moon,
-      text: [ts && ts + ' (' + tide.level.toFixed(1) + ' m)', light.charAt(0).toUpperCase() + light.slice(1), moon].filter(Boolean).join(' · ') };
-  }
-  function placeFor(lat, lon) {
-    var best = null, d = Infinity;
-    SPOTS.forEach(function (s) { var k = km({ lat: lat, lon: lon }, s); if (k < d) { d = k; best = s; } });
-    return { spot: d <= ASK_KM ? best.id : '', near: best.id, km: +d.toFixed(2) };
-  }
-  function addPhotos(files) {
-    files = [].slice.call(files || []);
-    if (!files.length) return;
-    logMsg('Reading ' + files.length + ' photo' + (files.length > 1 ? 's' : '') + '…');
-    var stats = { added: 0, dup: 0, noLoc: 0, blank: 0, noTime: 0, notJpeg: 0 };
-    var seen = {}; catches.forEach(function (c) { seen[c.key] = 1; });
-    var chain = Promise.resolve();
-    files.forEach(function (f) {
-      chain = chain.then(function () {
-        return f.slice(0, 256 * 1024).arrayBuffer().then(function (buf) {
-          var ex = readExif(buf);
-          if (!ex) { stats.notJpeg++; return; }
-          var utc = exifToUtc(ex.taken, ex.offset), timeFrom = 'photo';
-          if (utc == null) { utc = f.lastModified || Date.now(); timeFrom = 'file'; stats.noTime++; }
-          var key = f.name + '|' + f.size + '|' + utc;
-          if (seen[key]) { stats.dup++; return; }
-          seen[key] = 1;
-          var c = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7), key: key, utc: utc, timeFrom: timeFrom,
-            spot: '', species: '', count: 1, size: '', notes: '', added: Date.now() };
-          if (ex.lat != null) { var pl = placeFor(ex.lat, ex.lon); c.lat = ex.lat; c.lon = ex.lon; c.spot = pl.spot; c.near = pl.near; c.km = pl.km; }
-          else { stats.noLoc++; if (ex.gpsBlank) stats.blank++; }
-          return thumbOf(f).then(function (t) { c.thumb = t; c.cond = catchConditions(c); catches.push(c); stats.added++; });
-        }).catch(function () { stats.notJpeg++; });
-      });
-    });
-    chain.then(function () {
-      catches.sort(function (a, b) { return b.utc - a.utc; });
-      saveLog(); renderLog();
-      var t = 'Added ' + stats.added + ' catch' + (stats.added === 1 ? '' : 'es') + '.';
-      if (stats.dup) t += ' ' + stats.dup + ' already in the log.';
-      if (stats.noLoc) t += ' ' + stats.noLoc + ' had no location, so choose the spot for ' + (stats.noLoc > 1 ? 'those' : 'that one') + '.' + (stats.blank ? ' Android removed the location from ' + (stats.blank === stats.noLoc ? (stats.noLoc > 1 ? 'these photos' : 'this photo') : stats.blank + ' of them') + ' before handing ' + (stats.blank > 1 ? 'them' : 'it') + ' to the app.' : '') +
-        (stats.blank ? ' To keep the location, tap "Pick from Files instead", open the menu (☰), choose your phone\'s name or Internal storage, then DCIM, then Camera. Don\'t pick from Images, Recent or Gallery.' : '');
-      if (stats.noTime) t += ' ' + stats.noTime + ' had no time inside the photo, so the file date was used: check it.';
-      if (stats.notJpeg) t += ' ' + stats.notJpeg + ' could not be read (not a JPEG photo).';
-      logMsg(t);
-      var fresh = catches.filter(function (c) { return c.lat == null && !c.spot && Date.now() - c.utc < FRESH_MS && Date.now() - c.added < 60000; });
-      if (fresh.length) {
-        logMsg(t + ' Those photos were taken in the last few hours, so the app is using where your phone is now…');
-        hereFor(fresh, function (n, err) {
-          logMsg(t + (n ? ' Placed ' + n + ' of them from where your phone is now: check the spot.' :
-            err === 'denied' ? ' The app could not use your location because permission was declined.' : ' The app could not get your position either.'));
-        });
-      }
-    });
-  }
-  /* When a photo has lost its location, the phone's own position can stand in, if the catch is being logged on the spot. */
-  var FRESH_MS = 3 * 3600000;
-  function hereFor(list, done, fresh) {
-    if (!list.length || !navigator.geolocation) { done(0, !navigator.geolocation ? 'nogeo' : null); return; }
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      var lat = +pos.coords.latitude.toFixed(5), lon = +pos.coords.longitude.toFixed(5);
-      list.forEach(function (c) {
-        var pl = placeFor(lat, lon); c.lat = lat; c.lon = lon; c.spot = pl.spot; c.near = pl.near; c.km = pl.km; c.placeFrom = 'phone';
-        c.cond = catchConditions(c);
-      });
-      saveLog(); renderLog(); done(list.length, null);
-    }, function (err) { done(0, err && err.code === 1 ? 'denied' : 'failed'); }, { enableHighAccuracy: true, timeout: 20000, maximumAge: fresh ? 0 : 120000 });
-  }
-  function spotName(id) { var s = SPOTS.filter(function (x) { return x.id === id; })[0]; return s ? s.name : id; }
-  function speciesName(id) {
-    if (id === 'other') return 'Other fish';
-    var s = SPECIES.filter(function (x) { return x.id === id; })[0];
-    return s ? s.name : '';
-  }
-  function catchTitle(c) {
-    if (!c.species) return '';
-    return esc(speciesName(c.species)) + (c.count > 1 ? ' \u00d7 ' + c.count : '') + (c.size ? ' · ' + esc(c.size) : '');
-  }
-  /* Tallies across the log: what, where, and the tide, light and moon at the time. */
-  function renderInsights() {
-    var fish = catches.filter(function (c) { return c.species; });
-    if (!fish.length) { $('log-insights').innerHTML = ''; return; }
-    var total = 0, TIDES = { rising: 'Rising', falling: 'Falling', high: 'High water', low: 'Low water' };
-    fish.forEach(function (c) { total += c.count || 1; });
-    function tally(fn) {
-      var o = {};
-      fish.forEach(function (c) { var k = fn(c); if (k) o[k] = (o[k] || 0) + (c.count || 1); });
-      return Object.keys(o).sort(function (a, b) { return o[b] - o[a] || a.localeCompare(b); }).map(function (k) { return esc(k) + ' ' + o[k]; }).join(' · ') || '\u2013';
-    }
-    var rows = [
-      ['Fish', function (c) { return speciesName(c.species); }],
-      ['Spot', function (c) { return c.spot ? (c.spot === 'other' ? 'Other place' : spotName(c.spot)) : null; }],
-      ['Tide', function (c) { return c.cond && c.cond.tide ? TIDES[c.cond.tide] : null; }],
-      ['Light', function (c) { return c.cond && c.cond.light ? c.cond.light.charAt(0).toUpperCase() + c.cond.light.slice(1) : null; }],
-      ['Moon', function (c) { return c.cond && c.cond.moon ? c.cond.moon.split(',')[0] : null; }]
-    ];
-    $('log-insights').innerHTML = '<section class="panel" aria-labelledby="h-ins"><h3 class="eyebrow" id="h-ins" style="margin:0">What your catches say</h3><dl class="insights">' +
-      rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + tally(r[1]) + '</dd>'; }).join('') + '</dl>' +
-      '<p class="fine">' + total + ' fish logged with a species. A handful proves little; patterns start to mean something after a few dozen.</p></section>';
-  }
-  function renderLog() {
-    var n = catches.length;
-    $('log-count').textContent = n ? n + ' catch' + (n === 1 ? '' : 'es') + ' on this phone' : 'No catches yet';
-    $('log-export').hidden = !n;
-    renderInsights();
-    $('log-list').innerHTML = catches.map(function (c) {
-      /* A catch still missing its spot or species opens ready to fill in; otherwise it shows as a card with Edit. */
-      var editing = state.editing[c.id] != null ? state.editing[c.id] : (!c.species || !c.spot);
-      var when = fmtWhen(whenAt(c.utc), true) + (c.timeFrom === 'file' ? ' <span class="where ask">(file date, check)</span>' : '');
-      var thumb = c.thumb ? '<img class="pic" src="' + c.thumb + '" alt="" width="72" height="72">' : '';
-      if (!editing) {
-        return '<li data-cid="' + c.id + '"><div class="rowtop"><div class="sid">' + thumb + '<div>' +
-          '<div class="title">' + catchTitle(c) + '</div><div class="when">' + when + '</div>' +
-          '<div class="where">' + (c.spot === 'other' ? 'Other place' : 'At ' + esc(spotName(c.spot))) + '</div>' +
-          '<div class="why">' + esc(c.cond ? c.cond.text : '') + '</div>' + (c.notes ? '<div class="note">' + esc(c.notes) + '</div>' : '') +
-          '</div></div></div><div class="actions"><button class="btn ghost" type="button" data-edit="' + c.id + '">Edit</button></div></li>';
-      }
-      var where;
-      var from = c.placeFrom === 'phone' ? 'Your phone was ' : 'Photo taken ';
-      if (c.lat == null) where = '<span class="where ask">No location in the photo: choose the spot, or tap "Use where I am now" if you are there.</span>';
-      else if (!c.spot) where = '<span class="where ask">' + from + c.km.toFixed(1) + ' km from the nearest spot (' + esc(spotName(c.near)) + '). Choose the spot, or Other place.</span>';
-      else if (c.km > NEAR_KM) where = '<span class="where">' + from + c.km.toFixed(1) + ' km from ' + esc(spotName(c.near)) + ': check the spot.</span>';
-      else where = '<span class="where">' + from + Math.round(c.km * 1000) + ' m from ' + esc(spotName(c.near)) + '.</span>';
-      var opt = function (v, t, sel) { return '<option value="' + esc(v) + '"' + (v === sel ? ' selected' : '') + '>' + esc(t) + '</option>'; };
-      var spots = opt('', 'Choose…', c.spot) + SPOTS.map(function (s) { return opt(s.id, s.name, c.spot); }).join('') + opt('other', 'Other place', c.spot);
-      var sps = opt('', 'Choose…', c.species) + SPECIES.map(function (s) { return opt(s.id, s.name, c.species); }).join('') + opt('other', 'Other (say in notes)', c.species);
-      var f = function (lbl, inner) { var id = 'c' + c.id + lbl.replace(/\W/g, ''); return '<div class="field"><label for="' + id + '">' + lbl + '</label>' + inner.replace(' data-k=', ' id="' + id + '" data-k=') + '</div>'; };
-      return '<li data-cid="' + c.id + '"><div class="rowtop"><div class="sid">' + thumb +
-        '<div><div class="when">' + when + '</div>' + where +
-        '<div class="why">' + esc(c.cond ? c.cond.text : '') + '</div></div></div></div>' +
-        '<div class="grid">' +
-        f('Spot', '<select data-k="spot">' + spots + '</select>') +
-        f('Species', '<select data-k="species">' + sps + '</select>') +
-        f('How many', '<input data-k="count" type="number" min="1" max="99" inputmode="numeric" value="' + esc(c.count) + '">') +
-        f('Size', '<input data-k="size" type="text" placeholder="e.g. 1.2 kg" value="' + esc(c.size) + '">') +
-        f('Notes', '<input data-k="notes" type="text" placeholder="Bait, method…" value="' + esc(c.notes) + '">') +
-        f('Time (Azores)', '<input data-k="when" type="datetime-local" value="' + localStr(c.utc) + '">') +
-        '</div><div class="actions"><button class="btn" type="button" data-done="' + c.id + '">Done</button>' + (c.lat == null ? '<button class="btn ghost" type="button" data-here="' + c.id + '">Use where I am now</button>' : '') +
-        '<button class="linkbtn" type="button" data-del="' + c.id + '">Delete</button></div></li>';
-    }).join('');
-  }
-  function localToUtc(str) {
-    var m = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)/.exec(str || ''); if (!m) return null;
-    return exifToUtc(m[1] + ':' + m[2] + ':' + m[3] + ' ' + m[4] + ':' + m[5]);
-  }
-  function initLog() {
-    loadLog(); renderLog();
-    $('log-add').addEventListener('click', function () { $('log-photos').click(); });
-    $('log-add-files').addEventListener('click', function () { $('log-files').click(); });
-    ['log-photos', 'log-files'].forEach(function (id) {
-      $(id).addEventListener('change', function (e) { addPhotos(e.target.files); e.target.value = ''; });
-    });
-    $('log-list').addEventListener('change', function (e) {
-      var li = e.target.closest('[data-cid]'), k = e.target.getAttribute('data-k');
-      if (!li || !k) return;
-      var c = catches.filter(function (x) { return x.id === li.getAttribute('data-cid'); })[0]; if (!c) return;
-      state.editing[c.id] = true;
-      if (k === 'count') c.count = Math.max(1, parseInt(e.target.value, 10) || 1);
-      else if (k === 'when') { var u = localToUtc(e.target.value); if (u != null) { c.utc = u; c.timeFrom = 'edited'; } }
-      else c[k] = e.target.value;
-      if (k === 'spot' || k === 'when') { c.cond = catchConditions(c); saveLog(); renderLog(); } else saveLog();
-    });
-    $('log-list').addEventListener('click', function (e) {
-      var ed = e.target.closest('[data-edit]'), dn = e.target.closest('[data-done]');
-      if (ed || dn) {
-        var cid = (ed || dn).getAttribute(ed ? 'data-edit' : 'data-done');
-        state.editing[cid] = !!ed; renderLog();
-        var li = document.querySelector('#log-list [data-cid="' + cid + '"]');
-        var next = li && li.querySelector(ed ? 'select, input' : '[data-edit]');
-        if (next) next.focus();
-        return;
-      }
-      var h = e.target.closest('[data-here]');
-      if (h) {
-        var hc = catches.filter(function (x) { return x.id === h.getAttribute('data-here'); });
-        h.textContent = 'Finding your position…';
-        hereFor(hc, function (n, err) {
-          if (!n) { h.textContent = 'Use where I am now'; logMsg(err === 'denied' ? 'Location permission was declined. Allow location for this site in Chrome\'s settings, or choose the spot.' : 'Could not get your position. Move to open sky and try again, or choose the spot.'); }
-          else logMsg('Placed from where your phone is now.');
-        }, true);
-        return;
-      }
-      var b = e.target.closest('[data-del]'); if (!b) return;
-      if (b.getAttribute('data-sure')) {
-        catches = catches.filter(function (x) { return x.id !== b.getAttribute('data-del'); }); saveLog(); renderLog(); logMsg('Deleted.');
-      } else {
-        b.setAttribute('data-sure', '1'); b.textContent = 'Tap again to delete';
-        setTimeout(function () { if (b.getAttribute('data-sure')) { b.removeAttribute('data-sure'); b.textContent = 'Delete'; } }, 4000);
-      }
-    });
-    $('log-export').addEventListener('click', function () {
-      var blob = new Blob([JSON.stringify({ app: 'pico-fishing-forecast', kind: 'catch-log', version: 1, saved: new Date().toISOString(), catches: catches })], { type: 'application/json' });
-      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'pico-catches-' + localStr(Date.now()).slice(0, 10) + '.json';
-      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
-      logMsg('Backup saved to Downloads. It holds the exact places of your catches, so share it with care.');
-    });
-    $('log-import').addEventListener('click', function () { $('log-import-file').click(); });
-    $('log-import-file').addEventListener('change', function (e) {
-      var f = e.target.files[0]; e.target.value = ''; if (!f) return;
-      f.text().then(function (t) {
-        var j = JSON.parse(t), have = {}, n = 0;
-        if (!j || !Array.isArray(j.catches)) throw new Error('not a backup');
-        catches.forEach(function (c) { have[c.key] = 1; });
-        j.catches.forEach(function (c) { if (c && c.key && typeof c.utc === 'number' && !have[c.key]) { have[c.key] = 1; catches.push(c); n++; } });
-        catches.sort(function (a, b) { return b.utc - a.utc; }); saveLog(); renderLog();
-        logMsg('Loaded ' + n + ' catch' + (n === 1 ? '' : 'es') + ' from the backup' + (j.catches.length > n ? ' (' + (j.catches.length - n) + ' were already here)' : '') + '.');
-      }).catch(function () { logMsg('That file is not a catch log backup from this app.'); });
-    });
+      weekData: weekData, renderWeek: renderWeek, pickWeek: pickWeek, renderSummary: renderSummary, nextStretch: nextStretch, rankAt: rankAt, showTab: showTab };
   }
 
   function getJSON(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u); return r.json(); }); }

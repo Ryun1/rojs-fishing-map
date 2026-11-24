@@ -501,25 +501,6 @@
     pico.showTab('forecast', false);
     ok(!document.getElementById('p-forecast').hidden, 'forecast back');
   });
-  test('catch cards: read view with Edit, unfinished ones open to fill in', function () {
-    var saved = pico.catches();
-    pico.setCatches([
-      { id: 'a', key: 'ka', utc: Date.UTC(2026, 10, 20, 18), spot: 'lajes', species: 'sargo', count: 2, size: '', notes: '', cond: { tide: 'rising', light: 'dusk', moon: 'Full moon, 100% lit', text: '' } },
-      { id: 'b', key: 'kb', utc: Date.UTC(2026, 10, 19, 18), spot: '', species: '', count: 1, size: '', notes: '' }
-    ]);
-    try {
-      pico.renderLog();
-      ok(document.querySelector('#log-list [data-cid="a"] [data-edit]'), 'finished catch has Edit');
-      ok(document.querySelector('#log-list [data-cid="b"] [data-done]'), 'unfinished catch opens for editing');
-      ok(!document.getElementById('log-export').hidden, 'backup button shown');
-      ok(document.getElementById('log-insights').textContent.indexOf('White seabream 2') >= 0, document.getElementById('log-insights').textContent);
-      document.querySelector('#log-list [data-edit="a"]').click();
-      ok(document.querySelector('#log-list [data-cid="a"] [data-done]'), 'Edit opens the form');
-    } finally {
-      pico.setCatches(saved); pico.state.editing = {}; pico.renderLog();
-    }
-  });
-
   function finish() {
     var r = { pass: passed, fail: failures.length, failures: failures };
     window.picoTestResult = r;

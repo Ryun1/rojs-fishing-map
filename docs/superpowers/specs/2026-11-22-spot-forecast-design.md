@@ -267,11 +267,11 @@ The scale is comparable across species **(call)**: five dots means "one of the l
 
 ### 7.8 Catch log and other people's catches
 
-**Own log.**
+**Own log.** Changed 2026-11-24 by the owner: catches are logged through Claude, not in the app. The in-app "My catches" log (photos read on the phone, stored in the browser) was removed.
 
-- Fields: date and time, spot, species, count, rough size, method, notes. Conditions at that time are attached automatically.
+- Roj tells Claude about a session, with photos if he has them, and Claude adds it to `data/catches.json` using the same steps as the photo archive below. The same privacy rules apply: spot ID only, no coordinates, no photos committed.
+- Fields: date and time, spot, species, count, rough size, method, notes, and the conditions at that time.
 - Blank sessions are logged too. Without them the log only shows what was caught, never how often.
-- Stored on the phone only, with export to and import from a JSON file as the backup **(call)**.
 - Effect on ratings: per spot and species, the logged catch rate nudges the rating once there are enough sessions. The size of the nudge grows with the number of sessions. The exact rule is left to the builder.
 
 **Roj's photo archive.**
@@ -373,7 +373,7 @@ Each phase leaves the app working and is worth using on its own.
 4. **Forecast.** Done 2026-11-24 (plan: `docs/superpowers/plans/2026-11-24-phase-4-forecast.md`).
    - Seven days, ranked spots for a chosen window, offline copy.
 5. **Catch log.**
-   - Logging, export and import, the nudge to ratings.
+   - Logging through Claude into `data/catches.json` (the in-app log was removed on 2026-11-24), and the nudge to ratings.
    - Import of pasted community reports.
    - Import of Roj's photo archive into `data/catches.json` (7.8). This can be done before the other phases because it needs no app changes, and its records improve the season curves and species lists per spot. It also sets the app's species list (7.5), so ideally it comes before phase 3.
 6. **Rules.**
@@ -411,7 +411,7 @@ Decisions made in writing this document that the owner has not confirmed:
 - Moon is removed from scoring.
 - The embedded 2026 tide table is removed in favour of computed tides.
 - Forecast horizon of seven days.
-- Catch log stored on the phone only, with file export as the backup.
+- Catch log stored on the phone only, with file export as the backup. Superseded 2026-11-24: catches are logged through Claude into `data/catches.json`.
 - Photo catches are stored by spot ID only, with no exact coordinates, because the repository is public. The distances for "close to the sea" (300 m) and "a new place" (500 m) are first guesses.
 - The map is a drawn outline of the island shipped with the app, not a zoomable tiled map.
 - The species list is whatever Roj confirms from his photo upload; new species are added after the model is rebuilt, not before.
