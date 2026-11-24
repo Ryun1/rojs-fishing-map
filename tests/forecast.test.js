@@ -276,6 +276,54 @@
     ok(b.textContent.indexOf('All day') >= 0, b.textContent.slice(0, 80));
     ok(b.textContent.indexOf('00:00\u201300:00') < 0, 'no 00:00-00:00');
   });
+  function badges() { return [].map.call(document.querySelectorAll('#spotlist .badge'), function (b) { return b.textContent; }); }
+  function setDay() { document.getElementById('f-date').value = '2026-11-24'; document.getElementById('f-time').value = '10:00'; }
+  test('past the forecast end the spot views show no data', function () {
+    pico.state.live = liveFixture(Date.UTC(2026, 10, 24, 0), 12, function () { return CALM; });
+    pico.state.source = 'live';
+    setDay(); document.getElementById('f-time').value = '20:00';
+    pico.render();
+    var d = document.getElementById('detail');
+    ok(d.textContent.indexOf('Fishable:') < 0, 'no Fishable badge');
+    badges().forEach(function (t) { eq(t, 'No data'); });
+    eq(badges().length, 5);
+    eq(document.getElementById('status').textContent, 'Outside the forecast range');
+  });
+  test('example values show no data in the spot views', function () {
+    pico.state.live = null; pico.state.source = 'example';
+    setDay(); pico.render();
+    ok(document.getElementById('detail').textContent.indexOf('Fishable:') < 0, 'no Fishable badge');
+    badges().forEach(function (t) { eq(t, 'No data'); });
+    eq(document.getElementById('status').textContent, 'Example conditions');
+  });
+  test('typed values still rate the spots', function () {
+    pico.state.live = null; pico.state.source = 'manual';
+    setDay(); pico.render();
+    var b = badges();
+    eq(b.length, 5);
+    b.forEach(function (t) { ok(t !== 'No data', 'real level'); });
+  });
+  test('flat scores say so instead of All day', function () {
+    pico.state.live = liveFixture(Date.UTC(2026, 10, 23, 0), 96, function () { return CALM; });
+    pico.state.source = 'live';
+    pico.state.fish = 'sargo';
+    setDay(); pico.render();
+    var t = document.getElementById('besttimes').textContent, nm = pico.SPECIES.filter(function (x) { return x.id === 'sargo'; })[0].name;
+    ok(/scores about the same all day \(\d+\u2013\d+\), so no time stands out\./.test(t), t);
+    ok(t.indexOf(nm + ' scores about') >= 0, 'fish name');
+    ok(t.indexOf('All day ' + nm) < 0, 'no All day window');
+  });
+  test('best times note names the picked fish', function () {
+    pico.state.live = liveFixture(Date.UTC(2026, 10, 23, 0), 96, function () { return CALM; });
+    pico.state.source = 'live';
+    setDay();
+    pico.state.fish = ''; pico.render();
+    ok(document.getElementById('besttimes').textContent.indexOf('Pick a fish above') >= 0, 'prompt without fish');
+    pico.state.fish = pico.SPECIES[0].id; pico.render();
+    var t = document.getElementById('besttimes').textContent;
+    ok(t.indexOf('The bars show the ' + pico.SPECIES[0].name + ' score.') >= 0, t);
+    ok(t.indexOf('Pick a fish above') < 0, 'no prompt');
+  });
   test('ranked row press keeps focus', function () {
     calmLive();
     pico.render();

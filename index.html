@@ -943,7 +943,14 @@ var FISH = {
         r.lv = Math.max.apply(null, tl.slice(r.a, r.b + 1).map(function (c) { return c.level; }));
       });
       top = runs.slice().sort(function (x, y) { return y.peak - x.peak; }).slice(0, 3).sort(function (x, y) { return x.a - y.a; });
-      summary = top.length ? '<ol class="windows">' + top.map(function (r) {
+      var flat = runs.some(function (r) { return r.b - r.a + 1 >= 40; }), lo = null, hi = null;
+      tl.forEach(function (c) {
+        if (c.level === null || c.level === 3 || c.score === null) return;
+        if (lo === null || c.score < lo) lo = c.score;
+        if (hi === null || c.score > hi) hi = c.score;
+      });
+      if (flat) { top = []; summary = '<p class="msg">' + sp.name + ' scores about the same all day (' + Math.round(lo) + '\u2013' + Math.round(hi) + '), so no time stands out.</p>'; }
+      else summary = top.length ? '<ol class="windows">' + top.map(function (r) {
         return '<li><span class="t">' + range(r.a, r.b) + '</span><span>' + sp.name + ' ' + Math.round(r.peak) + '</span><span class="r">' + LEVELS[r.lv] + '</span></li>';
       }).join('') + '</ol>' : '<p class="msg">No standout window for ' + sp.name + ' on this date.</p>';
     }
@@ -972,7 +979,7 @@ var FISH = {
     var keyHtml = '<div class="keys">' + keys.map(function (x) { return '<div><b>' + hm(x.m) + '</b>' + x.n + '</div>'; }).join('') + '</div>';
 
     box.innerHTML = '<div class="eyebrow">Through the day at ' + spot.name + '</div>' + summary + strip + bars + axis + keyHtml +
-      '<p class="msg">Fishability for each half hour from the forecast. Pick a fish above to see its score through the day.</p>';
+      '<p class="msg">Fishability for each half hour from the forecast. ' + (sp ? 'The bars show the ' + sp.name + ' score.' : 'Pick a fish above to see its score through the day.') + '</p>';
   }
 
   var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -1011,7 +1018,9 @@ var FISH = {
     if (SPECIES.length) renderSeasons();
     if (!when || !SPOTS.length) return;
     var spot = currentSpot();
-    var conds = SPOTS.map(function (s, i) { return spotCond(s, i, when); });
+    var rawConds = SPOTS.map(function (s, i) { return spotCond(s, i, when); });
+    /* Example values and times past the forecast are not conditions: every view treats them as no data. */
+    var conds = rawConds.map(function (x) { return noForecast(x) ? null : x; });
     var idx = SPOTS.indexOf(spot), c = conds[idx];
     /* A hand-set tide overrides the computed one for the species scores. */
     if (c && c.tide && state.tideAuto) $('f-tide').value = c.tide.state;
@@ -1022,7 +1031,7 @@ var FISH = {
     renderWarnBanner(when);
     renderWarnNote();
     renderDetail(spot, c, when);
-    setStatus(conds);
+    setStatus(rawConds);
     renderRanked(when);
 
     if (!c) {
