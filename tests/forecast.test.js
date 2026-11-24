@@ -501,6 +501,33 @@
     pico.showTab('forecast', false);
     ok(!document.getElementById('p-forecast').hidden, 'forecast back');
   });
+
+  /* ---------- Phase 3: species model ---------- */
+  function S(id) { return pico.SPECIES.filter(function (x) { return x.id === id; })[0]; }
+  function P(id) { return pico.SPOTS.filter(function (x) { return x.id === id; })[0]; }
+  test('normal on day 366', function () {
+    var v = pico.sstNormal(2028, 12, 31);
+    ok(typeof v === 'number' && !isNaN(v), 'number: ' + v);
+    eq(v, pico.sstNormal(2027, 12, 31));
+  });
+  test('normal follows the year', function () {
+    ok(pico.sstNormal(2026, 8, 20) > 22 && pico.sstNormal(2026, 3, 1) < 17, pico.sstNormal(2026, 8, 20) + ' / ' + pico.sstNormal(2026, 3, 1));
+  });
+  test('steepness', function () {
+    eq(pico.steepOf(P('madalena')), 0);
+    ok(pico.steepOf(P('saoroque')) > 0.95, 'saoroque');
+    var l = pico.steepOf(P('lajes'));
+    ok(l > 0.5 && l < 0.6, 'lajes ' + l);
+  });
+  test('species fields', function () {
+    pico.SPECIES.forEach(function (sp) {
+      ok(typeof sp.base === 'number' && sp.base > 0 && sp.base <= 1, sp.id + ' base');
+      ok(typeof sp.deep === 'number' && sp.deep >= -1 && sp.deep <= 1, sp.id + ' deep');
+      ok(typeof sp.warm === 'number', sp.id + ' warm');
+      ok(sp.ev && ['measured', 'estimated'].indexOf(sp.ev.time) >= 0, sp.id + ' ev.time');
+    });
+    eq(S('veja').time.night, 0);
+  });
   function finish() {
     var r = { pass: passed, fail: failures.length, failures: failures };
     window.picoTestResult = r;

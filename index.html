@@ -502,6 +502,17 @@ var FISH = {
     return 'day';
   }
 
+  /* Normal sea temperature for a date (1991-2020, data/sst-normal.json); 31 December of a leap year uses day 365. */
+  function sstNormal(y, month, d) {
+    var doy = Math.round((Date.UTC(y, month - 1, d) - Date.UTC(y, 0, 1)) / 86400000);
+    return SSTN[Math.min(doy, SSTN.length - 1)];
+  }
+  /* How quickly deep water comes in: 1 when the 50 m depth is within 300 m, 0 from 1.5 km (or unknown, beyond 2 km). */
+  function steepOf(spot) {
+    var d50 = spot.d ? spot.d[1] : null;
+    return d50 == null ? 0 : clamp((1500 - d50) / 1200, 0, 1);
+  }
+
   var PHASE_TEXT = { dawn: 'at dawn', dusk: 'at dusk', night: 'after dark', day: 'in full daylight' };
   function scoreFor(sp, spot, c) {
     var f = {
@@ -613,7 +624,7 @@ var FISH = {
 
   /* ---------- Spots, map and per-spot conditions ---------- */
   var TEST = /[?&]test\b/.test(location.search);
-  var SPOTS = [], SPECIES = [], LIMITS = {};
+  var SPOTS = [], SPECIES = [], LIMITS = {}, SSTN = [];
   var LEVELS = ['Good', 'Fair', 'Poor', 'Unsafe'];
   var LIVE_KEY = 'pico-live-v1';
   /* source: 'live' (the loaded forecast, or nothing when none covers the time) or 'manual' (typed values). followNow keeps the When fields on the current time. */
@@ -1599,12 +1610,12 @@ var FISH = {
     if (!TEST && location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive(false);
     window.pico = { SPOTS: SPOTS, SPECIES: SPECIES, state: state, whenAt: whenAt, readWhen: readWhen, spotCond: spotCond, scoreFor: scoreFor, render: render, setStatus: setStatus, statusText: statusText, restoreWarn: restoreWarn, loadLive: loadLive,
       dayTimeline: dayTimeline, renderBest: renderBest, ctxFor: ctxFor, windowSamples: windowSamples, spotWindow: spotWindow, rankSpots: rankSpots, renderRanked: renderRanked, loadPrefs: loadPrefs,
-      weekData: weekData, renderWeek: renderWeek, pickWeek: pickWeek, renderSummary: renderSummary, nextStretch: nextStretch, rankAt: rankAt, showTab: showTab };
+      weekData: weekData, renderWeek: renderWeek, pickWeek: pickWeek, renderSummary: renderSummary, nextStretch: nextStretch, rankAt: rankAt, showTab: showTab, sstNormal: sstNormal, steepOf: steepOf, SSTN: SSTN };
   }
 
   function getJSON(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u); return r.json(); }); }
-  Promise.all([getJSON('data/spots.json'), getJSON('data/species.json')]).then(function (res) {
-    SPOTS = res[0].spots; LIMITS = res[0].limits; SPECIES = res[1];
+  Promise.all([getJSON('data/spots.json'), getJSON('data/species.json'), getJSON('data/sst-normal.json')]).then(function (res) {
+    SPOTS = res[0].spots; LIMITS = res[0].limits; SPECIES = res[1]; SSTN = res[2].days;
     init();
     if (TEST) { var ts = document.createElement('script'); ts.src = 'tests/forecast.test.js'; document.body.appendChild(ts); }
   }).catch(function () {
