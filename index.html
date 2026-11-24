@@ -34,7 +34,7 @@
 body {
   background: var(--bg); color: var(--fg);
   font-family: var(--font-body); font-size: 15px; line-height: 1.5;
-  padding-block: 20px 48px;
+  padding-block: 20px calc(96px + env(safe-area-inset-bottom, 0px));
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
@@ -73,19 +73,24 @@ button { font: inherit; cursor: pointer; }
 .rowtop { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .sid { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 auto; }
 .rowtop > * { min-width: 0; }
-@media (max-width: 480px) { .fish, .pic { width: 96px; height: 48px; } .sid { gap: 10px; } .score { font-size: 1.2rem; } }
-.fish, .pic { width: 132px; height: 66px; flex: none; border-radius: 6px; }
+.fish, .pic { width: 96px; height: 48px; flex: none; border-radius: 6px; }
+@media (max-width: 480px) { .fish, .pic { width: 80px; height: 40px; } .sid { gap: 10px; } .score { font-size: 1.2rem; } }
 .pic { object-fit: cover; background: var(--line); }
 .fish { background: var(--bg); border: 1px solid var(--line); padding: 4px; }
 .sname { font-weight: 600; }
 .sname span { font-weight: 400; color: var(--muted); font-size: 0.85rem; margin-left: 6px; }
 .score { font-family: var(--font-data); font-size: 1.35rem; white-space: nowrap; }
 .score small { font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; margin-left: 6px; }
-.track { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
-.fill { height: 100%; border-radius: 4px; background: var(--muted); }
-.good .fill { background: var(--good); } .good .score small { color: var(--good); }
-.fair .fill { background: var(--warn); } .fair .score small { color: var(--warn); }
-.poor .fill { background: var(--bad); } .poor .score small { color: var(--bad); }
+.track { display: block; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.fill { display: block; height: 100%; border-radius: 4px; background: var(--lk, var(--muted)); }
+/* Fish likelihood and season strength use one teal ramp; green, amber and red are kept for fishability (safety). */
+.lk2 { --lk: var(--accent); }
+.lk1 { --lk: color-mix(in srgb, var(--accent) 50%, var(--muted)); }
+.lk0 { --lk: color-mix(in srgb, var(--muted) 60%, var(--surface)); }
+.score small { color: var(--lk, var(--muted)); }
+.lk0 .score small { color: var(--muted); }
+.rank .score { text-align: right; line-height: 1.1; }
+.rank .score small { display: block; margin: 0; }
 .why { color: var(--muted); font-size: 0.88rem; }
 .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 table { border-collapse: collapse; width: 100%; min-width: 600px; font-size: 0.9rem; }
@@ -94,11 +99,12 @@ th:first-child, td:first-child { text-align: left; }
 tr:last-child td { border-bottom: 0; }
 th button { background: none; border: 0; color: var(--fg); font-weight: 600; padding: 0; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
 th.sel button { color: var(--accent); }
-td.c { font-family: var(--font-data); }
-td.c.good { background: color-mix(in srgb, var(--good) 20%, var(--surface)); }
-td.c.fair { background: color-mix(in srgb, var(--warn) 18%, var(--surface)); }
-td.c.poor { background: color-mix(in srgb, var(--bad) 12%, var(--surface)); }
-td.sel, th.sel { box-shadow: inset 0 0 0 2px var(--accent); }
+table.plain { min-width: 0; }
+table.plain td:last-child, table.plain th:last-child { text-align: right; font-family: var(--font-data); white-space: nowrap; }
+table.plain th, table.plain td { text-align: left; }
+table.plain th { font-weight: 600; color: var(--muted); font-size: 0.78rem; }
+table.plain td button { background: none; border: 0; padding: 4px 0; color: var(--accent); font-weight: 600; text-align: left; text-decoration: underline; text-underline-offset: 3px; }
+table.plain .badge { margin-left: 6px; }
 details { font-size: 0.9rem; color: var(--muted); }
 details summary { cursor: pointer; color: var(--fg); font-weight: 600; }
 details ul { margin: 10px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
@@ -109,15 +115,28 @@ a { color: var(--accent); }
 .windows .t { font-family: var(--font-data); font-weight: 500; }
 .windows .r { color: var(--muted); font-size: 0.9rem; }
 .bars { display: flex; align-items: flex-end; gap: 2px; height: 110px; border-bottom: 1px solid var(--line); }
-.cell { flex: 1; min-width: 0; border-radius: 2px 2px 0 0; background: var(--muted); }
-.cell.good { background: var(--good); } .cell.fair { background: var(--warn); } .cell.poor { background: var(--bad); }
+.cell { flex: 1; min-width: 0; border-radius: 2px 2px 0 0; background: var(--lk, var(--muted)); }
 .cell.lx { background: var(--line); }
 .cell.inwin { border-bottom: 3px solid var(--accent); }
 .strip { display: flex; gap: 2px; height: 14px; }
 .strip .cell { border-radius: 2px; }
 .strip .l0 { background: var(--good); } .strip .l1 { background: var(--warn); } .strip .l2 { background: var(--bad); }
 .strip .l3 { background: repeating-linear-gradient(45deg, var(--bad) 0 3px, var(--surface) 3px 6px); }
-.cell.sel { outline: 2px solid var(--accent); outline-offset: 1px; }
+.cell.sel { outline: 2px solid var(--fg); outline-offset: 1px; }
+/* Best-times scrubber: tap or use the arrow keys to move the chosen time. */
+.scrub { position: relative; display: flex; flex-direction: column; gap: 6px; padding-top: 6px; cursor: pointer; touch-action: pan-y; border-radius: 4px; background: var(--daynight, none); }
+.scrub:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.scrub .tidecurve { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
+.tidecurve polyline { fill: none; stroke: var(--fg); stroke-opacity: 0.55; stroke-width: 1.5; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; }
+.scrub .nowline { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--fg); pointer-events: none; }
+.blegend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.8rem; color: var(--muted); align-items: center; }
+.blegend i { display: inline-block; width: 14px; height: 10px; margin-right: 5px; vertical-align: -1px; border-radius: 2px; }
+.blegend .sw-dark { background: color-mix(in srgb, var(--fg) 14%, transparent); }
+.blegend .sw-tide { height: 0; border-top: 2px dashed color-mix(in srgb, var(--fg) 60%, transparent); border-radius: 0; vertical-align: 3px; }
+.blegend .sw-now { width: 2px; height: 12px; background: var(--fg); }
+.scrub.nobars .strip { height: 40px; }
+.readout { font-size: 0.9rem; }
+.readout b { font-family: var(--font-data); font-weight: 500; }
 .axis { display: flex; justify-content: space-between; font-family: var(--font-data); font-size: 0.72rem; color: var(--muted); }
 .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 4px 16px; font-size: 0.88rem; }
 .keys b { font-family: var(--font-data); font-weight: 500; margin-right: 6px; }
@@ -137,7 +156,7 @@ a { color: var(--accent); }
 .map .hit { fill: transparent; pointer-events: all; }
 .map .ring { fill: none; stroke: none; }
 .map .mk.sel .ring { stroke: var(--accent); stroke-width: 3; }
-.map .lbl { font-family: var(--font-body); font-size: 17px; font-weight: 600; fill: var(--fg); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.map .lbl { font-family: var(--font-body); font-size: 19px; font-weight: 600; fill: var(--fg); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
 .map .mk.sel .lbl { fill: var(--accent); }
 .s0 { fill: var(--good); } .s1 { fill: var(--warn); } .s2 { fill: var(--bad); } .s3 { stroke: var(--bad); stroke-width: 4.5; stroke-linecap: round; fill: none; }
 .s3bg { fill: var(--surface); stroke: var(--bad); stroke-width: 1.5; }
@@ -171,24 +190,22 @@ a { color: var(--accent); }
 .reasons { margin: 0; padding-left: 18px; font-size: 0.9rem; display: flex; flex-direction: column; gap: 2px; }
 .hazard { border-left: 3px solid var(--warn); padding: 4px 10px; font-size: 0.88rem; }
 .fine { color: var(--muted); font-size: 0.82rem; }
-details.whatif { color: var(--fg); }
-details.whatif > div { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
 .limits { font-family: var(--font-data); font-size: 0.82rem; }
-.mnav { display: flex; align-items: center; gap: 6px; }
-.mnav .chip { padding: 6px 12px; }
-.mnav .mname { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; min-width: 6.5em; text-align: center; }
 .months { gap: 6px; }
 .months .chip { padding: 6px 0; min-width: 3.4em; font-family: var(--font-data); font-size: 0.85rem; }
 .spark { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; height: 44px; }
 .spark button { border: 0; padding: 0; background: transparent; display: flex; align-items: flex-end; height: 100%; min-width: 0; }
 .spark button span { display: block; width: 100%; border-radius: 2px 2px 0 0; background: color-mix(in srgb, var(--muted) 40%, var(--surface)); }
 .spark button.on span { background: var(--accent); }
+.spark button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .spark button:hover span { background: color-mix(in srgb, var(--accent) 55%, var(--surface)); }
 .saxis { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; font-family: var(--font-data); font-size: 0.7rem; color: var(--muted); text-align: center; }
 .saxis .on { color: var(--accent); font-weight: 500; }
 .speak { color: var(--muted); font-size: 0.85rem; }
 .catches .rowtop { align-items: flex-start; }
-.catches .pic { width: 96px; height: 96px; }
+.catches .pic { width: 72px; height: 72px; }
+.catches .title { font-weight: 600; }
+.catches .note { font-size: 0.88rem; }
 .catches .when { font-family: var(--font-data); font-weight: 500; }
 .catches .where { font-size: 0.85rem; color: var(--muted); }
 .catches .where.ask { color: var(--warn); font-weight: 600; }
@@ -197,7 +214,81 @@ details.whatif > div { margin-top: 12px; display: flex; flex-direction: column; 
 .catches .grid .field:nth-last-child(-n+2) { grid-column: 1 / -1; }
 .catches input, .catches select { padding: 7px 8px; }
 .catches .actions { align-items: center; }
-.linkbtn { background: none; border: 0; color: var(--bad); padding: 4px 0; font-size: 0.85rem; text-decoration: underline; text-underline-offset: 3px; justify-self: start; }
+.linkbtn { background: none; border: 0; color: var(--bad); padding: 10px 4px; min-height: 44px; font-size: 0.88rem; text-decoration: underline; text-underline-offset: 3px; justify-self: start; }
+.linkbtn.plain { color: var(--accent); padding: 0; min-height: 0; font-size: inherit; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+html { scroll-padding-top: 12px; scroll-padding-bottom: 84px; }
+/* Bottom tab bar */
+.tabbar { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
+  padding: 0 max(8px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(8px, env(safe-area-inset-left, 0px)); }
+.tabbar .tabs { max-width: 880px; margin: 0 auto; display: flex; }
+.tabbar button { flex: 1; min-height: 58px; background: none; border: 0; color: var(--muted); font-size: 0.75rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 6px 2px; }
+.tabbar button[aria-selected="true"] { color: var(--accent); }
+.tabbar button[aria-selected="true"] svg { stroke-width: 2.2; }
+.tabbar svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.tabpanel { display: flex; flex-direction: column; gap: 28px; }
+/* Status pill with its refresh button */
+.statusbox { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.minibtn { border: 1px solid var(--accent); background: transparent; color: var(--accent); border-radius: 999px; padding: 4px 12px; font-size: 0.8rem; font-weight: 600; min-height: 32px; }
+.minibtn[disabled] { opacity: 0.55; cursor: default; }
+/* Summary card */
+.verdict { box-shadow: inset 4px 0 0 var(--accent); gap: 10px; }
+.verdict h2 { font-size: 1.9rem; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.verdict h2 .badge { font-family: var(--font-body); font-size: 0.95rem; letter-spacing: 0; padding: 2px 12px; }
+.verdict ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 0.95rem; }
+.verdict .k { color: var(--muted); }
+.banner.info { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+.banner.info strong { color: var(--accent); }
+/* Week view: days down, spots across, each box split into morning, afternoon and evening */
+.week { width: 100%; min-width: 0; table-layout: fixed; border-collapse: separate; border-spacing: 3px; font-size: 0.78rem; }
+.week th, .week td { padding: 0; border: 0; text-align: center; }
+.week thead th { font-weight: 600; font-size: 0.72rem; color: var(--muted); line-height: 1.15; padding-bottom: 4px; vertical-align: bottom; }
+.week thead th.sel { color: var(--accent); }
+.week tbody th { text-align: left; font-family: var(--font-data); font-weight: 500; font-size: 0.74rem; line-height: 1.15; width: 3.4em; }
+.week tbody th.today { color: var(--accent); }
+.wk { width: 100%; display: flex; gap: 1px; padding: 2px; border: 1px solid transparent; border-radius: 6px; background: none; min-height: 40px; }
+.wk.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.seg { flex: 1; display: flex; align-items: center; justify-content: center; border-radius: 3px; min-width: 0; }
+.seg svg { width: 11px; height: 11px; }
+.seg.l0 { background: color-mix(in srgb, var(--good) 24%, var(--surface)); }
+.seg.l1 { background: color-mix(in srgb, var(--warn) 24%, var(--surface)); }
+.seg.l2 { background: color-mix(in srgb, var(--bad) 18%, var(--surface)); }
+.seg.l3 { background: color-mix(in srgb, var(--bad) 34%, var(--surface)); }
+.seg.lx { background: color-mix(in srgb, var(--line) 50%, var(--surface)); }
+/* Spot detail opens inside the chosen row */
+.spotlist li { scroll-margin-top: 12px; }
+.spotlist .detail { margin-top: 8px; }
+/* Species rows: compact, tap for the score breakdown */
+.fishlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.fishrow { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.fishrow details { color: var(--fg); font-size: inherit; }
+.fishrow summary { list-style: none; padding: 10px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 6px 12px; font-weight: 400; }
+.fishrow summary::-webkit-details-marker { display: none; }
+.fishrow summary .pic, .fishrow summary .fish { width: 64px; height: 32px; }
+.fishrow summary .fish { padding: 2px; }
+.fishrow .score { font-size: 1.2rem; text-align: right; line-height: 1.1; }
+.fishrow .score small { display: block; margin: 0; font-size: 0.72rem; }
+.fishrow .track { grid-column: 1 / -1; height: 6px; }
+.fishrow .why { grid-column: 1 / -1; }
+#manualbanner:empty, #warnbanner:empty { display: none; }
+.chev { width: 16px; height: 16px; transform-origin: 50% 50%; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-reduced-motion: no-preference) { .chev { transition: transform 0.2s ease; } }
+.fishrow details[open] .chev { transform: rotate(180deg); }
+.factors { list-style: none; margin: 0; padding: 0 12px 12px; display: grid; grid-template-columns: max-content minmax(0, 1fr) 2.6em; gap: 6px 10px; align-items: center; font-size: 0.85rem; }
+.factors li { display: contents; }
+.factors .bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.factors .bar i { display: block; height: 100%; background: var(--accent); }
+.factors .v { font-family: var(--font-data); text-align: right; font-size: 0.8rem; color: var(--muted); }
+.fishrow .more { padding: 0 12px 12px; }
+.fishnote { list-style: none; font-size: 0.9rem; color: var(--muted); }
+/* Catch log */
+.insights { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 0.9rem; margin: 0; }
+.insights dt { color: var(--muted); font-weight: 600; }
+.insights dd { margin: 0; }
+.tip summary { color: var(--accent); }
+.tip p { margin-top: 8px; }
+.howto { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--muted); }
 body{margin:0}
 [hidden]{display:none!important}
 </style></head><body>
@@ -205,13 +296,16 @@ body{margin:0}
   <header>
     <p class="eyebrow">Pico island, Azores</p>
     <h1>Pico Fishing Forecast</h1>
-    <p class="lede">Sea conditions and a fishability rating for five shore spots, then the species most likely there. Tap a spot on the map.</p>
+    <p class="lede">Fishability and the likely fish at five shore spots.</p>
   </header>
+
+  <div class="tabpanel" id="p-forecast" role="tabpanel" aria-labelledby="t-forecast">
+  <section class="panel verdict" id="summary" aria-labelledby="h-sum"><h2 id="h-sum">Loading the forecast…</h2></section>
 
   <section class="panel" aria-labelledby="h-when">
     <div class="head-row">
       <h2 id="h-when">When</h2>
-      <span class="status" id="status" role="status">Example conditions</span>
+      <div class="statusbox"><span class="status" id="status" role="status">Loading forecast…</span><button class="minibtn" id="b-live" type="button">Refresh</button></div>
     </div>
     <div class="when">
       <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
@@ -221,10 +315,9 @@ body{margin:0}
       <div class="field"><label for="f-fish">Fish for</label><select id="f-fish"><option value="">Any species</option></select></div>
     </div>
     <div class="actions">
-      <button class="btn ghost" id="b-now" type="button">Now</button>
+      <button class="btn ghost" id="b-now" type="button" hidden>Back to now</button>
       <button class="btn ghost" id="b-dawn" type="button">Dawn</button>
       <button class="btn ghost" id="b-dusk" type="button">Dusk</button>
-      <button class="btn" id="b-live" type="button">Load live forecast</button>
       <button class="btn ghost" id="b-gps" type="button">Use my location</button>
     </div>
     <p class="msg" id="livemsg" hidden></p>
@@ -232,23 +325,30 @@ body{margin:0}
     <div class="sunline" id="sunline"></div>
   </section>
 
-  <section aria-labelledby="h-rank" style="display:flex;flex-direction:column;gap:12px">
+  <div id="manualbanner"></div>
+  <div id="warnbanner"></div>
+
+  <section class="stack" aria-labelledby="h-rank">
     <h2 id="h-rank">Best spots</h2>
     <p class="msg" id="rankmsg" hidden></p>
     <ol class="spotlist ranked" id="ranked"></ol>
   </section>
 
-  <section aria-labelledby="h-spot" style="display:flex;flex-direction:column;gap:12px">
+  <section class="stack" aria-labelledby="h-week">
+    <h2 id="h-week">This week</h2>
+    <div class="panel" id="week"></div>
+  </section>
+
+  <section class="stack" aria-labelledby="h-spot">
     <h2 id="h-spot">Spots</h2>
-    <div id="warnbanner"></div>
     <div class="mapbox">
-      <svg class="map" id="map" viewBox="30 50 545 300" role="group" aria-label="Map of Pico with the fishing spots">
+      <svg class="map" id="map" viewBox="70 100 480 250" role="group" aria-label="Map of Pico with the fishing spots">
         <rect class="sea" x="30" y="50" width="545" height="300"/>
         <path class="other" d="M-121.1 97.6L-120.1 98.4L-120.4 99.2L-121.1 98.7L-120.0 99.9L-120.5 101.0L-116.1 102.7L-115.8 106.4L-116.5 107.4L-115.8 107.9L-116.5 109.2L-116.0 108.1L-113.2 109.1L-111.1 113.7L-106.2 118.5L-104.6 118.7L-102.0 120.9L-95.4 124.0L-91.1 128.1L-87.3 129.5L-85.7 131.4L-81.9 133.0L-79.4 135.4L-76.0 134.5L-73.4 136.1L-73.4 135.0L-72.1 134.1L-68.6 133.5L-63.2 137.5L-61.0 141.2L-57.0 152.3L-55.4 161.0L-55.1 170.6L-53.7 170.9L-53.0 172.2L-53.7 175.2L-56.4 174.3L-57.8 175.2L-58.2 176.6L-57.2 178.1L-54.0 176.5L-49.5 175.9L-45.1 177.0L-40.8 179.7L-35.8 180.8L-35.8 182.0L-33.9 182.1L-34.0 181.3L-31.3 182.7L-26.0 182.5L-21.0 182.0L-17.2 179.5L-15.9 180.4L-9.9 178.6L0.8 179.1L6.5 177.0L6.4 176.4L8.5 177.6L10.7 177.2L13.5 178.1L19.1 176.1L19.1 177.0L19.6 176.4L23.4 177.7L25.9 176.2L27.3 176.9L29.7 176.4L30.4 175.1L32.1 174.5L34.6 175.1L34.4 175.7L38.4 175.6L39.5 175.4L40.6 173.7L42.0 174.5L42.4 176.7L40.4 177.2L38.2 179.3L37.2 182.5L38.4 183.2L39.0 182.5L41.0 184.2L39.9 181.8L41.4 180.6L43.1 184.1L44.5 184.8L45.9 183.9L47.2 181.0L46.3 178.4L43.8 177.1L44.4 175.6L46.0 175.4L45.3 172.7L46.0 166.1L45.2 170.9L44.3 171.3L44.9 172.4L42.7 172.0L42.0 170.8L41.9 168.9L42.8 169.1L42.8 170.2L42.4 165.9L43.3 168.3L43.3 166.6L42.3 165.0L43.0 162.5L45.9 158.7L45.9 159.8L46.9 159.6L45.4 162.4L47.7 159.6L46.9 157.9L47.6 158.5L47.6 157.2L58.5 156.4L60.6 153.5L59.9 151.2L55.4 145.8L54.9 144.0L55.8 143.3L54.6 142.4L55.6 142.0L53.4 138.9L54.3 136.8L55.5 136.1L55.3 134.7L58.7 132.5L59.7 130.8L56.0 120.7L57.8 118.0L57.7 115.1L59.4 113.8L59.8 110.8L64.0 108.0L64.0 106.0L57.5 99.0L51.7 95.8L45.1 88.6L41.0 87.3L41.0 86.4L32.7 86.1L26.5 83.9L24.7 82.6L23.7 80.3L19.4 77.6L18.2 75.0L16.9 74.5L17.3 74.0L15.0 73.7L13.6 69.8L10.1 68.7L5.6 65.4L3.2 65.9L2.5 64.5L1.4 65.1L-5.0 60.7L-15.2 58.6L-18.6 56.4L-20.6 57.0L-28.2 56.2L-36.7 62.7L-39.0 65.4L-41.1 71.1L-49.2 82.3L-54.3 86.9L-58.7 89.2L-60.5 89.8L-64.4 87.5L-68.0 86.9L-71.5 87.3L-73.9 89.2L-76.4 89.8L-84.5 88.3L-95.6 89.2L-101.6 90.4L-102.2 91.6L-104.5 91.6L-104.6 93.2L-109.3 96.5L-112.2 95.4L-113.1 96.1L-112.7 97.8L-113.6 98.5L-115.6 98.3L-117.9 96.1L-119.9 96.3L-119.9 97.9Z"/>
         <path class="other" d="M283.9 -55.3L284.5 -53.0L289.1 -50.4L294.0 -46.0L301.9 -34.5L306.7 -30.4L310.1 -28.6L314.3 -22.7L318.4 -20.2L321.8 -15.9L330.7 -10.5L336.9 -9.2L342.9 -4.9L345.6 -4.7L352.1 -1.2L354.1 1.0L355.4 4.7L355.3 6.4L352.8 8.6L355.0 10.3L355.3 8.8L356.3 8.2L359.2 8.3L360.8 9.7L359.7 15.2L358.1 15.7L357.8 17.1L356.6 17.8L358.1 20.2L360.4 20.8L363.7 18.9L364.4 19.8L365.2 19.2L367.0 20.2L366.2 21.8L367.3 20.7L367.8 23.2L371.1 20.7L371.7 22.1L372.9 21.9L374.3 23.2L372.1 20.1L375.1 19.7L378.1 22.8L379.3 25.5L378.8 26.0L379.5 26.1L379.0 26.9L380.2 30.8L382.8 33.0L384.7 33.3L388.6 36.0L395.0 37.2L400.4 40.0L403.1 42.4L405.7 43.2L405.6 44.1L406.5 43.9L406.3 44.7L414.1 48.4L415.5 50.4L424.3 52.9L427.0 55.1L428.2 54.8L428.1 56.1L431.0 56.5L431.9 55.4L433.3 56.8L432.9 57.6L434.4 57.3L436.5 59.1L435.7 60.5L437.2 61.3L436.9 62.0L443.3 62.5L446.8 64.7L447.5 65.4L447.1 66.0L448.3 65.5L449.8 67.1L450.5 66.8L451.0 67.3L450.2 68.3L452.5 67.4L454.2 68.9L455.6 67.8L457.0 69.2L459.5 68.6L468.2 71.7L469.8 71.3L470.5 72.8L471.5 72.5L472.3 73.4L475.4 71.7L480.7 73.4L495.6 83.0L497.6 86.4L500.8 87.4L503.5 90.8L505.5 91.8L504.8 93.2L505.3 92.8L505.5 93.9L506.6 93.8L513.0 98.6L517.9 98.9L520.2 100.1L522.8 99.4L524.7 100.5L523.9 99.5L524.5 99.6L524.1 98.7L525.0 98.2L525.8 99.3L531.8 100.6L537.0 104.1L538.9 103.6L546.4 106.2L550.1 105.7L555.1 103.2L561.3 105.8L567.2 110.0L577.0 110.5L587.9 119.6L592.4 121.4L595.1 126.2L598.6 127.4L602.0 130.8L606.6 132.6L609.8 135.1L619.2 137.4L628.1 144.1L635.3 146.4L636.9 149.3L638.2 149.6L639.6 152.4L641.4 153.9L645.0 154.9L650.1 158.5L654.7 160.1L660.4 163.9L666.0 166.3L692.9 164.8L703.1 162.6L707.4 163.0L709.7 164.6L710.8 162.4L716.3 161.0L716.2 159.8L718.6 158.0L720.9 158.4L721.4 158.0L720.5 157.1L721.5 156.7L721.7 154.2L725.9 152.4L725.0 150.5L723.3 150.3L722.1 147.4L720.2 147.7L716.8 142.8L712.2 141.2L705.8 134.9L702.2 132.8L697.2 133.0L692.6 130.1L690.6 126.8L690.5 125.0L687.9 125.9L680.1 122.7L675.2 122.0L673.4 121.2L673.4 120.1L671.6 121.5L668.8 117.0L667.5 118.3L666.0 117.9L661.4 113.4L651.6 109.2L640.6 101.8L624.9 94.4L621.8 91.1L618.2 91.0L608.0 85.5L597.0 83.9L591.6 78.6L590.7 75.3L588.4 72.0L586.5 71.5L583.3 73.5L580.6 71.4L578.8 71.4L577.3 68.2L562.6 62.4L560.4 56.8L550.3 56.0L546.3 52.5L544.6 49.6L543.1 49.0L541.3 45.6L539.2 44.6L538.8 42.5L537.6 42.9L536.3 41.5L535.8 42.1L532.5 40.0L528.6 39.6L526.0 36.5L518.4 33.0L513.6 27.9L510.2 27.6L508.9 28.8L505.3 29.4L498.0 27.1L496.6 27.5L496.4 25.6L494.1 24.8L494.1 23.3L492.1 23.4L493.1 21.6L493.0 18.6L489.6 21.5L489.1 21.6L489.7 20.2L488.6 20.1L487.8 23.2L485.7 23.6L475.4 19.6L470.8 18.9L468.5 16.5L458.8 10.6L449.3 7.4L443.5 8.0L440.3 7.0L438.5 5.2L437.5 1.6L436.9 2.6L433.9 3.1L426.8 0.9L419.4 -6.2L416.9 -6.1L413.1 -8.1L410.5 -7.8L406.6 -9.0L402.8 -11.8L394.0 -13.6L385.7 -18.8L383.1 -18.6L381.1 -19.8L377.1 -20.2L374.3 -22.3L365.4 -25.4L363.4 -27.2L357.2 -28.8L354.0 -31.4L352.2 -30.2L350.1 -30.8L346.7 -34.1L343.0 -35.2L338.5 -38.3L332.9 -39.9L325.7 -45.3L313.1 -48.6L306.7 -52.0L298.9 -52.6L290.3 -55.5Z"/>
         <path class="pico" d="M108.1 190.4L108.8 194.3L108.4 195.4L109.3 196.5L109.0 200.3L110.2 201.8L110.3 204.4L108.3 205.2L109.1 205.3L109.3 207.0L108.1 207.9L109.1 208.1L110.2 212.0L110.4 213.2L109.5 213.6L110.6 215.2L110.3 215.7L111.4 216.3L111.1 217.1L112.3 217.5L111.7 218.2L113.4 219.9L113.1 221.1L115.0 222.6L115.1 224.5L118.0 229.8L124.3 235.0L126.0 243.8L127.6 245.9L127.6 247.8L139.1 253.9L139.8 255.3L142.0 255.3L144.3 257.7L145.0 257.3L147.6 259.5L155.0 262.6L156.6 263.8L156.5 264.6L160.1 265.3L160.9 266.2L163.7 266.2L165.5 267.7L165.9 267.0L168.6 267.2L170.0 269.5L171.2 268.9L172.6 269.6L175.8 273.2L178.3 274.6L180.7 277.8L184.2 279.8L191.0 280.0L198.7 278.6L202.9 273.1L206.6 272.0L210.5 272.1L215.2 274.4L217.0 274.0L224.4 279.1L234.4 282.2L244.5 287.6L248.4 287.4L253.8 284.7L257.0 284.2L261.4 286.1L263.6 285.9L264.9 287.1L265.9 286.3L270.5 286.4L273.2 285.5L275.0 286.7L277.6 286.3L277.8 287.1L280.6 288.1L286.7 288.0L293.5 289.4L303.8 287.4L308.5 287.5L308.7 288.3L310.2 287.3L311.1 288.1L315.6 287.7L316.3 288.3L318.9 287.6L328.0 292.0L331.4 295.9L331.6 298.3L333.0 299.4L333.9 301.8L333.3 303.7L332.5 302.6L331.2 303.4L330.3 300.6L330.7 303.0L331.8 303.7L331.6 307.5L332.5 307.5L332.6 308.9L333.6 309.4L335.2 308.9L334.7 310.3L335.6 310.0L335.3 307.5L336.3 308.6L335.7 312.2L334.2 313.0L334.2 314.1L336.0 312.9L341.3 316.2L344.0 316.7L344.4 317.9L353.5 315.4L363.9 310.1L369.7 306.0L372.9 306.5L378.1 305.0L381.8 298.7L385.3 297.1L385.9 294.7L386.7 294.4L385.6 294.2L385.9 293.3L393.3 290.4L405.4 291.6L406.7 291.9L406.8 292.8L407.3 292.1L408.1 293.2L409.2 292.6L409.9 293.4L411.1 292.3L414.6 291.6L418.5 291.7L424.1 293.7L439.8 293.9L442.6 295.0L442.6 295.7L445.4 295.5L448.5 297.1L450.5 296.7L451.2 297.8L452.4 297.5L452.1 298.3L454.1 298.0L458.7 300.3L461.2 299.5L462.8 300.4L465.5 299.2L468.4 300.4L469.7 298.1L470.7 297.8L470.1 297.2L471.4 297.4L471.6 296.0L474.2 296.2L476.7 298.1L477.5 297.4L478.3 298.1L478.5 297.2L480.0 298.1L480.3 297.0L484.0 294.6L486.5 294.6L487.1 295.7L487.6 294.2L490.0 293.5L490.4 292.1L493.6 292.7L498.0 291.3L498.4 292.1L501.2 291.3L502.1 290.1L503.0 290.5L502.6 290.0L503.9 288.8L509.7 288.3L509.3 287.0L510.1 284.6L508.8 282.6L509.3 282.3L508.3 281.9L509.3 280.6L508.5 280.0L509.2 278.4L507.9 278.2L508.5 277.2L507.6 276.9L505.3 271.9L502.9 269.9L499.4 269.9L497.6 268.3L496.4 265.4L493.5 265.5L488.6 262.0L488.7 258.8L487.5 257.1L481.0 255.9L474.9 253.4L474.7 254.4L472.8 253.6L471.1 254.5L470.1 253.3L470.4 254.2L469.5 254.7L450.0 251.0L441.7 251.2L436.9 249.6L431.3 250.1L421.9 247.4L420.5 244.9L418.8 243.9L414.3 244.0L411.7 242.7L405.3 243.2L403.7 242.4L401.8 243.7L401.7 243.0L398.3 243.6L395.0 240.1L392.2 240.5L390.0 236.9L382.5 237.6L380.2 232.9L379.3 232.7L378.1 228.3L377.1 228.7L376.0 227.7L376.4 226.8L375.7 224.9L375.0 225.2L375.3 224.3L372.6 223.3L372.5 222.1L371.4 222.5L370.0 220.0L362.5 218.5L361.1 219.4L359.0 217.5L359.1 216.2L357.5 216.4L355.7 214.6L350.5 212.9L349.5 211.1L347.3 210.0L346.9 206.3L345.9 204.1L342.0 200.6L339.6 200.5L335.6 202.6L330.9 203.1L330.0 202.5L330.2 201.7L328.7 202.3L327.4 200.8L321.3 200.9L320.3 199.4L319.7 200.0L314.9 196.9L314.9 195.8L311.7 193.0L305.3 194.5L301.9 194.1L295.6 187.7L296.0 184.9L293.8 183.1L293.3 179.9L291.4 179.3L291.0 177.8L289.5 177.1L289.3 175.5L288.8 176.2L288.2 175.3L287.8 176.6L286.9 176.6L286.8 175.4L285.2 176.3L282.8 172.8L280.4 172.0L280.7 168.8L282.6 169.0L279.0 168.0L274.2 163.7L269.7 165.0L268.8 163.7L269.1 161.8L267.8 162.2L267.1 161.0L266.0 161.8L265.9 160.9L265.1 161.5L263.3 160.6L259.6 157.4L249.1 152.7L243.9 148.8L234.3 147.2L227.0 141.7L224.4 141.2L220.1 141.9L207.7 138.6L200.0 141.7L197.3 141.3L197.2 142.0L194.5 142.7L189.7 142.5L186.3 140.9L182.8 142.6L182.7 143.6L182.0 143.4L182.0 144.6L181.3 144.8L178.0 144.1L175.7 142.2L173.9 142.8L166.5 140.0L162.4 140.3L161.0 139.3L159.6 140.1L158.8 139.5L155.3 141.8L152.5 141.9L149.5 143.7L142.0 145.3L137.4 147.7L137.4 148.5L135.7 147.6L134.4 150.1L130.2 150.8L125.2 155.0L124.2 160.4L117.8 162.0L114.8 163.7L117.7 162.6L117.4 163.3L118.2 163.3L116.9 164.0L117.3 164.9L116.6 164.7L118.3 165.7L117.1 165.6L117.0 166.6L114.7 165.6L113.8 166.2L113.1 164.5L113.6 167.2L111.8 170.2L112.4 173.2L111.2 174.1L111.0 178.5L109.6 180.8Z"/>
-        <text class="iname small" x="34" y="104">Faial</text>
-        <text class="iname small" x="505" y="70" text-anchor="middle">São Jorge</text>
+        <text class="iname small" x="76" y="120">&larr; Faial</text>
+        <text class="iname small" x="546" y="126" text-anchor="end">São Jorge &uarr;</text>
         <text class="iname" x="305" y="228" text-anchor="middle">PICO</text>
         <g id="map-arrows"></g>
         <g id="map-me"></g>
@@ -259,47 +359,43 @@ body{margin:0}
     <ul class="spotlist" id="spotlist" aria-label="Spots"></ul>
   </section>
 
-  <section class="panel detail" id="detail" aria-live="polite"></section>
-
-  <section aria-labelledby="h-fish" style="display:flex;flex-direction:column;gap:14px">
+  <section class="stack" aria-labelledby="h-fish">
     <h2 id="h-fish">Likely species</h2>
     <p class="spotnote" id="spotnote"></p>
-    <ol class="rank" id="rank"></ol>
+    <ol class="fishlist" id="rank"></ol>
   </section>
 
-  <section aria-labelledby="h-best" style="display:flex;flex-direction:column;gap:12px">
+  <section class="stack" aria-labelledby="h-best">
     <h2 id="h-best">Best times</h2>
     <div class="panel" id="besttimes"></div>
   </section>
 
-  <section aria-labelledby="h-all" style="display:flex;flex-direction:column;gap:12px">
-    <h2 id="h-all">All spots at this time</h2>
-    <div class="scroll"><table id="grid"></table></div>
+  <section class="stack" aria-labelledby="h-all">
+    <h2 id="h-all">Best spot for each fish</h2>
+    <p class="spotnote" id="gridnote"></p>
+    <div class="scroll"><table class="plain" id="grid"></table></div>
   </section>
+  </div>
 
-  <section aria-labelledby="h-season" style="display:flex;flex-direction:column;gap:12px">
-    <div class="head-row">
-      <h2 id="h-season">Seasons</h2>
-      <div class="mnav">
-        <button class="chip" id="s-prev" type="button" aria-label="Previous month">&larr;</button>
-        <span class="mname" id="s-mname" aria-live="polite"></span>
-        <button class="chip" id="s-next" type="button" aria-label="Next month">&rarr;</button>
-      </div>
-    </div>
+  <div class="tabpanel" id="p-seasons" role="tabpanel" aria-labelledby="t-seasons" hidden>
+  <section class="stack" aria-labelledby="h-season">
+    <h2 id="h-season">Seasons</h2>
     <div class="chips months" id="s-months" role="group" aria-label="Month"></div>
     <p class="spotnote">How strongly each fish is in season, month by month, across the island. Pick a month to rank them, or tap a bar.</p>
     <p class="hazard"><b>Take these with a pinch of salt.</b> They come from commercial boat landings, not shore fishing. Boats fish deeper, further out and for the market, so these curves show roughly when each fish is around, not when it bites from the rocks. Your own catches and local knowledge count for more.</p>
     <ol class="rank" id="s-list"></ol>
     <p class="fine">From 32 years of monthly fish-auction landings by boats on Pico (SREA, 1994 to 2025), smoothed. The landings also follow quotas, market prices and the days boats can go out. Sargo, veja and moray live on the coast all year, so they never fall below a moderate level.</p>
   </section>
+  </div>
 
-  <section aria-labelledby="h-log" style="display:flex;flex-direction:column;gap:12px">
+  <div class="tabpanel" id="p-catches" role="tabpanel" aria-labelledby="t-catches" hidden>
+  <section class="stack" aria-labelledby="h-log">
     <div class="head-row">
       <h2 id="h-log">My catches</h2>
       <span class="status" id="log-count">No catches yet</span>
     </div>
     <div class="panel">
-      <p class="msg">Pick photos of fish you have caught. The app reads when and where each photo was taken and puts the catch at the nearest spot, with the tide and moon at that time. Everything stays on this phone: nothing is uploaded.</p>
+      <p class="msg">Pick photos of fish you have caught. The app reads when and where each was taken, puts the catch at the nearest spot and adds the tide and moon. Nothing is uploaded.</p>
       <div class="actions">
         <button class="btn" id="log-add" type="button">Add from photos</button>
         <button class="btn ghost" id="log-add-files" type="button">Pick from Files instead</button>
@@ -307,20 +403,24 @@ body{margin:0}
       <input type="file" id="log-photos" accept="image/*" multiple hidden>
       <input type="file" id="log-files" multiple hidden>
       <p class="msg" id="log-msg" role="status" hidden></p>
+      <details class="tip"><summary>Photos come in without a time or place?</summary>
+        <p>Use the original photos from the camera: photos sent through WhatsApp or Facebook have their time and place removed. Android's photo picker also removes the location from photos it gives to websites. To keep it, tap "Pick from Files instead", open the menu (&#9776;), choose your phone's name or Internal storage, then DCIM, then Camera.</p></details>
     </div>
+    <div id="log-insights"></div>
     <ol class="rank catches" id="log-list"></ol>
     <div class="actions">
-      <button class="btn ghost" id="log-export" type="button">Save backup file</button>
+      <button class="btn ghost" id="log-export" type="button" hidden>Save backup file</button>
       <button class="btn ghost" id="log-import" type="button">Load backup file</button>
       <input type="file" id="log-import-file" accept="application/json,.json" hidden>
     </div>
-    <p class="fine">Use the original photos from the camera. Photos sent through WhatsApp or Facebook have their time and place removed. Android's photo picker removes the location from photos it gives to websites. To keep it, tap "Pick from Files instead", open the menu (&#9776;), choose your phone's name or Internal storage, then DCIM, then Camera. The log lives in this browser only, so save a backup file now and then; clearing the browser's data deletes it.</p>
+    <p class="fine">The log lives in this browser only, so save a backup file now and then; clearing the browser's data deletes it.</p>
   </section>
+  </div>
 
-  <details class="whatif panel" id="whatif">
-    <summary>Enter conditions by hand</summary>
-    <div>
-      <p class="msg">For when there is no connection, or to try "what if". These open-sea values are applied to every spot, then reduced for each spot's shelter. They replace the forecast until you load the live forecast, or press "Use the forecast again" when a saved forecast is available.</p>
+  <div class="tabpanel" id="p-about" role="tabpanel" aria-labelledby="t-about" hidden>
+  <section class="panel" id="whatif" aria-labelledby="h-manual">
+      <h2 id="h-manual">Enter conditions by hand</h2>
+      <p class="msg">For when there is no connection, or to try "what if". These open-sea values are applied to every spot, then reduced for each spot's shelter. Changing any of them switches the app to these values until you press "Use the forecast again" or refresh the forecast.</p>
       <div class="grid">
         <div class="field"><label for="f-temp">Sea temp &deg;C</label><input type="number" id="f-temp" step="0.1" min="8" max="30" inputmode="decimal"></div>
         <div class="field"><label for="f-wave">Swell height m</label><input type="number" id="f-wave" step="0.1" min="0" max="12" inputmode="decimal"></div>
@@ -343,15 +443,15 @@ body{margin:0}
           </select></div>
       </div>
       <div class="actions">
+        <button class="btn" id="b-manual" type="button">Rate the spots with these values</button>
         <button class="btn ghost" id="b-tide" type="button" hidden>Use computed tide</button>
         <button class="btn ghost" id="b-clear" type="button" hidden>Use the forecast again</button>
       </div>
-    </div>
-  </details>
+  </section>
 
-  <details>
-    <summary>How the ratings and scores work</summary>
-    <ul id="howto">
+  <section class="stack" aria-labelledby="h-how">
+    <h2 id="h-how">How the ratings and scores work</h2>
+    <ul id="howto" class="howto">
       <li><b>Fishability</b> (Good, Fair, Poor, Unsafe) describes the forecast for the open sea near each spot, reduced for the spot's shelter. It cannot see a rogue set, a wet ledge or surge in a gully. Look at the sea before you go down, and more so at night.</li>
       <li>Waves: each spot has the wind and swell directions that reach it from open ocean, and those that only cross a channel to Faial or São Jorge. Swell from the open sector counts in full; swell across a channel counts about a third, and swell from behind the island counts for little, because some always wraps around headlands. Wind waves count a little more across a channel.</li>
       <li>Wind is called onshore when it blows within 60 degrees of straight at the spot, offshore when it blows from behind, and cross otherwise. Onshore wind has lower limits. Wind is shown on the Beaufort scale (force 0 to 12); the forecast comes in km/h and is converted.</li>
@@ -359,12 +459,24 @@ body{margin:0}
       <li id="limitsline">The limits used are listed with each spot.</li>
       <li>Wind comes from the Open-Meteo forecast over the sea next to each spot. Waves come from the Open-Meteo marine model at a point a few kilometres off the right coast. Both are on grids of about 8 to 9 km, so wind funnelling and shelter behind the mountain are not modelled. Spot positions and facings come from the OpenStreetMap coastline and have not been checked on the ground.</li>
       <li>Each species is scored from 0 to 100 on season, sea temperature, wave height at the spot, wind, time of day against sunrise and sunset, tide movement and the kind of spot. Season comes from 32 years of monthly fish-auction landings on Pico (SREA, 1994 to 2025). These are commercial boat catches, not shore catches, so treat the season part as a rough guide to when each fish is around, not when it bites from the shore. Sargo, veja and moray live on the coast all year, so they never drop below a moderate season score. The other factors are starting estimates, to be corrected with local knowledge and catch logs.</li>
+      <li>Colours: green, amber and red always mean fishability (Good, Fair, Poor, Unsafe). How likely a fish is uses teal, worded Likely (70 and up), Possible (45 to 69) and Unlikely. Tap a fish to see what went into its score.</li>
+      <li>This week shows the worst fishability in each part of each day: morning 06:00 to 12:00, afternoon 12:00 to 18:00 and evening 18:00 to 22:00. Tap a box to look at that time and spot.</li>
+      <li>With no forecast for the chosen time, spots are not rated: the app never fills the gap with made-up values. Tide, light and the fish in season are still shown, and the fish are ranked by season alone.</li>
       <li>Species pictures are from your own catches, except the moray, which is a drawing. Moon phase is shown for planning only; it does not change any rating or score.</li>
       <li>Tide is computed on the phone for Horta from published tidal constants, for any date and with no connection, and matches the official Instituto Hidrogr&aacute;fico table to within a few minutes and about 5 cm. It is the astronomical tide only: wind and air pressure can move the real sea level. All five spots use Horta's times. Tidal constants: <a href="https://www.seanoe.org/data/00980/109129/" target="_blank" rel="noopener">TICON-4</a> (Hart-Davis, Dettmering and Seitz, CC BY 4.0).</li>
       <li>Sources: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (wind and waves), <a href="https://www.ipma.pt/" target="_blank" rel="noopener">IPMA</a> (warnings), <a href="https://srea.azores.gov.pt/" target="_blank" rel="noopener">SREA</a> (landings), map &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>.</li>
     </ul>
-  </details>
+  </section>
+  </div>
 </div>
+
+<nav class="tabbar" aria-label="Sections"><div class="tabs" role="tablist">
+  <button type="button" role="tab" id="t-forecast" aria-controls="p-forecast" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 20c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M12 3v6M8.5 6.5 12 10l3.5-3.5"/></svg>Forecast</button>
+  <button type="button" role="tab" id="t-seasons" aria-controls="p-seasons" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Seasons</button>
+  <button type="button" role="tab" id="t-catches" aria-controls="p-catches" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12c3-4.5 7-6 11-6 3 0 5 2 6 6-1 4-3 6-6 6-4 0-8-1.5-11-6Z"/><path d="M3 12 1 8.5M3 12l-2 3.5"/><circle cx="16.5" cy="10.5" r="0.8"/></svg>Catches</button>
+  <button type="button" role="tab" id="t-about" aria-controls="p-about" aria-selected="false" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>About</button>
+</div></nav>
+<div id="announce" class="sr-only" aria-live="polite"></div>
 
 <script>
 (function () {
@@ -391,10 +503,11 @@ var FISH = {
   var pad = function (n) { return (n < 10 ? '0' : '') + n; };
   var hm = function (mins) { var m = ((Math.round(mins) % 1440) + 1440) % 1440; return pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
 
+  /* One formatter, reused: building an Intl.DateTimeFormat is slow, and the week view asks for hundreds of times. */
+  var AZF = new Intl.DateTimeFormat('en-GB', { timeZone: 'Atlantic/Azores', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
   function azParts(d) {
-    var f = new Intl.DateTimeFormat('en-GB', { timeZone: 'Atlantic/Azores', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
     var o = {};
-    f.formatToParts(d).forEach(function (p) { if (p.type !== 'literal') o[p.type] = +p.value; });
+    AZF.formatToParts(d).forEach(function (p) { if (p.type !== 'literal') o[p.type] = +p.value; });
     return o;
   }
   function azOffsetMin(d) {
@@ -437,6 +550,7 @@ var FISH = {
     return 'day';
   }
 
+  var PHASE_TEXT = { dawn: 'at dawn', dusk: 'at dusk', night: 'after dark', day: 'in full daylight' };
   function scoreFor(sp, spot, c) {
     var f = {
       season: sp.season[c.month - 1],
@@ -460,15 +574,16 @@ var FISH = {
         temp: 'Sea at ' + c.temp + '°C, it prefers ' + sp.t[0] + '–' + sp.t[1] + '°C.',
         wave: c.eff > sp.wave[1] ? 'Too rough here at ' + c.eff.toFixed(1) + ' m effective, it prefers up to ' + sp.wave[1] + ' m.' : 'Too calm here, it prefers at least ' + sp.wave[0] + ' m.',
         wind: 'Force ' + bft(c.wind) + ' wind is above its comfort limit.',
-        time: 'Weaker at ' + c.phase + '.',
+        time: 'Weaker ' + PHASE_TEXT[c.phase] + '.',
         tide: 'Slack tide, it prefers moving water.',
         kind: spot.type === 'harbour' ? 'A harbour spot suits it less than open rock.' : 'Open rock suits it less than a harbour.'
       };
       why = o[worst];
     }
-    return { score: score, why: why };
+    return { score: score, why: why, f: f, capped: !!c.danger };
   }
-  function labelOf(s) { return s >= 70 ? ['good', 'Good'] : (s >= 45 ? ['fair', 'Fair'] : ['poor', 'Poor']); }
+  /* Fish likelihood words and classes: deliberately not Good/Fair/Poor, which belong to fishability. */
+  function labelOf(s) { return s >= 70 ? ['lk2', 'Likely'] : (s >= 45 ? ['lk1', 'Possible'] : ['lk0', 'Unlikely']); }
 
   function hmUTC(ms) { var d = new Date(ms); return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()); }
   function hmLocal(ms) { return hmUTC(ms + azOffsetMin(new Date(ms)) * 60000); }
@@ -549,7 +664,9 @@ var FISH = {
   var SPOTS = [], SPECIES = [], LIMITS = {};
   var LEVELS = ['Good', 'Fair', 'Poor', 'Unsafe'];
   var LIVE_KEY = 'pico-live-v1';
-  var state = { smonth: null, spot: 'madalena', source: 'example', gps: null, tideAuto: true, live: null, warn: null, warnAt: null, fish: '', len: 3 };
+  /* source: 'live' (the loaded forecast, or nothing when none covers the time) or 'manual' (typed values). followNow keeps the When fields on the current time. */
+  var state = { smonth: null, spot: 'madalena', source: 'live', gps: null, tideAuto: true, live: null, warn: null, warnAt: null, fish: '', len: 3,
+    followNow: true, loading: false, tab: 'forecast', openFish: {}, editing: {}, lastAnn: null, bestCells: [] };
   var PREFS_KEY = 'pico-prefs-v1', LENS = [1, 2, 3, 4, 6];
 
   /* Seasons: browse the 12-month curves in data/species.json. state.smonth is null while it follows the chosen date. */
@@ -559,7 +676,7 @@ var FISH = {
     return w ? w.month : azParts(new Date()).month;
   }
   function seasonLevel(v) {
-    return v >= 0.85 ? ['Peak', 'good'] : v >= 0.6 ? ['Good', 'good'] : v >= 0.35 ? ['Fair', 'fair'] : ['Low', 'poor'];
+    return v >= 0.85 ? ['Peak', 'lk2'] : v >= 0.6 ? ['High', 'lk2'] : v >= 0.35 ? ['Medium', 'lk1'] : ['Low', 'lk0'];
   }
   function peakText(sp) {
     var top = Math.max.apply(null, sp.season), on = sp.season.map(function (v) { return v >= top - 0.05; });
@@ -573,7 +690,7 @@ var FISH = {
   }
   function renderSeasons() {
     var mo = seasonMonth(), i = mo - 1;
-    $('s-mname').textContent = MONTHS[i];
+    $('h-season').textContent = 'Seasons: ' + MONTHS[i];
     $('s-months').innerHTML = MONTHS.map(function (n, k) {
       return '<button class="chip" type="button" data-smonth="' + (k + 1) + '" aria-pressed="' + (k === i) + '" aria-label="' + n + '">' + n.slice(0, 3) + '</button>';
     }).join('');
@@ -581,11 +698,11 @@ var FISH = {
     $('s-list').innerHTML = SPECIES.slice().sort(function (a, b) { return b.season[i] - a.season[i] || a.name.localeCompare(b.name); }).map(function (sp) {
       var v = sp.season[i], lv = seasonLevel(v);
       var bars = sp.season.map(function (x, k) {
-        return '<button type="button" data-smonth="' + (k + 1) + '"' + (k === i ? ' class="on"' : '') + ' aria-label="' + sp.name + ', ' + MONTHS[k] + ': ' + Math.round(x * 100) + '"><span style="height:' + Math.max(4, Math.round(x * 100)) + '%"></span></button>';
+        return '<button type="button" data-smonth="' + (k + 1) + '"' + (k === i ? ' class="on"' : '') + ' tabindex="' + (k === i ? 0 : -1) + '" aria-label="' + sp.name + ', ' + MONTHS[k] + ': ' + Math.round(x * 100) + '"><span style="height:' + Math.max(4, Math.round(x * 100)) + '%"></span></button>';
       }).join('');
-      return '<li class="' + lv[1] + '"><div class="rowtop"><div class="sid">' + fishSvg(sp.id) + '<div><div class="sname">' + sp.name + '<span>' + sp.pt + '</span></div><div class="speak">' + peakText(sp) + '</div></div></div>' +
+      return '<li class="' + lv[1] + '" data-sp="' + sp.id + '"><div class="rowtop"><div class="sid">' + fishSvg(sp.id) + '<div><div class="sname">' + sp.name + '<span>' + sp.pt + '</span></div><div class="speak">' + peakText(sp) + '</div></div></div>' +
         '<div class="score">' + Math.round(v * 100) + '<small>' + lv[0] + '</small></div></div>' +
-        '<div class="spark">' + bars + '</div>' + axis + '</li>';
+        '<div class="spark" role="group" aria-label="' + sp.name + ' by month; arrow keys to move">' + bars + '</div>' + axis + '</li>';
     }).join('');
   }
   function setSeasonMonth(m) { state.smonth = ((m - 1 + 12) % 12) + 1; renderSeasons(); }
@@ -664,9 +781,11 @@ var FISH = {
           wind: w.wind_speed_10m[wi], windDir: w.wind_direction_10m[wi], gust: w.wind_gusts_10m[wi] };
       }
     }
+    /* Outside the loaded forecast there is nothing: the form's values only count once the user chooses them (manual). */
+    if (state.source !== 'manual') return null;
     var wave = num('f-wave'), wind = bftKmh(+$('f-wind').value);
     if (wave == null || wind == null || num('f-temp') == null) return null;
-    return { src: state.source === 'manual' ? 'manual' : 'example', waveH: wave, waveDir: +$('f-dir').value, wavePer: num('f-per'),
+    return { src: 'manual', waveH: wave, waveDir: +$('f-dir').value, wavePer: num('f-per'),
       swellH: wave, swellDir: +$('f-dir').value, swellPer: num('f-per'), windWaveH: 0, windWaveDir: null,
       sst: num('f-temp'), wind: wind, windDir: +$('f-wdir').value, gust: bftKmh(Math.min(12, +$('f-wind').value + 1)) };
   }
@@ -680,18 +799,20 @@ var FISH = {
   }
 
   /* Everything shown for one spot at the chosen time. */
-  function spotCond(spot, i, when) {
-    var r = rawFor(spot, i, when.utc);
-    if (!r) return null;
+  /* Everything for one spot at one moment. Light and tide are always there; raw and rating are null when there is no forecast.
+     opt.noTide skips the tide (the week view needs only the rating). */
+  function spotCond(spot, i, when, opt) {
+    var at = state.gps || spot, sun = sunTimes(when.y, when.month, when.d, at.lat, at.lon);
+    var phase = phaseOf(when.t, sun.rise, sun.set);
+    var c = { raw: rawFor(spot, i, when.utc), sun: sun, phase: phase, night: phase === 'night', rating: null,
+      tide: opt && opt.noTide ? null : tideAt(when.utc, spot.tideLag) };
+    var r = c.raw;
+    if (!r) return c;
     var sH = r.swellH != null ? r.swellH : r.waveH, sD = r.swellH != null ? r.swellDir : r.waveDir;
     var sP = r.swellH != null ? (r.swellPer || r.wavePer) : r.wavePer;
     var fs = exposure(spot, sD, false), fw = exposure(spot, r.windWaveDir, true);
-    var eff = Math.sqrt(Math.pow(sH * fs, 2) + Math.pow((r.windWaveH || 0) * fw, 2));
-    var at = state.gps || spot, sun = sunTimes(when.y, when.month, when.d, at.lat, at.lon);
-    var phase = phaseOf(when.t, sun.rise, sun.set), night = phase === 'night';
-    var tide = tideAt(when.utc, spot.tideLag);
-    var c = { raw: r, swellH: sH, swellDir: sD, swellPer: sP, exposure: fs, eff: eff, rel: windRel(spot, r.windDir),
-      sun: sun, phase: phase, night: night, tide: tide };
+    c.swellH = sH; c.swellDir = sD; c.swellPer = sP; c.exposure = fs; c.rel = windRel(spot, r.windDir);
+    c.eff = Math.sqrt(Math.pow(sH * fs, 2) + Math.pow((r.windWaveH || 0) * fw, 2));
     c.rating = rate(spot, c, activeWarnings(when));
     return c;
   }
@@ -726,8 +847,8 @@ var FISH = {
 
   function condSummary(c) {
     var r = c.raw;
-    return 'Wind ' + F(r.wind) + ' ' + compass16(r.windDir) + (r.gust ? ' gusts ' + F(r.gust) : '') + ' · ' +
-      'Sea ' + c.swellH.toFixed(1) + ' m ' + compass16(c.swellDir) + (c.swellPer ? ' ' + Math.round(c.swellPer) + 's' : '') + ' → ' + c.eff.toFixed(1) + ' m here';
+    return c.eff.toFixed(1) + ' m here · Wind ' + F(r.wind) + ' ' + compass16(r.windDir) + (r.gust ? ', gusts ' + F(r.gust) : '') + ' · ' +
+      'Sea ' + c.swellH.toFixed(1) + ' m ' + compass16(c.swellDir) + (c.swellPer ? ' ' + Math.round(c.swellPer) + ' s' : '');
   }
 
   /* ---------- Drawing ---------- */
@@ -742,8 +863,8 @@ var FISH = {
 
   function drawMap(conds) {
     $('map-spots').innerHTML = SPOTS.map(function (s, i) {
-      var p = mapXY(s.lat, s.lon), c = conds[i], lv = c ? c.rating.level : 'x', sel = s.id === state.spot, lb = s.label || {};
-      var desc = s.name + ': ' + (c ? c.rating.label : 'no data');
+      var p = mapXY(s.lat, s.lon), c = conds[i], lv = c.rating ? c.rating.level : 'x', sel = s.id === state.spot, lb = s.label || {};
+      var desc = s.name + ': ' + (c.rating ? c.rating.label : 'no forecast');
       return '<g class="mk' + (sel ? ' sel' : '') + '" data-spot="' + s.id + '" tabindex="0" role="button" aria-pressed="' + sel + '" aria-label="' + desc + '" transform="translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')">' +
         '<circle class="hit" r="22"/><circle class="ring" r="15"/>' + SHAPES[lv] +
         '<text class="lbl" x="' + (lb.dx || 0) + '" y="' + (lb.dy || 0) + '" text-anchor="' + (lb.anchor || 'middle') + '">' + s.name + '</text></g>';
@@ -751,7 +872,7 @@ var FISH = {
     /* Wind and swell arrows: island-wide picture from the most exposed sample points. */
     var wx = 0, wy = 0, wn = 0, big = null;
     conds.forEach(function (c) {
-      if (!c) return;
+      if (!c.raw) return;
       var r = c.raw, a = r.windDir * Math.PI / 180;
       wx += r.wind * Math.sin(a); wy += r.wind * Math.cos(a); wn++;
       if (!big || c.swellH > big.swellH) big = c;
@@ -764,26 +885,28 @@ var FISH = {
         '<path class="arrow ' + cls + '" d="M' + (cx - dx).toFixed(1) + ' ' + (cy - dy).toFixed(1) + ' L' + hx.toFixed(1) + ' ' + hy.toFixed(1) +
         ' M' + (hx + Math.sin(b1) * 8).toFixed(1) + ' ' + (hy - Math.cos(b1) * 8).toFixed(1) + ' L' + hx.toFixed(1) + ' ' + hy.toFixed(1) +
         ' L' + (hx + Math.sin(b2) * 8).toFixed(1) + ' ' + (hy - Math.cos(b2) * 8).toFixed(1) + '"/>' +
-        '<text class="alab" x="' + cx + '" y="' + (cy + 40) + '">' + text + '</text>';
+        '<text class="alab" x="' + cx + '" y="' + (cy + 38) + '">' + text + '</text>';
     }
     if (wn) {
       var wdir = (Math.atan2(wx, wy) * 180 / Math.PI + 360) % 360, wsp = Math.sqrt(wx * wx + wy * wy) / wn;
-      html += arrow(452, 160, wdir, 'wind', 'Wind ' + F(wsp));
+      html += arrow(102, 298, wdir, 'wind', 'Wind ' + F(wsp));
     }
-    if (big) html += arrow(538, 160, big.swellDir, 'swell', 'Sea ' + big.swellH.toFixed(1) + ' m');
+    if (big) html += arrow(170, 298, big.swellDir, 'swell', 'Sea ' + big.swellH.toFixed(1) + ' m');
     $('map-arrows').innerHTML = html;
     $('map-me').innerHTML = state.gps ? (function () { var p = mapXY(state.gps.lat, state.gps.lon); return '<circle class="me" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="7"><title>You</title></circle>'; })() : '';
-    $('maplegend').innerHTML = [0, 1, 2, 3].map(function (k) { return '<span>' + legendIcon(k) + LEVELS[k] + '</span>'; }).join('') +
-      '<span>Arrows show where wind and sea are heading</span><span class="credit">&copy; OpenStreetMap contributors</span>';
+    var anyX = conds.some(function (c) { return !c.rating; });
+    $('maplegend').innerHTML = [0, 1, 2, 3].concat(anyX ? ['x'] : []).map(function (k) { return '<span>' + legendIcon(k) + (k === 'x' ? 'No forecast' : LEVELS[k]) + '</span>'; }).join('') +
+      '<span><svg viewBox="-12 -12 24 24" aria-hidden="true"><path d="M-8 8 L7 -7 M-1 -7 L7 -7 L7 1" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Wind and sea heading</span><span class="credit">&copy; OpenStreetMap contributors</span>';
   }
 
-  function renderSpots(conds) {
+  function renderSpots(conds, when) {
     $('spotlist').innerHTML = SPOTS.map(function (s, i) {
       var c = conds[i], sel = s.id === state.spot;
       var dist = state.gps ? ' · ' + km(state.gps, s).toFixed(1) + ' km' : '';
-      var badge = c ? '<span class="badge l' + c.rating.level + '">' + c.rating.label + '</span>' : '<span class="badge lx">No data</span>';
-      return '<li><button type="button" class="spotrow" data-spot="' + s.id + '" aria-pressed="' + sel + '"><span class="top"><span class="nm">' + s.name + dist + '</span>' + badge + '</span>' +
-        (c ? '<span class="sum">' + condSummary(c) + '</span>' : '') + '</button></li>';
+      var badge = c.rating ? '<span class="badge l' + c.rating.level + '">' + c.rating.label + '</span>' : '<span class="badge lx">No forecast</span>';
+      return '<li data-spotli="' + s.id + '"><button type="button" class="spotrow" data-spot="' + s.id + '" aria-pressed="' + sel + '"><span class="top"><span class="nm">' + s.name + dist + '</span>' + badge + '</span>' +
+        (c.rating ? '<span class="sum">' + condSummary(c) + '</span>' : '') + '</button>' +
+        (sel ? '<section class="panel detail" aria-label="' + s.place + '">' + detailHtml(s, c, when) + '</section>' : '') + '</li>';
     }).join('');
   }
 
@@ -796,41 +919,51 @@ var FISH = {
     return names[o.state] + ', about ' + o.level.toFixed(1) + ' m' + (parts.length ? '. Next ' + parts.join(', ') : '') + '.';
   }
 
-  function renderDetail(spot, c, when) {
-    var L = limitsFor(spot);
-    if (!c) {
-      $('detail').innerHTML = '<h3>' + spot.place + '</h3><p class="msg">No conditions for this time. Load the live forecast, or open "Enter conditions by hand" below.</p>';
-      return;
-    }
-    var r = c.raw, rt = c.rating;
+  /* Date and time in words, e.g. "Tue 24 Nov, 12:58". */
+  function fmtWhen(w, withYear) {
+    return DAYS[new Date(Date.UTC(w.y, w.month - 1, w.d)).getUTCDay()] + ' ' + w.d + ' ' + MONTHS[w.month - 1].slice(0, 3) + (withYear ? ' ' + w.y : '') + ', ' + hm(w.t);
+  }
+  function forecastEnd() {
+    var L = state.live, t = L && L.m[0] && L.m[0].time;
+    return t && t.length ? fmtWhen(whenAt(t[t.length - 1] * 1000)) : '';
+  }
+  function detailHtml(spot, c, when) {
+    var L = limitsFor(spot), r = c.raw, rt = c.rating;
     var tideLine = tideText(c.tide) + (state.tideAuto ? '' : ' (You set the tide to ' + $('f-tide').selectedOptions[0].textContent.toLowerCase() + ' by hand.)');
-    var src = r.src === 'live' ? 'Forecast for ' + when.local.replace('T', ' ') : (r.src === 'manual' ? 'Values entered by hand' : 'Example values: load the live forecast for real conditions');
+    var light = c.night ? 'after dark' : (c.phase === 'day' ? 'daylight' : c.phase);
     var maps = 'https://www.google.com/maps/search/?api=1&query=' + spot.lat + ',' + spot.lon;
-    $('detail').innerHTML =
-      '<div class="head-row"><div><h3>' + spot.place + '</h3><div class="sub">' + spot.coast + ' · faces ' + compass16(spot.face) + ' · <a href="' + maps + '" target="_blank" rel="noopener">open in Maps</a></div></div>' +
-      '<span class="badge l' + rt.level + '" style="font-size:1rem;padding:3px 12px">Fishable: ' + rt.label + '</span></div>' +
-      '<ul class="condlist">' +
-      '<li><b>Wind</b>Force ' + bft(r.wind) + ' (' + BFT_NAME[bft(r.wind)] + ') from ' + compass16(r.windDir) + ', ' + c.rel + (r.gust ? ', gusts force ' + bft(r.gust) : '') + ' <span class="fine">· ' + Math.round(r.wind) + (r.gust ? '–' + Math.round(r.gust) : '') + ' km/h</span></li>' +
-      '<li><b>Swell</b>' + c.swellH.toFixed(1) + ' m from ' + compass16(c.swellDir) + (c.swellPer ? ', ' + Math.round(c.swellPer) + ' s' : '') +
-        (r.windWaveH ? ', plus ' + r.windWaveH.toFixed(1) + ' m wind chop from ' + compass16(r.windWaveDir) : '') + '</li>' +
-      '<li><b>Here</b>about ' + c.eff.toFixed(1) + ' m at the spot (' + (c.exposure >= 1 ? 'open to this swell' : (c.exposure <= 0.2 ? 'sheltered from this swell' : 'partly sheltered from this swell')) + ')</li>' +
-      '<li><b>Tide</b>' + tideLine + '</li>' +
-      '<li><b>Sea</b>' + (r.sst != null ? r.sst.toFixed(1) + ' °C' : 'temperature unknown') + ' · ' + (c.night ? 'after dark' : (c.phase === 'day' ? 'daylight' : c.phase)) + '</li>' +
-      '</ul>' +
-      '<div><div class="eyebrow">Why ' + rt.label + '</div><ul class="reasons">' + (rt.why.length ? rt.why : [rt.ok]).map(function (w) { return '<li>' + w + '</li>'; }).join('') + '</ul></div>' +
-      (spot.hazard ? '<p class="hazard">' + spot.hazard + '</p>' : '') +
+    var head = '<div class="head-row"><div><h3>' + spot.place + '</h3><div class="sub">' + spot.coast + ' · faces ' + compass16(spot.face) + ' · <a href="' + maps + '" target="_blank" rel="noopener">open in Maps</a></div></div>' +
+      (rt ? '<span class="badge l' + rt.level + '" style="font-size:1rem;padding:3px 12px">Fishable: ' + rt.label + '</span>' : '<span class="badge lx" style="font-size:1rem;padding:3px 12px">No forecast</span>') + '</div>';
+    var tail = (spot.hazard ? '<p class="hazard">' + spot.hazard + '</p>' : '') +
       '<p class="spotnote">' + spot.note + ' ' + spot.depth + '</p>' +
       '<details><summary>Limits used here</summary><p class="limits">Unsafe: waves ' + L.unsafeWave + ' m (' + L.unsafeWaveLong + ' m if swell period ' + L.longPeriod + ' s or more), wind force ' + L.unsafeWind + ', gusts force ' + L.unsafeGust + '.<br>' +
         'Poor: waves ' + L.poorWave + ' m, wind force ' + L.poorWind + ' (' + L.poorOnshoreWind + ' onshore), gusts force ' + L.poorGust + '.<br>' +
         'Fair: waves ' + L.fairWave + ' m, wind force ' + L.fairWind + ' (' + L.fairOnshoreWind + ' onshore), gusts force ' + L.fairGust + '.<br>' +
-        'After dark every wave limit is ' + L.nightWaveCut + ' m lower.</p><p class="msg">These are cautious starting numbers. Tell Claude what to change and they will be updated.</p></details>' +
-      '<p class="fine">' + src + '. The rating describes the forecast, not the rocks on the day.</p>';
+        'After dark every wave limit is ' + L.nightWaveCut + ' m lower.</p><p class="msg">These are cautious starting numbers, to be tuned as days out show what is really too rough.</p></details>';
+    if (!rt) {
+      return head + '<ul class="condlist"><li><b>Tide</b>' + tideLine + '</li><li><b>Light</b>' + light + ' · sunrise ' + hm(c.sun.rise) + ', sunset ' + hm(c.sun.set) + '</li></ul>' +
+        '<p class="msg">No forecast for this time, so this spot is not rated.' + (state.live && state.source !== 'manual' ? ' The forecast runs to ' + forecastEnd() + '.' : '') +
+        ' <button type="button" class="linkbtn plain" data-act="manual">Enter conditions by hand</button></p>' + tail;
+    }
+    var src = r.src === 'live' ? 'Forecast for ' + fmtWhen(when) : 'Values entered by hand';
+    return head +
+      '<ul class="condlist">' +
+      '<li><b>Here</b>about ' + c.eff.toFixed(1) + ' m at the spot (' + (c.exposure >= 1 ? 'open to this swell' : (c.exposure <= 0.2 ? 'sheltered from this swell' : 'partly sheltered from this swell')) + ')</li>' +
+      '<li><b>Wind</b>Force ' + bft(r.wind) + ' (' + BFT_NAME[bft(r.wind)] + ') from ' + compass16(r.windDir) + ', ' + c.rel + (r.gust ? ', gusts force ' + bft(r.gust) : '') + ' <span class="fine">· ' + Math.round(r.wind) + (r.gust ? '–' + Math.round(r.gust) : '') + ' km/h</span></li>' +
+      '<li><b>Swell</b>' + c.swellH.toFixed(1) + ' m from ' + compass16(c.swellDir) + (c.swellPer ? ', ' + Math.round(c.swellPer) + ' s' : '') +
+        (r.windWaveH ? ', plus ' + r.windWaveH.toFixed(1) + ' m wind chop from ' + compass16(r.windWaveDir) : '') + '</li>' +
+      '<li><b>Tide</b>' + tideLine + '</li>' +
+      '<li><b>Sea</b>' + (r.sst != null ? r.sst.toFixed(1) + ' °C' : 'temperature unknown') + ' · ' + light + '</li>' +
+      '</ul>' +
+      '<div><div class="eyebrow">Why ' + rt.label + '</div><ul class="reasons">' + (rt.why.length ? rt.why : [rt.ok]).map(function (w) { return '<li>' + w + '</li>'; }).join('') + '</ul></div>' +
+      tail + '<p class="fine">' + src + '. The rating describes the forecast, not the rocks on the day.</p>';
   }
 
   function renderWarnBanner(when) {
     var w = activeWarnings(when);
     $('warnbanner').innerHTML = w.length ? '<div class="banner"><strong>IPMA warning in force:</strong> ' + w.map(function (x) {
-      return (/Agita/.test(x.awarenessTypeName) ? 'sea state' : 'wind') + ' (' + x.awarenessLevelID + ') until ' + x.endTime.slice(5, 16).replace('T', ' ');
+      var e = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)/.exec(x.endTime || '');
+      return (/Agita/.test(x.awarenessTypeName) ? 'sea state' : 'wind') + ' (' + x.awarenessLevelID + ') until ' + (e ? fmtWhen({ y: +e[1], month: +e[2], d: +e[3], t: e[4] * 60 + +e[5] }) : x.endTime);
     }).join('; ') + '.</div>' : '';
   }
 
@@ -868,7 +1001,7 @@ var FISH = {
     return out;
   }
   /* No usable forecast for a sample: nothing, or the form's made-up example values standing in for one. Typed (manual) values do count. */
-  function noForecast(c) { return !c || c.raw.src === 'example' || !!(state.live && state.source !== 'manual' && c.raw.src !== 'live'); }
+  function noForecast(c) { return !c || !c.raw || c.raw.src === 'example' || !!(state.live && state.source !== 'manual' && c.raw.src !== 'live'); }
   function spotWindow(spot, i, fromUtc, hours, fishId) {
     var samples = windowSamples(fromUtc, hours), res = { level: null, worstWhy: null, samples: samples.length, missing: 0, score: null, sp: null, at: null };
     var firstWhy = null, pool = fishId ? SPECIES.filter(function (sp) { return sp.id === fishId; }) : SPECIES;
@@ -949,7 +1082,7 @@ var FISH = {
         if (lo === null || c.score < lo) lo = c.score;
         if (hi === null || c.score > hi) hi = c.score;
       });
-      if (flat) { top = []; summary = '<p class="msg">' + sp.name + ' scores about the same all day (' + Math.round(lo) + '\u2013' + Math.round(hi) + '), so no time stands out.</p>'; }
+      if (flat) { top = []; summary = '<p class="msg">' + sp.name + ' scores about the same all day (' + Math.round(lo) + '–' + Math.round(hi) + '), so no time stands out.</p>'; }
       else summary = top.length ? '<ol class="windows">' + top.map(function (r) {
         return '<li><span class="t">' + range(r.a, r.b) + '</span><span>' + sp.name + ' ' + Math.round(r.peak) + '</span><span class="r">' + LEVELS[r.lv] + '</span></li>';
       }).join('') + '</ol>' : '<p class="msg">No standout window for ' + sp.name + ' on this date.</p>';
@@ -960,6 +1093,7 @@ var FISH = {
 
     var selCell = -1, winEnd = when.utc + state.len * 3600000;
     tl.forEach(function (c, n) { if (c.utc <= when.utc && when.utc < c.utc + 1800000) selCell = n; });
+    state.bestCells = tl.map(function (c) { return c.utc; });
     var extra = function (n) { return (n === selCell ? ' sel' : '') + (tl[n].utc + 1800000 > when.utc && tl[n].utc < winEnd ? ' inwin' : ''); };
     var strip = '<div class="strip" role="img" aria-label="' + stripLabel + '">' + tl.map(function (c, n) {
       return '<div class="cell ' + (c.level === null ? 'lx' : 'l' + c.level) + extra(n) + '" title="' + hm(c.t) + ' ' + (c.level === null ? 'no forecast' : LEVELS[c.level]) + '"></div>';
@@ -968,18 +1102,37 @@ var FISH = {
       if (c.level === null) return '<div class="cell lx' + extra(n) + '" style="height:6%" title="' + hm(c.t) + ' no forecast"></div>';
       return '<div class="cell ' + labelOf(sc[n])[0] + extra(n) + '" style="height:' + Math.max(6, Math.round(sc[n])) + '%" title="' + hm(c.t) + ' score ' + Math.round(sc[n]) + '"></div>';
     }).join('') + '</div>' : '';
-    var axis = '<div class="axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>';
+    var axis = '<div class="axis" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>';
 
     var sun = sunTimes(when.y, when.month, when.d, at.lat, at.lon), keys = [{ m: sun.rise, n: 'Sunrise' }, { m: sun.set, n: 'Sunset' }];
     var lag = (spot.tideLag || 0) * MIN;
+    /* Dark hours shaded behind the timeline, the tide height as a dashed line over it, and a line at the current time. */
+    var pct = function (mins) { return clamp(mins / 1440 * 100, 0, 100).toFixed(1); };
+    var shade = 'color-mix(in srgb, var(--fg) 9%, transparent)';
+    var dn = 'linear-gradient(to right, ' + shade + ' 0 ' + pct(sun.rise) + '%, transparent ' + pct(sun.rise) + '% ' + pct(sun.set) + '%, ' + shade + ' ' + pct(sun.set) + '% 100%)';
+    var hs = [];
+    for (k = 0; k <= N; k++) hs.push(tideHeight((k < N ? tl[k].utc : tl[N - 1].utc + 1800000) - lag));
+    var hmin = Math.min.apply(null, hs), span = (Math.max.apply(null, hs) - hmin) || 1;
+    var curve = '<svg class="tidecurve" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="' +
+      hs.map(function (h, n) { return (n / N * 100).toFixed(2) + ',' + (92 - (h - hmin) / span * 80).toFixed(1); }).join(' ') + '"/></svg>';
+    var np = azParts(new Date()), today = np.year === when.y && np.month === when.month && np.day === when.d;
+    var nowLine = today ? '<span class="nowline" style="left:' + pct(np.hour * 60 + np.minute) + '%" aria-hidden="true"></span>' : '';
+    var cur0 = selCell >= 0 ? tl[selCell] : null;
+    var readTxt = cur0 ? hmLocal(cur0.utc) + '\u2013' + hmLocal(cur0.utc + 1800000) + ': ' + (cur0.level === null ? 'no forecast' : LEVELS[cur0.level]) +
+      (sp && cur0.level !== null ? ', ' + sp.name + ' ' + Math.round(sc[selCell]) : '') : '';
+    var scrub = '<div class="scrub' + (sp ? '' : ' nobars') + '" id="scrub" role="slider" tabindex="0" aria-label="Time of day at ' + spot.name + '" aria-valuemin="0" aria-valuemax="' + (N - 1) +
+      '" aria-valuenow="' + Math.max(0, selCell) + '" aria-valuetext="' + readTxt + '" style="--daynight:' + dn + '">' + strip + bars + curve + nowLine + '</div>';
+    var readout = readTxt ? '<p class="readout"><b>' + readTxt.split(': ')[0] + '</b> ' + readTxt.slice(readTxt.indexOf(': ') + 2) + '</p>' : '';
+    var legend = '<div class="blegend"><span><i class="sw-dark"></i>Dark</span><span><i class="sw-tide"></i>Tide height</span>' + (today ? '<span><i class="sw-now"></i>Now</span>' : '') + '</div>';
     tideExtremes(tl[0].utc - lag, tl[N - 1].utc + 1800000 - lag).forEach(function (e) {
       keys.push({ m: whenAt(e.t + lag).t, n: (e.high ? 'High tide ' : 'Low tide ') + e.h.toFixed(1) + ' m' });
     });
     keys.sort(function (x, y) { return x.m - y.m; });
     var keyHtml = '<div class="keys">' + keys.map(function (x) { return '<div><b>' + hm(x.m) + '</b>' + x.n + '</div>'; }).join('') + '</div>';
 
-    box.innerHTML = '<div class="eyebrow">Through the day at ' + spot.name + '</div>' + summary + strip + bars + axis + keyHtml +
-      '<p class="msg">Fishability for each half hour from the forecast. ' + (sp ? 'The bars show the ' + sp.name + ' score.' : 'Pick a fish above to see its score through the day.') + '</p>';
+    box.innerHTML = '<div class="eyebrow">Through the day at ' + spot.name + '</div>' + summary + scrub + axis + readout + legend + keyHtml +
+      '<p class="msg">Fishability for each half hour from the forecast. ' + (sp ? 'The bars show the ' + sp.name + ' score.' : 'Pick a fish above to see its score through the day.') +
+      ' Tap the timeline, or use the arrow keys on it, to pick a time.</p>';
   }
 
   var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -992,7 +1145,7 @@ var FISH = {
     var ranked = rankSpots(when.utc, state.len, state.fish), msg = $('rankmsg');
     var allNone = ranked.every(function (r) { return r.level === null; });
     msg.hidden = !allNone;
-    msg.textContent = !allNone ? '' : state.live ? 'The loaded forecast does not cover this window.' : 'No forecast loaded. Load the live forecast, or enter conditions by hand below.';
+    msg.textContent = !allNone ? '' : state.live ? 'The loaded forecast does not cover this window.' : 'No forecast loaded. Refresh the forecast, or enter conditions by hand under About.';
     $('ranked').innerHTML = ranked.map(function (r, k) {
       var badge = r.level === null ? '<span class="badge lx">No data</span>' : '<span class="badge l' + r.level + '">' + LEVELS[r.level] + '</span>';
       var line = r.score !== null ? r.sp.name + ' ' + r.score + ' at ' + hmLocal(r.at) : (r.level === 3 ? 'No species score: unsafe for the whole window' : '');
@@ -1010,66 +1163,248 @@ var FISH = {
     var m = Math.max(0, Math.floor(((which === 'dawn' ? sun.rise - 60 : sun.set - 120)) / 15) * 15);
     $('f-time').value = pad(Math.floor(m / 60)) + ':' + pad(m % 60);
     state.len = 3; $('f-len').value = '3'; savePrefs();
+    state.followNow = false;
     render();
   }
 
+  /* ---------- Focus, scrolling and announcements across re-renders ---------- */
+  var FOCUS_ATTRS = ['data-week', 'data-spot', 'data-fish', 'data-smonth', 'data-act', 'data-edit', 'data-done'];
+  /* A selector that finds the focused element again after its container is rebuilt. */
+  function focusKey(el) {
+    if (!el || el === document.body || !el.closest) return null;
+    if (el.id) return '#' + el.id;
+    var a = FOCUS_ATTRS.filter(function (x) { return el.hasAttribute(x); })[0];
+    if (!a) return null;
+    var sel = '[' + a + '="' + el.getAttribute(a) + '"]', up = el.parentElement;
+    var grp = up && up.closest('[data-sp]');
+    if (grp) sel = '[data-sp="' + grp.getAttribute('data-sp') + '"] ' + sel;
+    var box = up && up.closest('[id]');
+    return (box ? '#' + box.id + ' ' : '') + sel;
+  }
+  function restoreFocus(key) {
+    if (!key) return;
+    var el = null;
+    try { el = document.querySelector(key); } catch (e) {}
+    if (el && el !== document.activeElement && !el.closest('[hidden]')) el.focus({ preventScroll: true });
+  }
+  function ensureVisible(el) {
+    if (!el) return;
+    var r = el.getBoundingClientRect();
+    if (r.top < 0 || r.top > window.innerHeight * 0.6) {
+      var smooth = window.matchMedia && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      el.scrollIntoView({ block: 'start', behavior: smooth ? 'smooth' : 'auto' });
+    }
+  }
+  /* Screen readers hear the chosen spot's rating when it changes, not every rebuilt panel. */
+  function announce(spot, c) {
+    var t = spot.name + ': ' + (c.rating ? 'fishable ' + c.rating.label : 'no forecast');
+    if (state.lastAnn !== null && state.lastAnn !== t) $('announce').textContent = t;
+    state.lastAnn = t;
+  }
+
+  /* ---------- Species at the chosen spot ---------- */
+  var FACTORS = [['season', 'Season', 28], ['temp', 'Sea temperature', 22], ['wave', 'Waves here', 16], ['wind', 'Wind', 10], ['time', 'Time of day', 10], ['tide', 'Tide', 6], ['kind', 'Kind of spot', 8]];
+  var CHEV = '<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
+  /* Species ranked at one spot and moment; with no forecast, by season alone (f is then null). */
+  function rankAt(spot, c, when) {
+    if (!c.rating) return SPECIES.map(function (sp) { return { sp: sp, r: { score: Math.round(sp.season[when.month - 1] * 100), why: '', f: null } }; })
+      .sort(function (a, b) { return b.r.score - a.r.score || a.sp.name.localeCompare(b.sp.name); });
+    var cx = ctxFor(when, c);
+    return SPECIES.map(function (sp) { return { sp: sp, r: scoreFor(sp, spot, cx) }; }).sort(function (a, b) { return b.r.score - a.r.score; });
+  }
+  function factorsHtml(r, month) {
+    if (!r.f) return '<p class="fine more">Without a forecast only the season counts, so this is how strongly it is in season in ' + MONTHS[month - 1] + '.</p>';
+    return '<ul class="factors" aria-label="What went into the score">' + FACTORS.map(function (x) {
+      var v = Math.round(r.f[x[0]] * 100);
+      return '<li><span>' + x[1] + ' <span class="fine">(' + x[2] + '%)</span></span><span class="bar"><i style="width:' + v + '%"></i></span><span class="v">' + v + '</span></li>';
+    }).join('') + '</ul><p class="fine more">Each part is scored 0 to 100 and weighted as shown. Season and sea temperature also cap the total, so a fish out of season or in the wrong water cannot score high.' +
+      (r.capped ? ' Capped at 15 because the spot is Unsafe.' : '') + '</p>';
+  }
+  function renderRank(spot, c, when) {
+    var pre = '';
+    if (c.rating && c.rating.level === 3) pre = '<li class="banner"><strong>Stay off the rocks.</strong> ' + spot.name + ' is rated Unsafe at this time, so species scores are capped.</li>';
+    else if (c.rating && c.rating.level === 2) pre = '<li class="fishnote">These scores assume you can fish. ' + spot.name + ' is rated Poor at this time.</li>';
+    $('rank').innerHTML = pre + rankAt(spot, c, when).map(function (x) {
+      var l = labelOf(x.r.score), id = x.sp.id;
+      return '<li class="fishrow ' + l[0] + '"><details data-fishd="' + id + '"' + (state.openFish[id] ? ' open' : '') + '><summary data-fish="' + id + '">' +
+        fishSvg(id) + '<span class="sname">' + x.sp.name + '<span>' + x.sp.pt + '</span></span>' +
+        '<span class="score">' + x.r.score + '<small>' + l[1] + '</small></span>' + CHEV +
+        '<span class="track" aria-hidden="true"><span class="fill" style="width:' + x.r.score + '%"></span></span>' +
+        (x.r.score < 70 && x.r.why ? '<span class="why">' + x.r.why + '</span>' : '') + '</summary>' + factorsHtml(x.r, when.month) + '</details></li>';
+    }).join('');
+  }
+  /* Best spot for each fish, among spots rated Good or Fair at the chosen time. */
+  function renderGrid(conds, when) {
+    var ok = conds.map(function (c, i) { return { c: c, i: i }; }).filter(function (x) { return x.c.rating && x.c.rating.level <= 1; });
+    if (!conds.some(function (c) { return c.rating; })) {
+      $('gridnote').textContent = 'Needs a forecast for this time.'; $('grid').innerHTML = ''; return;
+    }
+    $('gridnote').textContent = 'At ' + hm(when.t) + ', among the spots rated Good or Fair. Tap a spot to look at it.';
+    var rows = SPECIES.map(function (sp) {
+      var best = null;
+      ok.forEach(function (x) {
+        var sc = scoreFor(sp, SPOTS[x.i], ctxFor(when, x.c)).score;
+        if (!best || sc > best.sc) best = { sc: sc, i: x.i, lv: x.c.rating.level };
+      });
+      return { sp: sp, best: best };
+    }).sort(function (a, b) { return (b.best ? b.best.sc : -1) - (a.best ? a.best.sc : -1); });
+    $('grid').innerHTML = '<thead><tr><th scope="col">Fish</th><th scope="col">Best spot</th><th scope="col">Score</th></tr></thead><tbody>' + rows.map(function (r) {
+      if (!r.best) return '<tr><td>' + r.sp.name + '</td><td colspan="2">No spot is Good or Fair</td></tr>';
+      var s = SPOTS[r.best.i];
+      return '<tr><td>' + r.sp.name + '</td><td><button type="button" data-spot="' + s.id + '" data-goto="1">' + s.name + '</button><span class="badge l' + r.best.lv + '">' + LEVELS[r.best.lv] + '</span></td><td>' + r.best.sc + '</td></tr>';
+    }).join('') + '</tbody>';
+  }
+
+  /* ---------- Summary: the answer first ---------- */
+  /* The next stretch of Good (else Fair) hours at a spot from the chosen time to midnight. */
+  function nextStretch(spot, i, when) {
+    var tl = dayTimeline(spot, i, when.y, when.month, when.d, ''), from = 0;
+    while (from < tl.length && tl[from].utc + 1800000 <= when.utc) from++;
+    for (var lv = 0; lv <= 1; lv++) {
+      for (var a = from; a < tl.length; a++) {
+        if (tl[a].level !== lv) continue;
+        var b = a;
+        while (b + 1 < tl.length && tl[b + 1].level === lv) b++;
+        var end = hmLocal(tl[b].utc + 1800000);
+        return LEVELS[lv] + (a === from ? ' until ' + (end === '00:00' ? 'midnight' : end) : ' from ' + hmLocal(tl[a].utc) + ' to ' + (end === '00:00' ? 'midnight' : end));
+      }
+    }
+    return 'No Good or Fair hours left on this day';
+  }
+  function renderSummary(when, conds) {
+    var box = $('summary'), idx = SPOTS.indexOf(currentSpot());
+    var head = '<p class="eyebrow">' + (state.followNow ? 'Now' : fmtWhen(when)) + (state.source === 'manual' ? ' · your own values' : '') + '</p>';
+    var rated = conds.map(function (c, i) { return { c: c, i: i }; }).filter(function (x) { return x.c.rating; });
+    if (!rated.length) {
+      var title = state.loading ? 'Loading the forecast…' : 'No forecast for this time';
+      var why = state.loading ? '' : state.live ? 'The forecast runs to ' + forecastEnd() + '.' : 'The forecast could not be loaded.';
+      var inSeason = SPECIES.slice().sort(function (a, b) { return b.season[when.month - 1] - a.season[when.month - 1]; }).slice(0, 2).map(function (sp) { return sp.name; }).join(' and ');
+      box.innerHTML = head + '<h2 id="h-sum">' + title + '</h2>' + (why ? '<p class="msg">' + why + ' Tide, light and the fish in season are still shown below.</p>' : '') +
+        '<ul><li><span class="k">Tide at ' + SPOTS[idx].name + ':</span> ' + tideText(conds[idx].tide) + '</li><li><span class="k">Most in season:</span> ' + inSeason + '</li></ul>' +
+        (state.loading ? '' : '<div class="actions">' + (!state.live ? '<button class="btn ghost" type="button" data-act="refresh">Try the forecast again</button>' : '') +
+          '<button class="btn ghost" type="button" data-act="manual">Enter conditions by hand</button></div>');
+      return;
+    }
+    var tops = rated.map(function (x) {
+      var rows = rankAt(SPOTS[x.i], x.c, when), top = state.fish ? rows.filter(function (r) { return r.sp.id === state.fish; })[0] : rows[0];
+      return { i: x.i, lv: x.c.rating.level, top: top, why: x.c.rating.why[0] };
+    }).sort(function (a, b) { return a.lv - b.lv || b.top.r.score - a.top.r.score || (a.i === idx ? -1 : (b.i === idx ? 1 : 0)); });
+    var b = tops[0], s = SPOTS[b.i], items = [];
+    if (b.lv === 3) {
+      box.innerHTML = head + '<h2 id="h-sum">Stay off the rocks</h2><p>Every spot is rated Unsafe ' + (state.followNow ? 'right now' : 'at this time') + '.' + (b.why ? ' ' + b.why : '') + '</p>' +
+        '<p class="msg">Look at This week below for a better day.</p>';
+      return;
+    }
+    var l = labelOf(b.top.r.score);
+    items.push('<li><span class="k">' + (state.fish ? 'Your fish there:' : 'Top fish there:') + '</span> <b>' + b.top.sp.name + '</b> ' + b.top.r.score + ' (' + l[1] + ')</li>');
+    items.push('<li><span class="k">Rest of the day:</span> ' + nextStretch(s, b.i, when) + '</li>');
+    if (b.i !== idx && conds[idx].rating) items.push('<li><span class="k">Your chosen spot:</span> ' + SPOTS[idx].name + ' is ' + LEVELS[conds[idx].rating.level] + '.</li>');
+    box.innerHTML = head + '<h2 id="h-sum">' + s.name + ' <span class="badge l' + b.lv + '">' + LEVELS[b.lv] + '</span></h2>' +
+      '<p class="msg">' + (b.lv === 0 ? 'The best spot ' : 'The least bad spot ') + (state.followNow ? 'right now' : 'at this time') + (b.lv === 2 ? ': every spot is Poor or worse.' : '.') + '</p>' +
+      '<ul>' + items.join('') + '</ul>' +
+      (b.i !== idx ? '<div class="actions"><button class="btn ghost" type="button" data-spot="' + s.id + '" data-goto="1">Show ' + s.name + '</button></div>' : '');
+  }
+
+  /* ---------- This week: worst fishability in the morning, afternoon and evening of each day ---------- */
+  var SLOTS = [[6, 12, 'morning'], [12, 18, 'afternoon'], [18, 22, 'evening']];
+  var weekCache = { key: null, days: null };
+  function weekData() {
+    var tp = azParts(new Date()), w = state.warn || [];
+    var key = state.live.at + '|' + w.map(function (x) { return x.startTime + x.awarenessLevelID; }).join() + '|' + tp.year + tp.month + tp.day + '|' + (state.gps ? state.gps.lat.toFixed(2) + state.gps.lon.toFixed(2) : '');
+    if (weekCache.key === key && weekCache.live === state.live) return weekCache.days;
+    var days = [], k;
+    for (k = 0; k < 7; k++) {
+      var dt = new Date(Date.UTC(tp.year, tp.month - 1, tp.day + k)), y = dt.getUTCFullYear(), m = dt.getUTCMonth() + 1, d = dt.getUTCDate();
+      var mid = localMidnight(y, m, d);
+      days.push({ y: y, m: m, d: d, date: y + '-' + pad(m) + '-' + pad(d), k: k, row: SPOTS.map(function (s, i) {
+        return SLOTS.map(function (sl) {
+          var worst = -1;
+          for (var h = sl[0]; h < sl[1]; h++) {
+            var c = spotCond(s, i, whenAt(mid + h * 3600000), { noTide: true });
+            if (!c.rating) return null;
+            worst = Math.max(worst, c.rating.level);
+          }
+          return worst;
+        });
+      }) });
+    }
+    weekCache = { key: key, live: state.live, days: days };
+    return days;
+  }
+  function renderWeek(when) {
+    var box = $('week');
+    if (state.source === 'manual') {
+      box.innerHTML = '<p class="msg">The week comes from the live forecast, and you are using your own values.' + (state.live ? ' <button type="button" class="linkbtn plain" data-act="live">Use the forecast again</button>' : '') + '</p>';
+      return;
+    }
+    if (!state.live) { box.innerHTML = '<p class="msg">' + (state.loading ? 'Loading the forecast…' : 'No forecast loaded, so there is no week to show.') + '</p>'; return; }
+    var days = weekData().filter(function (day) { return day.row.some(function (r) { return r.some(function (v) { return v !== null; }); }); });
+    if (!days.length) { box.innerHTML = '<p class="msg">The saved forecast does not reach today. Refresh it.</p>'; return; }
+    var date = when.y + '-' + pad(when.month) + '-' + pad(when.d), any = false;
+    days.forEach(function (day) { if (day.date === date) any = true; });
+    var label = function (day) { return day.k === 0 ? 'Today' : DAYS[new Date(Date.UTC(day.y, day.m - 1, day.d)).getUTCDay()] + '<br>' + day.d; };
+    box.innerHTML = '<table class="week"><thead><tr><td></td>' + SPOTS.map(function (s) {
+      return '<th scope="col"' + (s.id === state.spot ? ' class="sel"' : '') + '>' + (s.short || s.name) + '</th>';
+    }).join('') + '</tr></thead><tbody>' + days.map(function (day, r) {
+      return '<tr><th scope="row"' + (day.k === 0 ? ' class="today"' : '') + '>' + label(day) + '</th>' + SPOTS.map(function (s, ci) {
+        var lv = day.row[ci], sel = day.date === date && s.id === state.spot, first = !any && r === 0 && ci === 0;
+        var words = SLOTS.map(function (sl, n) { return sl[2] + ' ' + (lv[n] === null ? 'no forecast' : LEVELS[lv[n]]); }).join(', ');
+        return '<td><button type="button" class="wk' + (sel ? ' sel' : '') + '" data-week="' + day.date + '|' + s.id + '" tabindex="' + (sel || first ? 0 : -1) + '" aria-label="' + s.name + ', ' + label(day).replace('<br>', ' ') + ': ' + words + '">' +
+          lv.map(function (v) { var k = v === null ? 'x' : v; return '<span class="seg l' + k + '">' + legendIcon(k) + '</span>'; }).join('') + '</button></td>';
+      }).join('') + '</tr>';
+    }).join('') + '</tbody></table>' +
+      '<p class="fine">Each box is morning, afternoon and evening (06\u201312, 12\u201318, 18\u201322), rated by its worst hour. Tap one to look at that spot and time.</p>';
+  }
+  function pickWeek(v) {
+    var p = v.split('|'), day = (weekCache.days || []).filter(function (d) { return d.date === p[0]; })[0], si = -1;
+    SPOTS.forEach(function (s, i) { if (s.id === p[1]) si = i; });
+    if (!day || si < 0) return;
+    var lv = day.row[si], best = 0;
+    lv.forEach(function (x, n) { if (x !== null && (lv[best] === null || x < lv[best])) best = n; });
+    var sl = SLOTS[best];
+    $('f-date').value = day.date; $('f-time').value = pad(sl[0]) + ':00';
+    state.len = sl[1] - sl[0]; $('f-len').value = String(state.len);
+    state.spot = p[1]; state.followNow = false;
+    render();
+    var li = document.querySelector('#spotlist [data-spotli="' + p[1] + '"]');
+    ensureVisible(li);
+    var b = li && li.querySelector('.spotrow'); if (b) b.focus({ preventScroll: true });
+  }
+
+  function renderManualBanner() {
+    $('manualbanner').innerHTML = state.source === 'manual' ? '<div class="banner info"><span><strong>Using your own conditions.</strong> Every spot is rated from the values you entered by hand.</span>' +
+      '<button class="btn ghost" type="button" data-act="' + (state.live ? 'live' : 'refresh') + '">' + (state.live ? 'Use the forecast again' : 'Load the forecast') + '</button></div>' : '';
+  }
+
   function render() {
+    var fk = focusKey(document.activeElement);
     var when = readWhen();
     if (SPECIES.length) renderSeasons();
     if (!when || !SPOTS.length) return;
+    $('b-now').hidden = state.followNow;
     var spot = currentSpot();
-    var rawConds = SPOTS.map(function (s, i) { return spotCond(s, i, when); });
-    /* Example values and times past the forecast are not conditions: every view treats them as no data. */
-    var conds = rawConds.map(function (x) { return noForecast(x) ? null : x; });
+    var conds = SPOTS.map(function (s, i) { return spotCond(s, i, when); });
     var idx = SPOTS.indexOf(spot), c = conds[idx];
     /* A hand-set tide overrides the computed one for the species scores. */
-    if (c && c.tide && state.tideAuto) $('f-tide').value = c.tide.state;
+    if (c.tide && state.tideAuto) $('f-tide').value = c.tide.state;
     $('b-tide').hidden = state.tideAuto;
     $('b-clear').hidden = !(state.source === 'manual' && state.live);
     drawMap(conds);
-    renderSpots(conds);
+    renderSpots(conds, when);
     renderWarnBanner(when);
     renderWarnNote();
-    renderDetail(spot, c, when);
-    setStatus(rawConds);
+    renderManualBanner();
+    setStatus();
     renderRanked(when);
-
-    if (!c) {
-      $('rank').innerHTML = '<li><span class="msg">No conditions for this time, so no species scores.</span></li>';
-      $('grid').innerHTML = ''; $('sunline').textContent = ''; $('besttimes').innerHTML = '';
-      return;
-    }
     $('sunline').innerHTML = '<span>Sunrise ' + hm(c.sun.rise) + '</span><span>Sunset ' + hm(c.sun.set) + '</span><span>' + moonInfo(when.y, when.month, when.d) + '</span>';
-    $('spotnote').textContent = 'At ' + spot.name + ', ' + when.local.replace('T', ' ') + '.';
-
-    var cx = ctxFor(when, c);
-    var rows = SPECIES.map(function (sp) { return { sp: sp, r: scoreFor(sp, spot, cx) }; })
-      .sort(function (a, b) { return b.r.score - a.r.score; });
-    $('rank').innerHTML = (c.rating.level === 3 ? '<li class="banner"><strong>Stay off the rocks.</strong> ' + spot.name + ' is rated Unsafe at this time, so species scores are capped.</li>' : '') +
-      rows.map(function (x) {
-        var l = labelOf(x.r.score);
-        return '<li class="' + l[0] + '"><div class="rowtop"><div class="sid">' + fishSvg(x.sp.id) + '<div class="sname">' + x.sp.name + '<span>' + x.sp.pt + '</span></div></div>' +
-          '<div class="score">' + x.r.score + '<small>' + l[1] + '</small></div></div>' +
-          '<div class="track" aria-hidden="true"><div class="fill" style="width:' + x.r.score + '%"></div></div>' +
-          '<div class="why">' + x.r.why + '</div></li>';
-      }).join('');
-
-    var head = '<thead><tr><th scope="col">Species</th>' + SPOTS.map(function (s) {
-      return '<th scope="col" class="' + (s.id === state.spot ? 'sel' : '') + '"><button type="button" data-spot="' + s.id + '">' + s.name + '</button></th>';
-    }).join('') + '</tr></thead>';
-    var fishRow = '<tr><td>Fishable</td>' + SPOTS.map(function (s, i) {
-      var cc = conds[i];
-      return '<td class="' + (s.id === state.spot ? 'sel' : '') + '">' + (cc ? '<span class="badge l' + cc.rating.level + '">' + cc.rating.label + '</span>' : '–') + '</td>';
-    }).join('') + '</tr>';
-    var body = '<tbody>' + fishRow + SPECIES.map(function (sp) {
-      return '<tr><td>' + sp.name + '</td>' + SPOTS.map(function (s, i) {
-        if (!conds[i]) return '<td>–</td>';
-        var sc = scoreFor(sp, s, ctxFor(when, conds[i])).score;
-        return '<td class="c ' + labelOf(sc)[0] + (s.id === state.spot ? ' sel' : '') + '">' + sc + '</td>';
-      }).join('') + '</tr>';
-    }).join('') + '</tbody>';
-    $('grid').innerHTML = head + body;
+    $('spotnote').textContent = 'At ' + spot.name + ', ' + fmtWhen(when) + '.' + (c.rating ? ' Tap a fish to see what went into its score.' : ' No forecast for this time, so the fish are ranked by season alone.');
+    renderRank(spot, c, when);
+    renderGrid(conds, when);
     renderBest(when, spot, idx);
+    renderSummary(when, conds);
+    renderWeek(when);
+    announce(spot, c);
+    restoreFocus(fk);
   }
 
   function statusText(source, liveAt, nowMs) {
@@ -1080,15 +1415,15 @@ var FISH = {
       return 'Forecast from ' + day + ' ' + hmLocal(liveAt) + ', ' + Math.round(age / 60) + ' h old';
     }
     if (source === 'manual') return 'Entered by hand';
-    return liveAt ? 'Outside the forecast range' : 'Example conditions';
+    return state.loading ? 'Loading forecast…' : 'No forecast';
   }
-  function setStatus(conds) {
-    var c = conds.filter(Boolean)[0], s = $('status');
-    s.classList.remove('stale');
-    if (!c) { s.textContent = 'No conditions'; return; }
-    var src = c.raw.src;
-    s.textContent = statusText(src, state.live ? state.live.at : 0, Date.now());
-    if (src === 'live' && Date.now() - state.live.at >= 24 * 3600000) s.classList.add('stale');
+  function setStatus() {
+    var s = $('status'), src = state.source === 'manual' ? 'manual' : (state.live ? 'live' : 'none');
+    var t = statusText(src, state.live ? state.live.at : 0, Date.now());
+    if (s.textContent !== t) s.textContent = t;
+    s.classList.toggle('stale', src === 'live' && Date.now() - state.live.at >= 24 * 3600000);
+    var b = $('b-live');
+    b.disabled = !!state.loading; b.textContent = state.loading ? 'Loading…' : 'Refresh';
   }
 
   /* ---------- Live data ---------- */
@@ -1103,7 +1438,9 @@ var FISH = {
   }
   function loadLive(explicit) {
     var msg = $('livemsg');
-    msg.hidden = false; msg.textContent = 'Loading the forecast for every spot…';
+    if (explicit) { msg.hidden = false; msg.textContent = 'Loading the forecast for every spot…'; }
+    state.loading = true;
+    if (state.live) setStatus(); else render();
     var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }); };
     var lat = function (k) { return SPOTS.map(function (s) { return k ? s.wavePt[0] : s.lat; }).join(','); };
     var lon = function (k) { return SPOTS.map(function (s) { return k ? s.wavePt[1] : s.lon; }).join(','); };
@@ -1122,14 +1459,16 @@ var FISH = {
       state.live = { at: Date.now(), m: m.map(function (x) { return x.hourly; }), w: w.map(function (x) { return x.hourly; }) };
       try { localStorage.setItem(LIVE_KEY, JSON.stringify(state.live)); } catch (e) {}
       if (explicit || state.source !== 'manual') { state.source = 'live'; state.tideAuto = true; }
-      msg.textContent = 'Loaded wind and wave forecasts for the next 7 days. Change the date or time to look ahead.';
+      state.loading = false;
+      if (explicit) msg.textContent = 'Forecast updated: wind and waves for the next 7 days.'; else msg.hidden = true;
       render();
     }).catch(function () {
+      state.loading = false; msg.hidden = false;
       var ageMin = state.live ? (Date.now() - state.live.at) / 60000 : 0;
       if (state.live && (explicit || state.source !== 'manual')) { state.source = 'live'; if (explicit) state.tideAuto = true; }
       msg.textContent = state.source === 'manual' ? 'Could not reach Open-Meteo. Your typed values are in use.' :
         state.live ? 'Could not reach Open-Meteo, so the forecast saved on this phone ' + (ageMin < 90 ? 'at ' + hmLocal(state.live.at) : Math.round(ageMin / 60) + ' h ago') + ' is shown.' :
-        'Could not reach Open-Meteo. Check your connection, or enter conditions by hand below.';
+        'Could not reach Open-Meteo. Check your connection, or enter conditions by hand under About.';
       render();
     });
   }
@@ -1141,6 +1480,33 @@ var FISH = {
   }
 
   function markManual() { state.source = 'manual'; render(); }
+
+  /* ---------- Tabs ---------- */
+  var TABS = ['forecast', 'seasons', 'catches', 'about'];
+  function tabFromHash() { var h = (location.hash || '').slice(1); return TABS.indexOf(h) >= 0 ? h : 'forecast'; }
+  function showTab(name, push) {
+    if (TABS.indexOf(name) < 0) name = 'forecast';
+    TABS.forEach(function (t) {
+      var on = t === name, b = $('t-' + t);
+      $('p-' + t).hidden = !on; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+    });
+    var changed = state.tab !== name;
+    state.tab = name;
+    if (push && changed) { try { history.pushState({ tab: name }, '', name === 'forecast' ? location.pathname + location.search : '#' + name); } catch (e) {} }
+    if (changed) window.scrollTo(0, 0);
+  }
+  /* Arrow keys move focus within a group of buttons that is a single tab stop. cols = items per row (0: one row). */
+  function rove(e, scopeSel, itemSel, cols) {
+    var t = e.target.closest ? e.target.closest(itemSel) : null;
+    var d = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -cols, ArrowDown: cols }[e.key];
+    if (!t || (d === undefined && e.key !== 'Home' && e.key !== 'End') || d === 0) return;
+    var items = [].slice.call(t.closest(scopeSel).querySelectorAll(itemSel)), i = items.indexOf(t);
+    var j = e.key === 'Home' ? 0 : (e.key === 'End' ? items.length - 1 : i + d);
+    if (j < 0 || j >= items.length) return;
+    e.preventDefault();
+    items.forEach(function (x) { x.tabIndex = -1; });
+    items[j].tabIndex = 0; items[j].focus();
+  }
 
   function init() {
     $('f-temp').value = '19.0'; $('f-wave').value = '1.8'; $('f-dir').value = '315'; $('f-per').value = '10'; $('f-wind').value = '4'; $('f-wdir').value = '270'; $('f-tide').value = 'rising';
@@ -1156,11 +1522,11 @@ var FISH = {
     $('b-dusk').addEventListener('click', function () { setTimeFor('dusk'); });
     ['input', 'change'].forEach(function (ev) {
       $('f-tide').addEventListener(ev, function () { state.tideAuto = false; render(); });
-      ['f-date', 'f-time'].forEach(function (id) { $(id).addEventListener(ev, render); });
+      ['f-date', 'f-time'].forEach(function (id) { $(id).addEventListener(ev, function () { state.followNow = false; render(); }); });
       ['f-temp', 'f-wave', 'f-dir', 'f-per', 'f-wind', 'f-wdir'].forEach(function (id) { $(id).addEventListener(ev, markManual); });
     });
     $('b-tide').addEventListener('click', function () { state.tideAuto = true; render(); });
-    $('b-now').addEventListener('click', function () { setNow(); render(); });
+    $('b-now').addEventListener('click', function () { state.followNow = true; setNow(); render(); });
     $('b-gps').addEventListener('click', function () {
       var msg = $('livemsg'); msg.hidden = false;
       if (!navigator.geolocation) { msg.textContent = 'This browser cannot share a location.'; return; }
@@ -1176,8 +1542,6 @@ var FISH = {
         msg.textContent = (err && err.code === 1) ? 'Location permission was declined. Allow location for this site in the browser settings, or pick a spot on the map.' : 'Could not get a position. Move to open sky and try again.';
       }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
     });
-    $('s-prev').addEventListener('click', function () { setSeasonMonth(seasonMonth() - 1); });
-    $('s-next').addEventListener('click', function () { setSeasonMonth(seasonMonth() + 1); });
     $('s-months').addEventListener('keydown', function (e) {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       e.preventDefault(); setSeasonMonth(seasonMonth() + (e.key === 'ArrowRight' ? 1 : -1));
@@ -1185,7 +1549,14 @@ var FISH = {
     });
     document.addEventListener('click', function (e) {
       var t = e.target.closest ? e.target.closest('[data-smonth]') : null;
-      if (t) setSeasonMonth(+t.getAttribute('data-smonth'));
+      if (!t) return;
+      var row = t.closest('[data-sp]'), m = t.getAttribute('data-smonth'), had = document.activeElement === t;
+      setSeasonMonth(+m);
+      /* The list re-sorts for the new month; keep focus on the same fish's bar. */
+      if (had) {
+        var again = document.querySelector(row ? '#s-list [data-sp="' + row.getAttribute('data-sp') + '"] [data-smonth="' + m + '"]' : '#s-months [data-smonth="' + m + '"]');
+        if (again) again.focus({ preventScroll: true });
+      }
     });
     $('b-live').addEventListener('click', function () { loadLive(true); });
     $('b-clear').addEventListener('click', function () { state.source = 'live'; state.tideAuto = true; render(); });
@@ -1193,19 +1564,92 @@ var FISH = {
     document.addEventListener('click', function (e) {
       var t = e.target.closest ? e.target.closest('[data-spot]') : null;
       if (!t) return;
-      var inRank = !!(t.closest && t.closest('#ranked'));
+      var inRank = !!(t.closest && t.closest('#ranked')), onMap = !!(t.closest && t.closest('#map')), go = t.hasAttribute('data-goto');
       pick(t);
       if (inRank) { var b = document.querySelector('#ranked .spotrow[data-spot="' + state.spot + '"]'); if (b) b.focus(); }
+      /* From the map, the summary or the best-spot table, bring the spot's details into view. */
+      if (onMap || go) {
+        var li = document.querySelector('#spotlist [data-spotli="' + state.spot + '"]');
+        ensureVisible(li);
+        if (go && li) li.querySelector('.spotrow').focus({ preventScroll: true });
+      }
     });
     $('map').addEventListener('keydown', function (e) {
       var t = e.target.closest ? e.target.closest('[data-spot]') : null;
       if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(t); var g = document.querySelector('.mk[data-spot="' + state.spot + '"]'); if (g) g.focus(); }
     });
+    $('b-manual').addEventListener('click', function () { markManual(); showTab('forecast', true); });
+    TABS.forEach(function (t) { $('t-' + t).addEventListener('click', function () { showTab(t, true); }); });
+    document.querySelector('.tabbar .tabs').addEventListener('keydown', function (e) {
+      var i = TABS.indexOf(state.tab), j = { ArrowLeft: i - 1, ArrowRight: i + 1, Home: 0, End: TABS.length - 1 }[e.key];
+      if (j === undefined) return;
+      e.preventDefault(); j = (j + TABS.length) % TABS.length;
+      showTab(TABS[j], true); $('t-' + TABS[j]).focus();
+    });
+    window.addEventListener('popstate', function () { showTab(tabFromHash(), false); });
+    /* Buttons that act on the whole app: back to the forecast, reload it, or go and type conditions. */
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest ? e.target.closest('[data-act]') : null;
+      if (!a) return;
+      var act = a.getAttribute('data-act');
+      if (act === 'live') { state.source = 'live'; state.tideAuto = true; if (!state.live) loadLive(true); render(); }
+      else if (act === 'refresh') loadLive(true);
+      else if (act === 'manual') { showTab('about', true); $('f-temp').focus(); }
+    });
+    $('week').addEventListener('click', function (e) { var b = e.target.closest('[data-week]'); if (b) pickWeek(b.getAttribute('data-week')); });
+    $('week').addEventListener('keydown', function (e) { rove(e, 'table', '[data-week]', SPOTS.length); });
+    /* Best times: tap the timeline, or use the arrow keys on it, to move the chosen time. */
+    function setHalf(n) {
+      var cells = state.bestCells;
+      if (!cells.length) return;
+      var w = whenAt(cells[clamp(n, 0, cells.length - 1)]);
+      $('f-date').value = w.y + '-' + pad(w.month) + '-' + pad(w.d); $('f-time').value = hm(w.t);
+      state.followNow = false; render();
+    }
+    $('besttimes').addEventListener('click', function (e) {
+      var s = e.target.closest('.scrub');
+      if (!s) return;
+      var r = s.getBoundingClientRect();
+      setHalf(Math.floor((e.clientX - r.left) / r.width * state.bestCells.length));
+    });
+    $('besttimes').addEventListener('keydown', function (e) {
+      var s = e.target.closest('.scrub');
+      if (!s) return;
+      var cur = +s.getAttribute('aria-valuenow'), d = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1, PageDown: -4, PageUp: 4 }[e.key];
+      var n = e.key === 'Home' ? 0 : (e.key === 'End' ? state.bestCells.length - 1 : (d === undefined ? null : cur + d));
+      if (n === null) return;
+      e.preventDefault(); setHalf(n);
+    });
+    $('rank').addEventListener('toggle', function (e) {
+      var d = e.target;
+      if (d.getAttribute && d.getAttribute('data-fishd')) state.openFish[d.getAttribute('data-fishd')] = d.open;
+    }, true);
+    $('s-list').addEventListener('keydown', function (e) { rove(e, '.spark', 'button', 0); });
+    /* Keep "now" current while the app is open, and refresh an old forecast when it comes back to the front. */
+    if (!TEST) {
+      setInterval(function () {
+        if (document.hidden) return;
+        if (state.followNow) {
+          var before = $('f-date').value + $('f-time').value;
+          setNow();
+          if ($('f-date').value + $('f-time').value !== before) { render(); return; }
+        }
+        setStatus();
+      }, 20000);
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) return;
+        if (state.followNow) { setNow(); render(); }
+        if (state.live && Date.now() - state.live.at > 3 * 3600000 && !state.loading && navigator.onLine !== false) loadLive(false);
+      });
+    }
     initLog();
     render();
+    showTab(tabFromHash(), false);
     if (!TEST && location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive(false);
     window.pico = { SPOTS: SPOTS, SPECIES: SPECIES, state: state, whenAt: whenAt, readWhen: readWhen, spotCond: spotCond, scoreFor: scoreFor, render: render, setStatus: setStatus, statusText: statusText, restoreWarn: restoreWarn, loadLive: loadLive,
-      dayTimeline: dayTimeline, renderBest: renderBest, ctxFor: ctxFor, windowSamples: windowSamples, spotWindow: spotWindow, rankSpots: rankSpots, renderRanked: renderRanked, loadPrefs: loadPrefs };
+      dayTimeline: dayTimeline, renderBest: renderBest, ctxFor: ctxFor, windowSamples: windowSamples, spotWindow: spotWindow, rankSpots: rankSpots, renderRanked: renderRanked, loadPrefs: loadPrefs,
+      weekData: weekData, renderWeek: renderWeek, pickWeek: pickWeek, renderSummary: renderSummary, nextStretch: nextStretch, rankAt: rankAt, showTab: showTab, renderLog: renderLog,
+      catches: function () { return catches; }, setCatches: function (list) { catches = list; } };
   }
 
   /* ---------- Catch log (design 7.8): built from the phone's own photos, kept on this phone only ---------- */
@@ -1334,7 +1778,7 @@ var FISH = {
       var t = 'Added ' + stats.added + ' catch' + (stats.added === 1 ? '' : 'es') + '.';
       if (stats.dup) t += ' ' + stats.dup + ' already in the log.';
       if (stats.noLoc) t += ' ' + stats.noLoc + ' had no location, so choose the spot for ' + (stats.noLoc > 1 ? 'those' : 'that one') + '.' + (stats.blank ? ' Android removed the location from ' + (stats.blank === stats.noLoc ? (stats.noLoc > 1 ? 'these photos' : 'this photo') : stats.blank + ' of them') + ' before handing ' + (stats.blank > 1 ? 'them' : 'it') + ' to the app.' : '') +
-        (stats.noLoc === stats.added ? ' To keep the location, tap "Pick from Files instead", open the menu (☰), choose your phone\'s name or Internal storage, then DCIM, then Camera. Don\'t pick from Images, Recent or Gallery.' : '');
+        (stats.blank ? ' To keep the location, tap "Pick from Files instead", open the menu (☰), choose your phone\'s name or Internal storage, then DCIM, then Camera. Don\'t pick from Images, Recent or Gallery.' : '');
       if (stats.noTime) t += ' ' + stats.noTime + ' had no time inside the photo, so the file date was used: check it.';
       if (stats.notJpeg) t += ' ' + stats.notJpeg + ' could not be read (not a JPEG photo).';
       logMsg(t);
@@ -1362,10 +1806,54 @@ var FISH = {
     }, function (err) { done(0, err && err.code === 1 ? 'denied' : 'failed'); }, { enableHighAccuracy: true, timeout: 20000, maximumAge: fresh ? 0 : 120000 });
   }
   function spotName(id) { var s = SPOTS.filter(function (x) { return x.id === id; })[0]; return s ? s.name : id; }
+  function speciesName(id) {
+    if (id === 'other') return 'Other fish';
+    var s = SPECIES.filter(function (x) { return x.id === id; })[0];
+    return s ? s.name : '';
+  }
+  function catchTitle(c) {
+    if (!c.species) return '';
+    return esc(speciesName(c.species)) + (c.count > 1 ? ' \u00d7 ' + c.count : '') + (c.size ? ' · ' + esc(c.size) : '');
+  }
+  /* Tallies across the log: what, where, and the tide, light and moon at the time. */
+  function renderInsights() {
+    var fish = catches.filter(function (c) { return c.species; });
+    if (!fish.length) { $('log-insights').innerHTML = ''; return; }
+    var total = 0, TIDES = { rising: 'Rising', falling: 'Falling', high: 'High water', low: 'Low water' };
+    fish.forEach(function (c) { total += c.count || 1; });
+    function tally(fn) {
+      var o = {};
+      fish.forEach(function (c) { var k = fn(c); if (k) o[k] = (o[k] || 0) + (c.count || 1); });
+      return Object.keys(o).sort(function (a, b) { return o[b] - o[a] || a.localeCompare(b); }).map(function (k) { return esc(k) + ' ' + o[k]; }).join(' · ') || '\u2013';
+    }
+    var rows = [
+      ['Fish', function (c) { return speciesName(c.species); }],
+      ['Spot', function (c) { return c.spot ? (c.spot === 'other' ? 'Other place' : spotName(c.spot)) : null; }],
+      ['Tide', function (c) { return c.cond && c.cond.tide ? TIDES[c.cond.tide] : null; }],
+      ['Light', function (c) { return c.cond && c.cond.light ? c.cond.light.charAt(0).toUpperCase() + c.cond.light.slice(1) : null; }],
+      ['Moon', function (c) { return c.cond && c.cond.moon ? c.cond.moon.split(',')[0] : null; }]
+    ];
+    $('log-insights').innerHTML = '<section class="panel" aria-labelledby="h-ins"><h3 class="eyebrow" id="h-ins" style="margin:0">What your catches say</h3><dl class="insights">' +
+      rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + tally(r[1]) + '</dd>'; }).join('') + '</dl>' +
+      '<p class="fine">' + total + ' fish logged with a species. A handful proves little; patterns start to mean something after a few dozen.</p></section>';
+  }
   function renderLog() {
     var n = catches.length;
     $('log-count').textContent = n ? n + ' catch' + (n === 1 ? '' : 'es') + ' on this phone' : 'No catches yet';
+    $('log-export').hidden = !n;
+    renderInsights();
     $('log-list').innerHTML = catches.map(function (c) {
+      /* A catch still missing its spot or species opens ready to fill in; otherwise it shows as a card with Edit. */
+      var editing = state.editing[c.id] != null ? state.editing[c.id] : (!c.species || !c.spot);
+      var when = fmtWhen(whenAt(c.utc), true) + (c.timeFrom === 'file' ? ' <span class="where ask">(file date, check)</span>' : '');
+      var thumb = c.thumb ? '<img class="pic" src="' + c.thumb + '" alt="" width="72" height="72">' : '';
+      if (!editing) {
+        return '<li data-cid="' + c.id + '"><div class="rowtop"><div class="sid">' + thumb + '<div>' +
+          '<div class="title">' + catchTitle(c) + '</div><div class="when">' + when + '</div>' +
+          '<div class="where">' + (c.spot === 'other' ? 'Other place' : 'At ' + esc(spotName(c.spot))) + '</div>' +
+          '<div class="why">' + esc(c.cond ? c.cond.text : '') + '</div>' + (c.notes ? '<div class="note">' + esc(c.notes) + '</div>' : '') +
+          '</div></div></div><div class="actions"><button class="btn ghost" type="button" data-edit="' + c.id + '">Edit</button></div></li>';
+      }
       var where;
       var from = c.placeFrom === 'phone' ? 'Your phone was ' : 'Photo taken ';
       if (c.lat == null) where = '<span class="where ask">No location in the photo: choose the spot, or tap "Use where I am now" if you are there.</span>';
@@ -1376,9 +1864,8 @@ var FISH = {
       var spots = opt('', 'Choose…', c.spot) + SPOTS.map(function (s) { return opt(s.id, s.name, c.spot); }).join('') + opt('other', 'Other place', c.spot);
       var sps = opt('', 'Choose…', c.species) + SPECIES.map(function (s) { return opt(s.id, s.name, c.species); }).join('') + opt('other', 'Other (say in notes)', c.species);
       var f = function (lbl, inner) { var id = 'c' + c.id + lbl.replace(/\W/g, ''); return '<div class="field"><label for="' + id + '">' + lbl + '</label>' + inner.replace(' data-k=', ' id="' + id + '" data-k=') + '</div>'; };
-      return '<li data-cid="' + c.id + '"><div class="rowtop"><div class="sid">' +
-        (c.thumb ? '<img class="pic" src="' + c.thumb + '" alt="" width="96" height="96">' : '') +
-        '<div><div class="when">' + localStr(c.utc).replace('T', ' ') + (c.timeFrom === 'file' ? ' <span class="where ask">(file date, check)</span>' : '') + '</div>' + where +
+      return '<li data-cid="' + c.id + '"><div class="rowtop"><div class="sid">' + thumb +
+        '<div><div class="when">' + when + '</div>' + where +
         '<div class="why">' + esc(c.cond ? c.cond.text : '') + '</div></div></div></div>' +
         '<div class="grid">' +
         f('Spot', '<select data-k="spot">' + spots + '</select>') +
@@ -1387,7 +1874,7 @@ var FISH = {
         f('Size', '<input data-k="size" type="text" placeholder="e.g. 1.2 kg" value="' + esc(c.size) + '">') +
         f('Notes', '<input data-k="notes" type="text" placeholder="Bait, method…" value="' + esc(c.notes) + '">') +
         f('Time (Azores)', '<input data-k="when" type="datetime-local" value="' + localStr(c.utc) + '">') +
-        '</div><div class="actions">' + (c.lat == null ? '<button class="btn ghost" type="button" data-here="' + c.id + '">Use where I am now</button>' : '') +
+        '</div><div class="actions"><button class="btn" type="button" data-done="' + c.id + '">Done</button>' + (c.lat == null ? '<button class="btn ghost" type="button" data-here="' + c.id + '">Use where I am now</button>' : '') +
         '<button class="linkbtn" type="button" data-del="' + c.id + '">Delete</button></div></li>';
     }).join('');
   }
@@ -1406,12 +1893,22 @@ var FISH = {
       var li = e.target.closest('[data-cid]'), k = e.target.getAttribute('data-k');
       if (!li || !k) return;
       var c = catches.filter(function (x) { return x.id === li.getAttribute('data-cid'); })[0]; if (!c) return;
+      state.editing[c.id] = true;
       if (k === 'count') c.count = Math.max(1, parseInt(e.target.value, 10) || 1);
       else if (k === 'when') { var u = localToUtc(e.target.value); if (u != null) { c.utc = u; c.timeFrom = 'edited'; } }
       else c[k] = e.target.value;
       if (k === 'spot' || k === 'when') { c.cond = catchConditions(c); saveLog(); renderLog(); } else saveLog();
     });
     $('log-list').addEventListener('click', function (e) {
+      var ed = e.target.closest('[data-edit]'), dn = e.target.closest('[data-done]');
+      if (ed || dn) {
+        var cid = (ed || dn).getAttribute(ed ? 'data-edit' : 'data-done');
+        state.editing[cid] = !!ed; renderLog();
+        var li = document.querySelector('#log-list [data-cid="' + cid + '"]');
+        var next = li && li.querySelector(ed ? 'select, input' : '[data-edit]');
+        if (next) next.focus();
+        return;
+      }
       var h = e.target.closest('[data-here]');
       if (h) {
         var hc = catches.filter(function (x) { return x.id === h.getAttribute('data-here'); });
@@ -1425,7 +1922,10 @@ var FISH = {
       var b = e.target.closest('[data-del]'); if (!b) return;
       if (b.getAttribute('data-sure')) {
         catches = catches.filter(function (x) { return x.id !== b.getAttribute('data-del'); }); saveLog(); renderLog(); logMsg('Deleted.');
-      } else { b.setAttribute('data-sure', '1'); b.textContent = 'Tap again to delete'; }
+      } else {
+        b.setAttribute('data-sure', '1'); b.textContent = 'Tap again to delete';
+        setTimeout(function () { if (b.getAttribute('data-sure')) { b.removeAttribute('data-sure'); b.textContent = 'Delete'; } }, 4000);
+      }
     });
     $('log-export').addEventListener('click', function () {
       var blob = new Blob([JSON.stringify({ app: 'pico-fishing-forecast', kind: 'catch-log', version: 1, saved: new Date().toISOString(), catches: catches })], { type: 'application/json' });
@@ -1453,7 +1953,7 @@ var FISH = {
     init();
     if (TEST) { var ts = document.createElement('script'); ts.src = 'tests/forecast.test.js'; document.body.appendChild(ts); }
   }).catch(function () {
-    $('detail').innerHTML = '<p class="msg">Could not load the spot data. Open the app from a web address (not as a file), and check the connection the first time.</p>';
+    $('summary').innerHTML = '<h2 id="h-sum">The app could not start</h2><p class="msg">Could not load the spot data. Open the app from a web address (not as a file), and check the connection the first time.</p>';
   });
   if (!TEST && 'serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }
 })();

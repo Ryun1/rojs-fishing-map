@@ -276,32 +276,34 @@
     ok(b.textContent.indexOf('All day') >= 0, b.textContent.slice(0, 80));
     ok(b.textContent.indexOf('00:00\u201300:00') < 0, 'no 00:00-00:00');
   });
-  function badges() { return [].map.call(document.querySelectorAll('#spotlist .badge'), function (b) { return b.textContent; }); }
-  function setDay() { document.getElementById('f-date').value = '2026-11-24'; document.getElementById('f-time').value = '10:00'; }
+  /* From main (c60f382), adapted to the reviewed UI: the detail sits inside the spot list, the badge reads "No forecast",
+     and the status pill reports the forecast's age while the summary says the time is past its end. */
+  function badges() { return [].map.call(document.querySelectorAll('#spotlist .spotrow .badge'), function (b) { return b.textContent; }); }
+  function setDay() { document.getElementById('f-date').value = '2026-11-24'; document.getElementById('f-time').value = '10:00'; pico.state.followNow = false; }
   test('past the forecast end the spot views show no data', function () {
     pico.state.live = liveFixture(Date.UTC(2026, 10, 24, 0), 12, function () { return CALM; });
     pico.state.source = 'live';
     setDay(); document.getElementById('f-time').value = '20:00';
     pico.render();
-    var d = document.getElementById('detail');
+    var d = document.querySelector('#spotlist .detail');
     ok(d.textContent.indexOf('Fishable:') < 0, 'no Fishable badge');
-    badges().forEach(function (t) { eq(t, 'No data'); });
+    badges().forEach(function (t) { eq(t, 'No forecast'); });
     eq(badges().length, 5);
-    eq(document.getElementById('status').textContent, 'Outside the forecast range');
+    eq(document.getElementById('h-sum').textContent, 'No forecast for this time');
   });
   test('example values show no data in the spot views', function () {
     pico.state.live = null; pico.state.source = 'example';
     setDay(); pico.render();
-    ok(document.getElementById('detail').textContent.indexOf('Fishable:') < 0, 'no Fishable badge');
-    badges().forEach(function (t) { eq(t, 'No data'); });
-    eq(document.getElementById('status').textContent, 'Example conditions');
+    ok(document.querySelector('#spotlist .detail').textContent.indexOf('Fishable:') < 0, 'no Fishable badge');
+    badges().forEach(function (t) { eq(t, 'No forecast'); });
+    eq(document.getElementById('status').textContent, 'No forecast');
   });
   test('typed values still rate the spots', function () {
     pico.state.live = null; pico.state.source = 'manual';
     setDay(); pico.render();
     var b = badges();
     eq(b.length, 5);
-    b.forEach(function (t) { ok(t !== 'No data', 'real level'); });
+    b.forEach(function (t) { ok(t !== 'No forecast', 'real level'); });
   });
   test('flat scores say so instead of All day', function () {
     pico.state.live = liveFixture(Date.UTC(2026, 10, 23, 0), 96, function () { return CALM; });
@@ -309,7 +311,7 @@
     pico.state.fish = 'sargo';
     setDay(); pico.render();
     var t = document.getElementById('besttimes').textContent, nm = pico.SPECIES.filter(function (x) { return x.id === 'sargo'; })[0].name;
-    ok(/scores about the same all day \(\d+\u2013\d+\), so no time stands out\./.test(t), t);
+    ok(/scores about the same all day \(\d+–\d+\), so no time stands out\./.test(t), t);
     ok(t.indexOf(nm + ' scores about') >= 0, 'fish name');
     ok(t.indexOf('All day ' + nm) < 0, 'no All day window');
   });
@@ -371,6 +373,151 @@
       eq(pico.state.source, 'live');
       window.fetch = realFetch;
     }, function (e) { window.fetch = realFetch; throw e; });
+  });
+
+  /* ---------- UI review: no made-up ratings, summary, week view, species rows, tabs, catch cards ---------- */
+  function at(date, time) {
+    document.getElementById('f-date').value = date; document.getElementById('f-time').value = time;
+    pico.state.followNow = false;
+  }
+  function texts(sel) { return [].map.call(document.querySelectorAll(sel), function (e) { return e.textContent; }); }
+  /* A calm forecast for 9 days from the start of yesterday (UTC), so it covers the real "today" the week view starts from. */
+  function weekLive(fn) {
+    var d = new Date(), start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - 1);
+    pico.state.live = liveFixture(start, 24 * 9, function (s, h) { return fn ? (fn(s, h) || CALM) : CALM; });
+    pico.state.source = 'live';
+  }
+
+  test('no forecast means no ratings anywhere', function () {
+    pico.state.live = null; pico.state.source = 'live';
+    at('2026-11-24', '10:00'); pico.render();
+    texts('#spotlist .spotrow .badge').forEach(function (t) { eq(t, 'No forecast'); });
+    [].forEach.call(document.querySelectorAll('#map-spots .mk'), function (g) { ok(/no forecast$/.test(g.getAttribute('aria-label')), g.getAttribute('aria-label')); });
+    eq(document.getElementById('h-sum').textContent, 'No forecast for this time');
+    eq(document.querySelectorAll('#rank .fishrow').length, pico.SPECIES.length, 'fish still ranked by season');
+    ok(document.getElementById('besttimes').textContent.indexOf('High tide') >= 0 || document.getElementById('besttimes').textContent.indexOf('Low tide') >= 0, 'tides still shown');
+  });
+  test('typed values rate the spots, with a banner', function () {
+    pico.state.live = null; pico.state.source = 'manual';
+    at('2026-11-24', '10:00'); pico.render();
+    texts('#spotlist .spotrow .badge').forEach(function (t) { ok(t !== 'No forecast', t); });
+    ok(document.getElementById('manualbanner').textContent.indexOf('Using your own conditions') >= 0, 'banner');
+  });
+  test('fish scores use their own words', function () {
+    calmLive(); at('2026-11-24', '10:00'); pico.render();
+    var words = texts('#rank .score small');
+    eq(words.length, pico.SPECIES.length);
+    words.forEach(function (w) { ok(['Likely', 'Possible', 'Unlikely'].indexOf(w) >= 0, w); });
+  });
+  test('time-of-day reasons read naturally', function () {
+    ['dawn', 'day', 'dusk', 'night'].forEach(function (ph) {
+      pico.SPECIES.forEach(function (sp) {
+        var r = pico.scoreFor(sp, pico.SPOTS[0], { month: 11, temp: 19, wind: 5, eff: 0.5, phase: ph, moving: true, danger: false });
+        ok(!/Weaker at (day|night)/.test(r.why), r.why);
+      });
+    });
+  });
+  test('tapping a fish shows its score breakdown', function () {
+    calmLive(); at('2026-11-24', '10:00'); pico.render();
+    var d = document.querySelector('#rank details');
+    eq(d.querySelectorAll('.factors li').length, 7);
+    d.open = true;
+    return new Promise(function (res) { setTimeout(res, 0); }).then(function () {
+      pico.render();
+      ok(document.querySelector('#rank details[data-fishd="' + d.getAttribute('data-fishd') + '"]').open, 'stays open after a re-render');
+      pico.state.openFish = {};
+    });
+  });
+  test('summary names the best spot and stays off unsafe ones', function () {
+    calmLive(function (s) { return s === 0 ? unsafeFor(0) : null; });
+    pico.state.spot = pico.SPOTS[0].id; at('2026-11-24', '10:00'); pico.render();
+    var h = document.getElementById('h-sum').textContent;
+    ok(h.indexOf(pico.SPOTS[0].name) < 0, h);
+    ok(/Good$/.test(h), h);
+    ok(document.querySelector('#summary [data-goto]'), 'show button for another spot');
+    pico.state.warn = [{ awarenessLevelID: 'red', awarenessTypeName: 'Agitação Marítima', idAreaAviso: 'ACE', startTime: '2026-11-24T00:00:00', endTime: '2026-11-25T00:00:00' }];
+    pico.render();
+    eq(document.getElementById('h-sum').textContent, 'Stay off the rocks');
+  });
+  test('best spot for each fish leaves out Poor and Unsafe spots', function () {
+    calmLive(function (s) { return s === 0 ? unsafeFor(0) : null; });
+    at('2026-11-24', '10:00'); pico.render();
+    eq(document.querySelectorAll('#grid tbody tr').length, pico.SPECIES.length);
+    eq(document.querySelectorAll('#grid [data-spot="' + pico.SPOTS[0].id + '"]').length, 0);
+  });
+  test('week view: 7 days by 5 spots, worst hour per part of the day', function () {
+    weekLive(function (s) { return s === 2 ? unsafeFor(2) : null; });
+    pico.render();
+    var cells = document.querySelectorAll('#week [data-week]');
+    eq(cells.length, 35);
+    [].forEach.call(cells, function (b) {
+      eq(b.querySelectorAll('.seg').length, 3);
+      if (b.getAttribute('data-week').split('|')[1] === pico.SPOTS[2].id) eq(b.querySelectorAll('.seg.l3').length, 3, b.getAttribute('aria-label'));
+    });
+    eq([].filter.call(cells, function (b) { return b.tabIndex === 0; }).length, 1, 'one tab stop');
+  });
+  test('tapping a week box picks that day, spot and part of the day', function () {
+    weekLive();
+    pico.render();
+    var b = document.querySelectorAll('#week [data-week]')[7], v = b.getAttribute('data-week').split('|');
+    b.click();
+    eq(document.getElementById('f-date').value, v[0]);
+    eq(pico.state.spot, v[1]);
+    eq(document.getElementById('f-time').value, '06:00');
+    eq(document.getElementById('f-len').value, '6');
+  });
+  test('week view says when typed values are in use', function () {
+    weekLive(); pico.state.source = 'manual'; pico.render();
+    eq(document.querySelectorAll('#week [data-week]').length, 0);
+    ok(document.getElementById('week').textContent.indexOf('your own values') >= 0);
+  });
+  test('following now hides the Now button until the time is changed', function () {
+    calmLive(); pico.state.followNow = true; pico.render();
+    ok(document.getElementById('b-now').hidden, 'hidden while following');
+    var t = document.getElementById('f-time');
+    t.value = '09:00'; t.dispatchEvent(new Event('input', { bubbles: true }));
+    eq(pico.state.followNow, false);
+    ok(!document.getElementById('b-now').hidden, 'shown after a change');
+  });
+  test('the best-times timeline moves the time with the arrow keys', function () {
+    calmLive(); at('2026-11-24', '10:00'); pico.render();
+    var s = document.getElementById('scrub');
+    s.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    eq(document.getElementById('f-time').value, '10:30');
+    s = document.getElementById('scrub');
+    s.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    eq(document.getElementById('f-time').value, '00:00');
+  });
+  test('focus survives a re-render', function () {
+    weekLive(); pico.render();
+    var b = document.querySelectorAll('#week [data-week]')[3], v = b.getAttribute('data-week');
+    b.focus(); pico.render();
+    eq(document.activeElement && document.activeElement.getAttribute('data-week'), v);
+  });
+  test('tabs show one panel at a time', function () {
+    pico.showTab('seasons', false);
+    ok(document.getElementById('p-forecast').hidden && !document.getElementById('p-seasons').hidden, 'seasons shown');
+    eq(document.getElementById('t-seasons').getAttribute('aria-selected'), 'true');
+    pico.showTab('forecast', false);
+    ok(!document.getElementById('p-forecast').hidden, 'forecast back');
+  });
+  test('catch cards: read view with Edit, unfinished ones open to fill in', function () {
+    var saved = pico.catches();
+    pico.setCatches([
+      { id: 'a', key: 'ka', utc: Date.UTC(2026, 10, 20, 18), spot: 'lajes', species: 'sargo', count: 2, size: '', notes: '', cond: { tide: 'rising', light: 'dusk', moon: 'Full moon, 100% lit', text: '' } },
+      { id: 'b', key: 'kb', utc: Date.UTC(2026, 10, 19, 18), spot: '', species: '', count: 1, size: '', notes: '' }
+    ]);
+    try {
+      pico.renderLog();
+      ok(document.querySelector('#log-list [data-cid="a"] [data-edit]'), 'finished catch has Edit');
+      ok(document.querySelector('#log-list [data-cid="b"] [data-done]'), 'unfinished catch opens for editing');
+      ok(!document.getElementById('log-export').hidden, 'backup button shown');
+      ok(document.getElementById('log-insights').textContent.indexOf('White seabream 2') >= 0, document.getElementById('log-insights').textContent);
+      document.querySelector('#log-list [data-edit="a"]').click();
+      ok(document.querySelector('#log-list [data-cid="a"] [data-done]'), 'Edit opens the form');
+    } finally {
+      pico.setCatches(saved); pico.state.editing = {}; pico.renderLog();
+    }
   });
 
   function finish() {

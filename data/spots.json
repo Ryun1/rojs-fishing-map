@@ -19,7 +19,7 @@
   },
   "spots": [
     {
-      "id": "madalena", "name": "Madalena", "place": "Madalena breakwater", "coast": "west coast, Faial channel",
+      "id": "madalena", "name": "Madalena", "short": "Madalena", "place": "Madalena breakwater", "coast": "west coast, Faial channel",
       "type": "harbour", "lat": 38.53622, "lon": -28.53302, "face": 322,
       "open": [[210, 250], [320, 35]], "channel": [[40, 45], [255, 315]],
       "wavePt": [38.575, -28.56], "tideLag": 0,
@@ -29,7 +29,7 @@
       "label": { "dx": 4, "dy": -16, "anchor": "start" }
     },
     {
-      "id": "saoroque", "name": "São Roque", "place": "Cais do Pico old quay, São Roque", "coast": "north coast, São Jorge channel",
+      "id": "saoroque", "name": "São Roque", "short": "São Roque", "place": "Cais do Pico old quay, São Roque", "coast": "north coast, São Jorge channel",
       "type": "harbour", "lat": 38.52714, "lon": -28.31907, "face": 46,
       "open": [[90, 110], [335, 0]], "channel": [[5, 85], [115, 115]],
       "wavePt": [38.60, -28.30], "tideLag": 0,
@@ -39,7 +39,7 @@
       "label": { "dx": 0, "dy": -18, "anchor": "middle" }
     },
     {
-      "id": "lajes", "name": "Lajes do Pico", "place": "Lajes do Pico breakwater", "coast": "south coast",
+      "id": "lajes", "name": "Lajes do Pico", "short": "Lajes", "place": "Lajes do Pico breakwater", "coast": "south coast",
       "type": "harbour", "lat": 38.39780, "lon": -28.25637, "face": 228,
       "open": [[175, 275]], "channel": [[280, 320]],
       "wavePt": [38.35, -28.285], "tideLag": 0,
@@ -49,7 +49,7 @@
       "label": { "dx": -8, "dy": -14, "anchor": "end" }
     },
     {
-      "id": "calheta", "name": "Calheta de Nesquim", "place": "Calheta de Nesquim port", "coast": "south-east coast",
+      "id": "calheta", "name": "Calheta de Nesquim", "short": "Calheta", "place": "Calheta de Nesquim port", "coast": "south-east coast",
       "type": "harbour", "lat": 38.40257, "lon": -28.07973, "face": 150,
       "open": [[95, 205]], "channel": [],
       "wavePt": [38.36, -28.06], "tideLag": 0,
@@ -59,7 +59,7 @@
       "label": { "dx": 30, "dy": 36, "anchor": "end" }
     },
     {
-      "id": "ponta", "name": "Ponta da Ilha", "place": "Ponta da Ilha lighthouse rocks", "coast": "east tip",
+      "id": "ponta", "name": "Ponta da Ilha", "short": "Ponta", "place": "Ponta da Ilha lighthouse rocks", "coast": "east tip",
       "type": "rock", "lat": 38.41251, "lon": -28.03047, "face": 147,
       "open": [[60, 245]], "channel": [[40, 55]],
       "wavePt": [38.385, -27.985], "tideLag": 0,
