@@ -12,6 +12,10 @@ A static, installable PWA (no build step) giving a fishing forecast for Pico, Az
 | `icon-192.png`, `icon-512.png` | App icons |
 | `img/` | Species photos (crops of own catch photos, location/date metadata removed; the moray is a drawing) |
 
+## Ranking and best times
+
+Under "Best spots", pick a start time, a length (1 to 6 hours, or the Dawn and Dusk buttons) and a fish, and the app ranks the five spots for that window. A spot is rated by its worst half hour, and any official warning makes it Unsafe. "Best times" shows fishability and the chosen fish through the day, with sunrise, sunset and the tides marked. The forecast is saved on the phone, so it still works offline and shows how old it is.
+
 ## Run locally
 
 ```sh
@@ -19,6 +23,10 @@ python3 -m http.server 8000
 ```
 
 Open http://localhost:8000. `localhost` counts as a secure context, so the service worker and geolocation work there.
+
+## Tests
+
+Open the app with `?test` on the end of the address (for example http://localhost:8000/?test) to run the browser tests. See `tests/README.md`.
 
 ## Deploy
 

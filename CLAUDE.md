@@ -6,3 +6,4 @@ Static PWA, no build step or dependencies. Code lives in `index.html` (HTML + CS
 - Whenever any shipped file changes, bump `CACHE` in `sw.js`; new assets must also be added to its `FILES` list.
 - Keep the theme tokens on `:root` with the dark-mode overrides in sync (both the `prefers-color-scheme` block and `[data-theme="dark"]`).
 - Fish photos in `img/` must have EXIF/GPS metadata stripped before committing.
+- Tests run by opening the app with `?test` (see `tests/README.md`); new features should add tests there.

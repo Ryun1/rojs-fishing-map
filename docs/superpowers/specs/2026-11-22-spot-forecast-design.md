@@ -370,7 +370,7 @@ Each phase leaves the app working and is worth using on its own.
 3. **Evidence-based species model.**
    - Season curves generated from the SREA 1994–2026 landings export by a script in `tools/` (starting from `docs/research/scripts/srea.py`).
    - Time-of-day and habitat factors; conditions demoted; evidence labels.
-4. **Forecast.**
+4. **Forecast.** Done 2026-11-24 (plan: `docs/superpowers/plans/2026-11-24-phase-4-forecast.md`).
    - Seven days, ranked spots for a chosen window, offline copy.
 5. **Catch log.**
    - Logging, export and import, the nudge to ratings.
@@ -415,6 +415,20 @@ Decisions made in writing this document that the owner has not confirmed:
 - Photo catches are stored by spot ID only, with no exact coordinates, because the repository is public. The distances for "close to the sea" (300 m) and "a new place" (500 m) are first guesses.
 - The map is a drawn outline of the island shipped with the app, not a zoomable tiled map.
 - The species list is whatever Roj confirms from his photo upload; new species are added after the model is rebuilt, not before.
+
+From phase 4 (2026-11-24):
+
+- The window is the start time plus a length of 1, 2, 3 (default), 4 or 6 hours; "Dawn" and "Dusk" set it to sunrise minus 1 hour and sunset minus 2 hours, for 3 hours.
+- A spot's fishability for a window is its worst half hour in the window.
+- A spot's species score for a window is the best half-hour score among half hours that are not Unsafe, shown with that half hour's time; if every half hour is Unsafe there is no score.
+- Spots are ranked with data first, then by window fishability, then by score (no score last), then by name.
+- If the window runs past the end of the forecast, the spot is rated from the half hours that have data and says the forecast covers only part of the window; a spot with no data shows "No data" and sorts last.
+- The "Fish for" picker (Any species or one species) drives both the ranking and the best-times species line, and is remembered on the phone.
+- In best times the moon leaves the timeline completely (selector, scoring and markers); sunrise, sunset and the tides stay, and the moon phase stays in the sun line.
+- IPMA warnings are saved with the forecast, so an offline phone still applies them.
+- Typed "what if" values are not overwritten by the automatic forecast load on start; only "Load live forecast" or "Use the forecast again" clears them.
+- Window half hours past the end of the live forecast count as missing, not as example values.
+- Dawn and Dusk round down to 15 minutes.
 
 ## 11. Left to the builder
 
