@@ -47,6 +47,7 @@ p { margin: 0; }
 .eyebrow { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
 .head-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+.status.stale { color: var(--bad); }
 .status { font-size: 0.8rem; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; background: var(--bg); }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
 .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -317,7 +318,7 @@ body{margin:0}
   <details class="whatif panel" id="whatif">
     <summary>Enter conditions by hand</summary>
     <div>
-      <p class="msg">For when there is no connection, or to try "what if". These open-sea values are applied to every spot, then reduced for each spot's shelter. They are used until you load the live forecast again.</p>
+      <p class="msg">For when there is no connection, or to try "what if". These open-sea values are applied to every spot, then reduced for each spot's shelter. They replace the forecast until you press "Use the forecast again" or load the live forecast.</p>
       <div class="grid">
         <div class="field"><label for="f-temp">Sea temp &deg;C</label><input type="number" id="f-temp" step="0.1" min="8" max="30" inputmode="decimal"></div>
         <div class="field"><label for="f-wave">Swell height m</label><input type="number" id="f-wave" step="0.1" min="0" max="12" inputmode="decimal"></div>
@@ -341,6 +342,7 @@ body{margin:0}
       </div>
       <div class="actions">
         <button class="btn ghost" id="b-tide" type="button" hidden>Use computed tide</button>
+        <button class="btn ghost" id="b-clear" type="button" hidden>Use the forecast again</button>
       </div>
     </div>
   </details>
@@ -997,6 +999,7 @@ var FISH = {
     /* A hand-set tide overrides the computed one for the species scores. */
     if (c && c.tide && state.tideAuto) $('f-tide').value = c.tide.state;
     $('b-tide').hidden = state.tideAuto;
+    $('b-clear').hidden = !(state.source === 'manual' && state.live);
     drawMap(conds);
     renderSpots(conds);
     renderWarnBanner(when);
@@ -1042,18 +1045,34 @@ var FISH = {
     renderBest(when, spot, idx);
   }
 
+  function statusText(source, liveAt, nowMs) {
+    if (source === 'live') {
+      var age = (nowMs - liveAt) / 60000;
+      if (age < 90) return 'Forecast loaded ' + hmLocal(liveAt);
+      var day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Atlantic/Azores', weekday: 'short' }).format(new Date(liveAt));
+      return 'Forecast from ' + day + ' ' + hmLocal(liveAt) + ', ' + Math.round(age / 60) + ' h old';
+    }
+    if (source === 'manual') return 'Entered by hand';
+    return liveAt ? 'Outside the forecast range' : 'Example conditions';
+  }
   function setStatus(conds) {
     var c = conds.filter(Boolean)[0], s = $('status');
+    s.classList.remove('stale');
     if (!c) { s.textContent = 'No conditions'; return; }
-    if (c.raw.src === 'live') {
-      var age = (Date.now() - state.live.at) / 60000;
-      s.textContent = 'Forecast loaded ' + (age < 90 ? hmLocal(state.live.at) : Math.round(age / 60) + ' h ago');
-    } else if (c.raw.src === 'manual') s.textContent = 'Entered by hand';
-    else s.textContent = state.live ? 'Outside the forecast range' : 'Example conditions';
+    var src = c.raw.src;
+    s.textContent = statusText(src, state.live ? state.live.at : 0, Date.now());
+    if (src === 'live' && Date.now() - state.live.at >= 24 * 3600000) s.classList.add('stale');
   }
 
   /* ---------- Live data ---------- */
-  function loadLive() {
+  var WARN_KEY = 'pico-warn-v1';
+  function restoreWarn() {
+    try {
+      var j = JSON.parse(localStorage.getItem(WARN_KEY) || 'null');
+      if (j && j.list && Date.now() - j.at < 48 * 3600000) state.warn = j.list;
+    } catch (e) {}
+  }
+  function loadLive(explicit) {
     var msg = $('livemsg');
     msg.hidden = false; msg.textContent = 'Loading the forecast for every spot…';
     var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }); };
@@ -1065,17 +1084,20 @@ var FISH = {
     var weather = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat(0) + '&longitude=' + lon(0) + common +
       '&cell_selection=sea&wind_speed_unit=kmh&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m';
     get('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json').then(function (j) {
-      state.warn = j.filter(function (w) { return w.idAreaAviso === 'ACE'; }); render();
-    }).catch(function () { state.warn = null; });
-    Promise.all([get(marine), get(weather)]).then(function (res) {
+      state.warn = j.filter(function (w) { return w.idAreaAviso === 'ACE'; });
+      try { localStorage.setItem(WARN_KEY, JSON.stringify({ at: Date.now(), list: state.warn })); } catch (e) {}
+      render();
+    }).catch(function () {});
+    return Promise.all([get(marine), get(weather)]).then(function (res) {
       var m = [].concat(res[0]), w = [].concat(res[1]);
       state.live = { at: Date.now(), m: m.map(function (x) { return x.hourly; }), w: w.map(function (x) { return x.hourly; }) };
       try { localStorage.setItem(LIVE_KEY, JSON.stringify(state.live)); } catch (e) {}
-      state.source = 'live'; state.tideAuto = true;
+      if (explicit || state.source !== 'manual') { state.source = 'live'; state.tideAuto = true; }
       msg.textContent = 'Loaded wind and wave forecasts for the next 7 days. Change the date or time to look ahead.';
       render();
     }).catch(function () {
-      msg.textContent = state.live ? 'Could not reach Open-Meteo, so the forecast saved on this phone is shown.' :
+      var ageMin = state.live ? (Date.now() - state.live.at) / 60000 : 0;
+      msg.textContent = state.live ? 'Could not reach Open-Meteo, so the forecast saved on this phone ' + (ageMin < 90 ? 'at ' + hmLocal(state.live.at) : Math.round(ageMin / 60) + ' h ago') + ' is shown.' :
         'Could not reach Open-Meteo. Check your connection, or enter conditions by hand below.';
       if (state.live && state.source !== 'manual') state.source = 'live';
       render();
@@ -1094,6 +1116,7 @@ var FISH = {
     $('f-temp').value = '19.0'; $('f-wave').value = '1.8'; $('f-dir').value = '315'; $('f-per').value = '10'; $('f-wind').value = '4'; $('f-wdir').value = '270'; $('f-tide').value = 'rising';
     setNow();
     restoreLive();
+    restoreWarn();
     SPECIES.forEach(function (sp) { var o = document.createElement('option'); o.value = sp.id; o.textContent = sp.name; $('f-fish').appendChild(o); });
     loadPrefs();
     $('f-fish').value = state.fish; $('f-len').value = String(state.len);
@@ -1134,7 +1157,8 @@ var FISH = {
       var t = e.target.closest ? e.target.closest('[data-smonth]') : null;
       if (t) setSeasonMonth(+t.getAttribute('data-smonth'));
     });
-    $('b-live').addEventListener('click', loadLive);
+    $('b-live').addEventListener('click', function () { loadLive(true); });
+    $('b-clear').addEventListener('click', function () { state.source = 'live'; render(); });
     function pick(t) { state.spot = t.getAttribute('data-spot'); render(); }
     document.addEventListener('click', function (e) {
       var t = e.target.closest ? e.target.closest('[data-spot]') : null;
@@ -1146,8 +1170,8 @@ var FISH = {
     });
     initLog();
     render();
-    if (!TEST && location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive();
-    window.pico = { SPOTS: SPOTS, SPECIES: SPECIES, state: state, whenAt: whenAt, readWhen: readWhen, spotCond: spotCond, scoreFor: scoreFor, render: render, setStatus: setStatus,
+    if (!TEST && location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive(false);
+    window.pico = { SPOTS: SPOTS, SPECIES: SPECIES, state: state, whenAt: whenAt, readWhen: readWhen, spotCond: spotCond, scoreFor: scoreFor, render: render, setStatus: setStatus, statusText: statusText, restoreWarn: restoreWarn, loadLive: loadLive,
       dayTimeline: dayTimeline, renderBest: renderBest, ctxFor: ctxFor, windowSamples: windowSamples, spotWindow: spotWindow, rankSpots: rankSpots, renderRanked: renderRanked, loadPrefs: loadPrefs };
   }
 

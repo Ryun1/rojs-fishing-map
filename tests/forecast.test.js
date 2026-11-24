@@ -112,9 +112,11 @@
     ok(h.indexOf('next day') >= 0, 'next day in ' + h);
   });
 
+  function redWarn() { return { awarenessLevelID: 'red', awarenessTypeName: 'Agitação Marítima', idAreaAviso: 'ACE', startTime: '2026-11-24T00:00:00', endTime: '2026-11-25T00:00:00' }; }
+
   test('all unsafe', function () {
     calmLive();
-    pico.state.warn = [{ awarenessLevelID: 'red', awarenessTypeName: 'Agitação Marítima', idAreaAviso: 'ACE', startTime: '2026-11-24T00:00:00', endTime: '2026-11-25T00:00:00' }];
+    pico.state.warn = [redWarn()];
     var r = pico.rankSpots(T12, 3, '');
     eq(r.length, 5);
     r.forEach(function (x) { eq(x.level, 3); eq(x.score, null); });
@@ -192,6 +194,56 @@
     pico.render();
     eq(b.querySelectorAll('.bars').length, 0);
     ok(b.textContent.indexOf('Good') >= 0, 'stretch label');
+  });
+
+  /* ---------- Task 4: offline copy, saved warnings, clearing what-if ---------- */
+  test('status fresh', function () {
+    var now = Date.now();
+    ok(pico.statusText('live', now - 30 * 60000, now).indexOf('Forecast loaded ') === 0);
+  });
+  test('status old', function () {
+    var now = Date.now(), t = pico.statusText('live', now - 5 * 3600000, now);
+    ok(/5 h old$/.test(t), t);
+    ok(t.indexOf('Forecast from ') === 0, t);
+  });
+  test('stale class', function () {
+    calmLive();
+    pico.state.live.at = Date.now() - 30 * 3600000; pico.state.source = 'live';
+    pico.render();
+    ok(document.getElementById('status').classList.contains('stale'));
+  });
+  test('saved warnings restore', function () {
+    localStorage.setItem('pico-warn-v1', JSON.stringify({ at: Date.now(), list: [redWarn()] }));
+    pico.state.warn = null; pico.restoreWarn();
+    eq(pico.state.warn.length, 1);
+    localStorage.setItem('pico-warn-v1', JSON.stringify({ at: Date.now() - 49 * 3600000, list: [redWarn()] }));
+    pico.state.warn = null; pico.restoreWarn();
+    eq(pico.state.warn, null);
+  });
+  test('clear what-if', function () {
+    calmLive(); pico.state.source = 'manual'; pico.render();
+    var b = document.getElementById('b-clear');
+    ok(!b.hidden, 'visible');
+    b.click();
+    eq(pico.state.source, 'live');
+    ok(b.hidden, 'hidden');
+  });
+  test('auto load keeps manual', function () {
+    var fx = liveFixture(Date.UTC(2026, 10, 24, 0), 48, function () { return CALM; });
+    var realFetch = window.fetch;
+    window.fetch = function (u) {
+      var body = String(u).indexOf('marine-api') >= 0 ? fx.m.map(function (x) { return { hourly: x }; })
+        : String(u).indexOf('api.open-meteo') >= 0 ? fx.w.map(function (x) { return { hourly: x }; }) : [];
+      return Promise.resolve({ ok: true, json: function () { return Promise.resolve(body); } });
+    };
+    pico.state.source = 'manual';
+    return pico.loadLive(false).then(function () {
+      eq(pico.state.source, 'manual');
+      return pico.loadLive(true);
+    }).then(function () {
+      eq(pico.state.source, 'live');
+      window.fetch = realFetch;
+    }, function (e) { window.fetch = realFetch; throw e; });
   });
 
   function finish() {
