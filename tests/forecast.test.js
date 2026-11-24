@@ -425,7 +425,7 @@
   test('tapping a fish shows its score breakdown', function () {
     calmLive(); at('2026-11-24', '10:00'); pico.render();
     var d = document.querySelector('#rank details');
-    eq(d.querySelectorAll('.factors li').length, 7);
+    eq(d.querySelectorAll('.factors li').length, 5);
     d.open = true;
     return new Promise(function (res) { setTimeout(res, 0); }).then(function () {
       pico.render();
@@ -611,6 +611,36 @@
     at('2026-07-15', '10:00'); pico.render();
     var first = document.querySelector('#rank .sname');
     ok(first && first.textContent.indexOf(S('amberjack').name) < 0, first && first.textContent);
+  });
+  test('breakdown shows evidence', function () {
+    calmLive(); at('2026-11-24', '10:00'); pico.render();
+    var d = document.querySelector('#rank details[data-fishd="veja"]');
+    ok(d, 'veja row');
+    var t = d.textContent;
+    ok(t.indexOf('measured') >= 0, 'measured');
+    ok(t.indexOf('estimated') >= 0, 'estimated');
+    ok(t.indexOf('multiplied together') >= 0, 'multiplied');
+  });
+  test('sea line says normal', function () {
+    calmLive(); at('2026-11-24', '10:00'); pico.render();
+    var a = 19 - pico.sstNormal(2026, 11, 24), t = document.querySelector('#spotlist .detail').textContent;
+    var want = Math.abs(a) < 1 ? 'about normal for the date' : (a > 0 ? 'warmer than normal' : 'cooler than normal');
+    ok(t.indexOf(want) >= 0, want + ' in ' + t);
+  });
+  test('conditions row adds up', function () {
+    calmLive(function () { var c = {}; for (var k in CALM) c[k] = CALM[k]; c.sst = 20.5; return c; });
+    at('2026-11-24', '10:00'); pico.render();
+    var d = document.querySelector('#rank details[data-fishd="veja"]');
+    var row = d.querySelectorAll('.factors li')[4].querySelector('.v').textContent.replace('−', '-');
+    var note = d.querySelector('.factors + p').textContent.replace(/−/g, '-');
+    var parts = note.match(/\(([-+]?\d+), estimated\); swell ([-+]?\d+) and tide ([-+]?\d+)/);
+    ok(parts, note);
+    eq(parseInt(row, 10), parseInt(parts[1], 10) + parseInt(parts[2], 10) + parseInt(parts[3], 10));
+  });
+  test('how-to has no temperature gate', function () {
+    var t = document.getElementById('howto').textContent;
+    ok(t.indexOf('multiplied') >= 0, 'multiplied');
+    ok(t.indexOf('cap the total') < 0, 'no cap');
   });
   function finish() {
     var r = { pass: passed, fail: failures.length, failures: failures };

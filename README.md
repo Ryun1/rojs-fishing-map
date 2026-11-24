@@ -16,6 +16,10 @@ A static, installable PWA (no build step) giving a fishing forecast for Pico, Az
 
 In the When panel, pick a start time, a length (1 to 6 hours, or the Dawn and Dusk buttons) and a fish, and "Best spots" ranks the five spots for that window. A spot is rated by its worst half hour. An orange or red sea warning makes every spot Unsafe; a yellow sea warning makes spots open to the swell Unsafe and the rest no better than Poor; any wind warning makes every spot no better than Poor. "Best times" shows fishability and the chosen fish through the day, with sunrise, sunset and the tides marked. The forecast is saved on the phone, so it still works offline and shows how old it is.
 
+## Species scores
+
+Each fish's score (0 to 100) is how often it is caught from the shore × how much it is in season × how active it is at that time of day × how well the spot suits it × a small conditions adjustment. Season curves come from the SREA Pico landings (`tools/season.py`); the other numbers are in `data/species.json` (`base`, `time`, `deep`, `kind`, `warm`, `wave`, `tide`) and the spot depths in `data/spots.json` (`d`). Sea temperature only counts when it is at least 1 °C off its 1991 to 2020 normal for the date, from `data/sst-normal.json`, which `python3 -I tools/sst_normal.py` rebuilds from the research climatology. Tapping a fish shows each part and whether it is measured, estimated or angler lore.
+
 ## Run locally
 
 ```sh

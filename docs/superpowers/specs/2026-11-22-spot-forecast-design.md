@@ -227,7 +227,7 @@ A per-spot rating of **Good, Fair, Poor or Unsafe**, separate from species.
 
 ### 7.5 Species likelihood
 
-A rating per species per spot, shown as a five-step scale with a one-line reason, not as a percentage **(call)**.
+A rating per species per spot, shown as a five-step scale with a one-line reason, not as a percentage **(call)**. Superseded 2026-11-24: a 0–100 score with Likely / Possible / Unlikely words, from the UI review.
 
 The scale is comparable across species **(call)**: five dots means "one of the likeliest catches here now", so a species that is rarely taken from the shore, such as írio, does not sit beside sargo just because it is in season. This needs a base-rate factor per species (how common it is in shore catches), taken from the tiering in the species research. Spots are ranked for a chosen window by fishability first, then by the rating of the species the owner picks, or by the best-rated species if none is picked.
 
@@ -367,7 +367,7 @@ Each phase leaves the app working and is worth using on its own.
    - Map markers coloured by fishability, with wind and swell arrows.
    - Seabed type per spot scraped from open seabed maps.
    - Roj's precise positions and local geography loaded into `data/spots.json`, with the derived geometry recomputed (7.1). This needs no app changes and can be done whenever he supplies them.
-3. **Evidence-based species model.**
+3. **Evidence-based species model.** Done 2026-11-24 (plan: `docs/superpowers/plans/2026-11-24-phase-3-species-model.md`).
    - Season curves generated from the SREA 1994–2026 landings export by a script in `tools/` (starting from `docs/research/scripts/srea.py`).
    - Time-of-day and habitat factors; conditions demoted; evidence labels.
 4. **Forecast.** Done 2026-11-24 (plan: `docs/superpowers/plans/2026-11-24-phase-4-forecast.md`).
@@ -429,6 +429,18 @@ From phase 4 (2026-11-24):
 - Typed "what if" values are not overwritten by the automatic forecast load on start; only "Load live forecast" or "Use the forecast again" clears them.
 - Window half hours past the end of the live forecast count as missing, not as example values.
 - Dawn and Dusk round down to 15 minutes.
+
+From phase 3 (2026-11-24):
+
+- Score = 100 × shore catch rate × season × time of day × habitat fit × conditions, clamped to 0–100; Unsafe still caps it at 15.
+- Shore catch rates are kept close together because Roj has caught all seven from the shore (owner, 2026-11-24): sargo 1.0, veja 0.9, bicuda 0.85, anchova 0.8, moreia 0.75, írio 0.65, serra 0.6. Every fish can reach at least Possible at its peak.
+- Time of day from the research: veja scores 0 after dark; bicuda's night weight drops from 0.9 to 0.4. Labelled measured for sargo, veja, bicuda and moreia, estimated for the others.
+- Habitat fit = depth fit (from the distance to the 50 m depth, against each fish's preference for deep or shallow water) × the old harbour / rock weight.
+- Conditions: sea temperature counts only at 1 °C or more off the 1991–2020 normal for the date (up to ±10%); swell and tide are angler lore (up to −10% and −5%). Wind leaves the species score.
+- Season is labelled measured, with the boat-landings caveat kept.
+- The 0–100 score and Likely / Possible / Unlikely words stay; the five-dot scale is not brought back.
+- With no forecast, fish are ranked by shore catch rate × season.
+- The sea temperature normal is the mean of the six OISST cells around Pico, one value per day; 31 December of a leap year uses day 365.
 
 ## 11. Left to the builder
 
