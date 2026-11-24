@@ -637,6 +637,22 @@
     ok(parts, note);
     eq(parseInt(row, 10), parseInt(parts[1], 10) + parseInt(parts[2], 10) + parseInt(parts[3], 10));
   });
+  test('what-if without a sea temperature still rates', function () {
+    pico.state.live = null; pico.state.source = 'manual';
+    document.getElementById('f-temp').value = '';
+    setDay(); pico.render();
+    var b = badges();
+    eq(b.length, 5);
+    b.forEach(function (t) { ok(t !== 'No forecast', 'rated: ' + t); });
+    ok(document.querySelector('#spotlist .detail').textContent.indexOf('temperature unknown') >= 0, 'sea unknown');
+  });
+  test('fallback reason only for strong scores', function () {
+    /* Sargo at Ponta in March by day: every part just above its limit, score Possible. */
+    var r = pico.scoreFor(S('sargo'), P('ponta'), cx({ month: 3, phase: 'day' }));
+    ok(r.score < 70, 'score ' + r.score);
+    ok(r.why.indexOf('good spot for it') < 0, r.why);
+    ok(/\((measured|estimated|angler lore)\)\.$/.test(r.why), r.why);
+  });
   test('how-to has no temperature gate', function () {
     var t = document.getElementById('howto').textContent;
     ok(t.indexOf('multiplied') >= 0, 'multiplied');

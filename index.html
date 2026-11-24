@@ -542,6 +542,10 @@ var FISH = {
     ['season', 'time', 'habitat', 'base', 'cond'].forEach(function (k) {
       if (f[k] < lim[k] && (worst === null || f[k] < f[worst])) worst = k;
     });
+    /* Several parts just above their limits still multiply to a middling score: then name the weakest part anyway. */
+    if (worst === null && f.base * f.season * f.time * f.habitat * f.cond < 0.7) {
+      ['season', 'time', 'habitat', 'base'].forEach(function (k) { if (worst === null || f[k] < f[worst]) worst = k; });
+    }
     /* Resident fish (season never below 0.4: sargo, veja, moray) are here all year, just quieter in some months. */
     if (worst === 'season') return (Math.min.apply(null, sp.season) >= 0.4 ? 'Here all year, but quieter in ' : 'Out of its usual season in ') + MONTHS[c.month - 1] + ' (measured).';
     if (worst === 'time') return (f.time === 0 ? 'Does not feed ' : 'Weaker ') + PHASE_TEXT[c.phase] + ' (' + sp.ev.time + ').';
@@ -760,7 +764,7 @@ var FISH = {
     /* Outside the loaded forecast there is nothing: the form's values only count once the user chooses them (manual). */
     if (state.source !== 'manual') return null;
     var wave = num('f-wave'), wind = bftKmh(+$('f-wind').value);
-    if (wave == null || wind == null || num('f-temp') == null) return null;
+    if (wave == null || wind == null) return null;
     return { src: 'manual', waveH: wave, waveDir: +$('f-dir').value, wavePer: num('f-per'),
       swellH: wave, swellDir: +$('f-dir').value, swellPer: num('f-per'), windWaveH: 0, windWaveDir: null,
       sst: num('f-temp'), wind: wind, windDir: +$('f-wdir').value, gust: bftKmh(Math.min(12, +$('f-wind').value + 1)) };
