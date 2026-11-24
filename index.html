@@ -621,6 +621,7 @@ var FISH = {
   }
 
   /* ---------- Spots, map and per-spot conditions ---------- */
+  var TEST = /[?&]test\b/.test(location.search);
   var SPOTS = [], SPECIES = [], LIMITS = {};
   var LEVELS = ['Good', 'Fair', 'Poor', 'Unsafe'];
   var LIVE_KEY = 'pico-live-v1';
@@ -712,6 +713,11 @@ var FISH = {
     var dp = date.split('-').map(Number), tp = time.split(':').map(Number);
     var guess = Date.UTC(dp[0], dp[1] - 1, dp[2], tp[0], tp[1]);
     return { y: dp[0], month: dp[1], d: dp[2], t: tp[0] * 60 + tp[1], utc: guess - azOffsetMin(new Date(guess)) * 60000, local: date + 'T' + time };
+  }
+  /* The same shape as readWhen(), for any moment given as UTC milliseconds. */
+  function whenAt(utcMs) {
+    var p = azParts(new Date(utcMs)), date = p.year + '-' + pad(p.month) + '-' + pad(p.day);
+    return { y: p.year, month: p.month, d: p.day, t: p.hour * 60 + p.minute, utc: utcMs, local: date + 'T' + pad(p.hour) + ':' + pad(p.minute) };
   }
   function setNow() {
     var p = azParts(new Date());
@@ -1060,7 +1066,8 @@ var FISH = {
     });
     initLog();
     render();
-    if (location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive();
+    if (!TEST && location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive();
+    window.pico = { SPOTS: SPOTS, SPECIES: SPECIES, state: state, whenAt: whenAt, readWhen: readWhen, spotCond: spotCond, scoreFor: scoreFor, render: render, setStatus: setStatus };
   }
 
   /* ---------- Catch log (design 7.8): built from the phone's own photos, kept on this phone only ---------- */
@@ -1306,10 +1313,11 @@ var FISH = {
   Promise.all([getJSON('data/spots.json'), getJSON('data/species.json')]).then(function (res) {
     SPOTS = res[0].spots; LIMITS = res[0].limits; SPECIES = res[1];
     init();
+    if (TEST) { var ts = document.createElement('script'); ts.src = 'tests/forecast.test.js'; document.body.appendChild(ts); }
   }).catch(function () {
     $('detail').innerHTML = '<p class="msg">Could not load the spot data. Open the app from a web address (not as a file), and check the connection the first time.</p>';
   });
-  if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }
+  if (!TEST && 'serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }
 })();
 </script>
 
