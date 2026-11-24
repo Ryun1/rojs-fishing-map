@@ -54,9 +54,33 @@
     var pre = document.createElement('pre'); pre.id = 'test-out'; pre.textContent = JSON.stringify(r, null, 1);
     document.body.appendChild(pre);
   }
+  /* Each test starts from, and leaves behind, the page as it was: state, form values, fetch and pico- storage. */
+  function snapshot() {
+    var snap = { state: {}, fetch: window.fetch, fields: [], store: {} }, k, i, els = document.querySelectorAll('input, select');
+    for (k in pico.state) snap.state[k] = pico.state[k];
+    for (i = 0; i < els.length; i++) snap.fields.push({ el: els[i], value: els[i].value, checked: els[i].checked });
+    try {
+      for (i = 0; i < localStorage.length; i++) { k = localStorage.key(i); if (k.indexOf('pico-') === 0) snap.store[k] = localStorage.getItem(k); }
+    } catch (e) {}
+    return snap;
+  }
+  function restore(snap) {
+    var k, i, keys = [];
+    for (k in pico.state) if (!(k in snap.state)) delete pico.state[k];
+    for (k in snap.state) pico.state[k] = snap.state[k];
+    for (i = 0; i < snap.fields.length; i++) { snap.fields[i].el.value = snap.fields[i].value; snap.fields[i].el.checked = snap.fields[i].checked; }
+    window.fetch = snap.fetch;
+    try {
+      for (i = 0; i < localStorage.length; i++) if (localStorage.key(i).indexOf('pico-') === 0) keys.push(localStorage.key(i));
+      keys.forEach(function (key) { localStorage.removeItem(key); });
+      for (k in snap.store) localStorage.setItem(k, snap.store[k]);
+    } catch (e) {}
+    try { pico.render(); } catch (e) {}
+  }
   function runNext(i) {
     if (i >= tests.length) { finish(); return; }
-    var t = tests[i], done = function (err) {
+    var t = tests[i], snap = snapshot(), done = function (err) {
+      restore(snap);
       if (err) failures.push({ name: t.name, msg: String(err && err.message || err) }); else passed++;
       runNext(i + 1);
     };
