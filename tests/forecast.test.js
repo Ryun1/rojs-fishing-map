@@ -48,6 +48,91 @@
     eq(c.raw.src, 'live');
   });
 
+  /* ---------- Task 2: ranked spots for a window ---------- */
+  var CALM = { wave: 0.2, waveDir: 315, per: 8, wind: 8, windDir: 90, gust: 12, sst: 19 };
+  /* A swell that the real exposure model lets through: 3.0 m from the middle of the spot's first open sector. */
+  function unsafeFor(i) {
+    var s = pico.SPOTS[i].open[0], a = s[0], b = s[1];
+    if (b < a) b += 360;
+    return { wave: 3.0, waveDir: ((a + b) / 2) % 360, per: 8, wind: 8, windDir: 90, gust: 12, sst: 19 };
+  }
+  function calmLive(fn) {
+    pico.state.live = liveFixture(Date.UTC(2026, 10, 24, 0), 48, function (s, h) { return fn ? (fn(s, h) || CALM) : CALM; });
+    pico.state.source = 'live';
+  }
+  var T12 = Date.UTC(2026, 10, 24, 12);
+
+  test('ranks by fishability then score', function () {
+    calmLive(function (s) {
+      if (s === 2) return unsafeFor(2);
+      if (s === 0) return { wave: 0.2, waveDir: 315, per: 8, wind: 45, windDir: 90, gust: 55, sst: 19 };
+    });
+    var r = pico.rankSpots(T12, 3, '');
+    eq(r.length, 5);
+    var last = r[4];
+    eq(last.spot.id, pico.SPOTS[2].id); eq(last.level, 3); eq(last.score, null);
+    var zero = r.filter(function (x) { return x.spot.id === pico.SPOTS[0].id; })[0];
+    eq(zero.level, 2);
+    ok(r[0].level === 0 && r[1].level === 0 && r[2].level === 0, 'first three are level 0');
+    ok(r[0].score >= r[1].score && r[1].score >= r[2].score, 'sorted by score');
+  });
+
+  test('worst half hour wins', function () {
+    calmLive(function (s, h) { if (s === 1 && h === 13) return unsafeFor(1); });
+    var r = pico.rankSpots(T12, 3, ''), e = r.filter(function (x) { return x.i === 1; })[0];
+    eq(e.level, 3);
+    ok(e.at !== Date.UTC(2026, 10, 24, 12, 30) && e.at !== Date.UTC(2026, 10, 24, 13), 'at is a safe half hour');
+  });
+
+  test('picked species', function () {
+    calmLive();
+    var id = pico.SPECIES[0].id, r = pico.rankSpots(T12, 3, id);
+    r.forEach(function (x) { if (x.score !== null) eq(x.sp.id, id); });
+    ok(r.some(function (x) { return x.score !== null; }), 'some score');
+  });
+
+  test('partial window', function () {
+    pico.state.live = liveFixture(Date.UTC(2026, 10, 24, 0), 24, function () { return CALM; });
+    pico.state.source = 'live';
+    var r = pico.rankSpots(Date.UTC(2026, 10, 24, 22), 3, '');
+    eq(r[0].samples, 6); eq(r[0].missing, 3); ok(r[0].level !== null, 'level');
+    pico.state.len = 3; pico.state.fish = '';
+    pico.renderRanked(pico.whenAt(Date.UTC(2026, 10, 24, 22)));
+    ok(document.getElementById('ranked').textContent.indexOf('covers only part') >= 0, 'partial note');
+  });
+
+  test('window across midnight', function () {
+    calmLive();
+    document.getElementById('f-date').value = '2026-11-24';
+    document.getElementById('f-time').value = '23:00';
+    pico.state.len = 3; pico.state.fish = '';
+    pico.renderRanked(pico.readWhen());
+    var h = document.getElementById('h-rank').textContent;
+    ok(h.indexOf('23:00–02:00') >= 0, 'range in ' + h);
+    ok(h.indexOf('next day') >= 0, 'next day in ' + h);
+  });
+
+  test('all unsafe', function () {
+    calmLive();
+    pico.state.warn = [{ awarenessLevelID: 'red', awarenessTypeName: 'Agitação Marítima', idAreaAviso: 'ACE', startTime: '2026-11-24T00:00:00', endTime: '2026-11-25T00:00:00' }];
+    var r = pico.rankSpots(T12, 3, '');
+    eq(r.length, 5);
+    r.forEach(function (x) { eq(x.level, 3); eq(x.score, null); });
+  });
+
+  test('manual mode', function () {
+    pico.state.live = null; pico.state.source = 'manual';
+    var r = pico.rankSpots(T12, 3, '');
+    eq(r.length, 5);
+    r.forEach(function (x) { ok(x.level !== null, 'level null'); });
+  });
+
+  test('bad saved fish', function () {
+    localStorage.setItem('pico-prefs-v1', '{"fish":"nosuchfish","len":3}');
+    pico.loadPrefs();
+    eq(pico.state.fish, '');
+  });
+
   function finish() {
     var r = { pass: passed, fail: failures.length, failures: failures };
     window.picoTestResult = r;

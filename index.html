@@ -148,6 +148,10 @@ a { color: var(--accent); }
 .spotrow[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .spotrow .top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
 .spotrow .nm { font-weight: 600; }
+.ranked .rk { font-family: var(--font-data); color: var(--muted); margin-right: 8px; }
+.ranked .nm { display: flex; align-items: baseline; min-width: 0; }
+.ranked .line { color: var(--fg); font-size: 0.9rem; }
+.ranked .why, .ranked .part { color: var(--muted); font-size: 0.85rem; }
 .spotrow .sum { color: var(--muted); font-size: 0.85rem; font-family: var(--font-data); }
 .badge { display: inline-block; font-size: 0.78rem; font-weight: 600; border-radius: 999px; padding: 1px 9px; border: 1px solid currentColor; white-space: nowrap; }
 .badge.l0 { color: var(--good); } .badge.l1 { color: var(--warn); } .badge.l2 { color: var(--bad); }
@@ -205,14 +209,24 @@ body{margin:0}
     <div class="when">
       <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
       <div class="field"><label for="f-time">Time (Azores)</label><input type="time" id="f-time"></div>
+      <div class="field"><label for="f-len">For</label>
+        <select id="f-len"><option value="1">1 hour</option><option value="2">2 hours</option><option value="3" selected>3 hours</option><option value="4">4 hours</option><option value="6">6 hours</option></select></div>
+      <div class="field"><label for="f-fish">Fish for</label><select id="f-fish"><option value="">Any species</option></select></div>
     </div>
     <div class="actions">
       <button class="btn ghost" id="b-now" type="button">Now</button>
+      <button class="btn ghost" id="b-dawn" type="button">Dawn</button>
+      <button class="btn ghost" id="b-dusk" type="button">Dusk</button>
       <button class="btn" id="b-live" type="button">Load live forecast</button>
       <button class="btn ghost" id="b-gps" type="button">Use my location</button>
     </div>
     <p class="msg" id="livemsg" hidden></p>
     <div class="sunline" id="sunline"></div>
+  </section>
+
+  <section aria-labelledby="h-rank" style="display:flex;flex-direction:column;gap:12px">
+    <h2 id="h-rank">Best spots</h2>
+    <ol class="spotlist ranked" id="ranked"></ol>
   </section>
 
   <section aria-labelledby="h-spot" style="display:flex;flex-direction:column;gap:12px">
@@ -625,7 +639,8 @@ var FISH = {
   var SPOTS = [], SPECIES = [], LIMITS = {};
   var LEVELS = ['Good', 'Fair', 'Poor', 'Unsafe'];
   var LIVE_KEY = 'pico-live-v1';
-  var state = { smonth: null, spot: 'madalena', source: 'example', gps: null, tideAuto: true, live: null, warn: null };
+  var state = { smonth: null, spot: 'madalena', source: 'example', gps: null, tideAuto: true, live: null, warn: null, fish: '', len: 3 };
+  var PREFS_KEY = 'pico-prefs-v1', LENS = [1, 2, 3, 4, 6];
 
   /* Seasons: browse the 12-month curves in data/species.json. state.smonth is null while it follows the chosen date. */
   function seasonMonth() {
@@ -909,6 +924,87 @@ var FISH = {
     }).join('; ') + '.</div>' : '';
   }
 
+  function ctxFor(when, cc) {
+    var tideState = state.tideAuto ? (cc.tide ? cc.tide.state : 'rising') : $('f-tide').value;
+    return { month: when.month, temp: cc.raw.sst != null ? cc.raw.sst : 19, wind: Math.round(cc.raw.wind), eff: cc.eff, phase: cc.phase,
+      moving: tideState === 'rising' || tideState === 'falling', danger: cc.rating.level === 3, sun: cc.sun };
+  }
+
+  /* ---------- Ranked spots for a time window ---------- */
+  function loadPrefs() {
+    try {
+      var j = JSON.parse(localStorage.getItem(PREFS_KEY) || 'null') || {};
+      state.fish = SPECIES.some(function (sp) { return sp.id === j.fish; }) ? j.fish : '';
+      state.len = LENS.indexOf(j.len) >= 0 ? j.len : 3;
+    } catch (e) { state.fish = ''; state.len = 3; }
+  }
+  function savePrefs() {
+    try { localStorage.setItem(PREFS_KEY, JSON.stringify({ fish: state.fish, len: state.len })); } catch (e) {}
+  }
+  /* Every half hour from fromUtc, end exclusive. */
+  function windowSamples(fromUtc, hours) {
+    var out = [], k;
+    for (k = 0; k < hours * 2; k++) out.push(fromUtc + k * 1800000);
+    return out;
+  }
+  function spotWindow(spot, i, fromUtc, hours, fishId) {
+    var samples = windowSamples(fromUtc, hours), res = { level: null, worstWhy: null, samples: samples.length, missing: 0, score: null, sp: null, at: null };
+    var firstWhy = null, pool = fishId ? SPECIES.filter(function (sp) { return sp.id === fishId; }) : SPECIES;
+    samples.forEach(function (utc) {
+      var w = whenAt(utc), c = spotCond(spot, i, w);
+      /* Outside a loaded forecast the form's example values would be used; they are not a forecast for that time. */
+      if (!c || (state.live && state.source !== 'manual' && c.raw.src !== 'live')) { res.missing++; return; }
+      var lv = c.rating.level;
+      if (res.level === null || lv > res.level) { res.level = lv; firstWhy = c.rating.why[0] || null; }
+      if (lv === 3) return;
+      var cx = ctxFor(w, c);
+      pool.forEach(function (sp) {
+        var sc = scoreFor(sp, spot, cx).score;
+        if (res.score === null || sc > res.score) { res.score = sc; res.sp = sp; res.at = utc; }
+      });
+    });
+    res.worstWhy = res.level >= 1 ? firstWhy : null;
+    return res;
+  }
+  function rankSpots(fromUtc, hours, fishId) {
+    return SPOTS.map(function (s, i) {
+      var r = spotWindow(s, i, fromUtc, hours, fishId);
+      r.spot = s; r.i = i;
+      return r;
+    }).sort(function (a, b) {
+      var la = a.level === null ? 9 : a.level, lb = b.level === null ? 9 : b.level;
+      if (la !== lb) return la - lb;
+      var sa = a.score === null ? -1 : a.score, sb = b.score === null ? -1 : b.score;
+      return sb - sa || a.i - b.i;
+    });
+  }
+  var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  function renderRanked(when) {
+    if (!when || !SPOTS.length) return;
+    var end = whenAt(when.utc + state.len * 3600000), later = end.y * 10000 + end.month * 100 + end.d > when.y * 10000 + when.month * 100 + when.d;
+    var clock = function (w) { return pad(Math.floor(w.t / 60)) + ':' + pad(w.t % 60); };
+    var dow = DAYS[new Date(Date.UTC(when.y, when.month - 1, when.d)).getUTCDay()];
+    $('h-rank').textContent = 'Best spots, ' + dow + ' ' + when.d + ' ' + MONTHS[when.month - 1].slice(0, 3) + ' ' + clock(when) + '\u2013' + clock(end) + (later ? ' next day' : '');
+    $('ranked').innerHTML = rankSpots(when.utc, state.len, state.fish).map(function (r, k) {
+      var badge = r.level === null ? '<span class="badge lx">No data</span>' : '<span class="badge l' + r.level + '">' + LEVELS[r.level] + '</span>';
+      var line = r.score !== null ? r.sp.name + ' ' + r.score + ' at ' + hmLocal(r.at) : (r.level === 3 ? 'No species score: unsafe for the whole window' : '');
+      return '<li><button type="button" class="spotrow" data-spot="' + r.spot.id + '" aria-pressed="' + (r.spot.id === state.spot) + '"><span class="top"><span class="nm"><span class="rk">' + (k + 1) + '</span>' + r.spot.name + '</span>' + badge + '</span>' +
+        (line ? '<span class="line">' + line + '</span>' : '') +
+        (r.worstWhy ? '<span class="why">At worst: ' + r.worstWhy + '</span>' : '') +
+        (r.missing > 0 && r.samples > r.missing ? '<span class="part">The forecast covers only part of this window.</span>' : '') + '</button></li>';
+    }).join('');
+  }
+  /* Dawn and Dusk set the time so a window starts one hour before sunrise or two before sunset. */
+  function setTimeFor(which) {
+    var date = $('f-date').value;
+    if (!date) return;
+    var dp = date.split('-').map(Number), at = state.gps || currentSpot(), sun = sunTimes(dp[0], dp[1], dp[2], at.lat, at.lon);
+    var m = Math.max(0, Math.floor(((which === 'dawn' ? sun.rise - 60 : sun.set - 120)) / 15) * 15);
+    $('f-time').value = pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+    state.len = 3; $('f-len').value = '3'; savePrefs();
+    render();
+  }
+
   function render() {
     var when = readWhen();
     if (SPECIES.length) renderSeasons();
@@ -924,6 +1020,7 @@ var FISH = {
     renderWarnBanner(when);
     renderDetail(spot, c, when);
     setStatus(conds);
+    renderRanked(when);
 
     if (!c) {
       $('rank').innerHTML = '<li><span class="msg">No conditions for this time, so no species scores.</span></li>';
@@ -933,12 +1030,7 @@ var FISH = {
     $('sunline').innerHTML = '<span>Sunrise ' + hm(c.sun.rise) + '</span><span>Sunset ' + hm(c.sun.set) + '</span><span>' + moonInfo(when.y, when.month, when.d) + '</span>';
     $('spotnote').textContent = 'At ' + spot.name + ', ' + when.local.replace('T', ' ') + '.';
 
-    function ctx(cc) {
-      var tideState = state.tideAuto ? (cc.tide ? cc.tide.state : 'rising') : $('f-tide').value;
-      return { month: when.month, temp: cc.raw.sst != null ? cc.raw.sst : 19, wind: Math.round(cc.raw.wind), eff: cc.eff, phase: cc.phase,
-        moving: tideState === 'rising' || tideState === 'falling', danger: cc.rating.level === 3, sun: cc.sun };
-    }
-    var cx = ctx(c);
+    var cx = ctxFor(when, c);
     var rows = SPECIES.map(function (sp) { return { sp: sp, r: scoreFor(sp, spot, cx) }; })
       .sort(function (a, b) { return b.r.score - a.r.score; });
     $('rank').innerHTML = (c.rating.level === 3 ? '<li class="banner"><strong>Stay off the rocks.</strong> ' + spot.name + ' is rated Unsafe at this time, so species scores are capped.</li>' : '') +
@@ -960,7 +1052,7 @@ var FISH = {
     var body = '<tbody>' + fishRow + SPECIES.map(function (sp) {
       return '<tr><td>' + sp.name + '</td>' + SPOTS.map(function (s, i) {
         if (!conds[i]) return '<td>–</td>';
-        var sc = scoreFor(sp, s, ctx(conds[i])).score;
+        var sc = scoreFor(sp, s, ctxFor(when, conds[i])).score;
         return '<td class="c ' + labelOf(sc)[0] + (s.id === state.spot ? ' sel' : '') + '">' + sc + '</td>';
       }).join('') + '</tr>';
     }).join('') + '</tbody>';
@@ -1020,6 +1112,13 @@ var FISH = {
     $('f-temp').value = '19.0'; $('f-wave').value = '1.8'; $('f-dir').value = '315'; $('f-per').value = '10'; $('f-wind').value = '4'; $('f-wdir').value = '270'; $('f-tide').value = 'rising';
     setNow();
     restoreLive();
+    SPECIES.forEach(function (sp) { var o = document.createElement('option'); o.value = sp.id; o.textContent = sp.name; $('f-fish').appendChild(o); });
+    loadPrefs();
+    $('f-fish').value = state.fish; $('f-len').value = String(state.len);
+    $('f-fish').addEventListener('change', function () { state.fish = $('f-fish').value; savePrefs(); render(); });
+    $('f-len').addEventListener('change', function () { state.len = +$('f-len').value; savePrefs(); render(); });
+    $('b-dawn').addEventListener('click', function () { setTimeFor('dawn'); });
+    $('b-dusk').addEventListener('click', function () { setTimeFor('dusk'); });
     ['input', 'change'].forEach(function (ev) {
       $('f-tide').addEventListener(ev, function () { state.tideAuto = false; render(); });
       ['f-date', 'f-time'].forEach(function (id) { $(id).addEventListener(ev, render); });
@@ -1067,7 +1166,8 @@ var FISH = {
     initLog();
     render();
     if (!TEST && location.protocol.indexOf('http') === 0 && navigator.onLine !== false) loadLive();
-    window.pico = { SPOTS: SPOTS, SPECIES: SPECIES, state: state, whenAt: whenAt, readWhen: readWhen, spotCond: spotCond, scoreFor: scoreFor, render: render, setStatus: setStatus };
+    window.pico = { SPOTS: SPOTS, SPECIES: SPECIES, state: state, whenAt: whenAt, readWhen: readWhen, spotCond: spotCond, scoreFor: scoreFor, render: render, setStatus: setStatus,
+      ctxFor: ctxFor, windowSamples: windowSamples, spotWindow: spotWindow, rankSpots: rankSpots, renderRanked: renderRanked, loadPrefs: loadPrefs };
   }
 
   /* ---------- Catch log (design 7.8): built from the phone's own photos, kept on this phone only ---------- */
