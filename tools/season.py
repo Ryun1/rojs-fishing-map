@@ -10,7 +10,8 @@ For each species:
   2. smooth it once around the year with weights 1/4, 1/2, 1/4 and rescale to top = 1,
      so one odd month does not dominate,
   3. lift it onto a floor: season = floor + (1 - floor) * curve.
-     Resident reef fish (sargo, veja, moray) are on the coast all year and the
+     Resident reef fish (sargo, veja, moray, comber, scorpionfish, grouper,
+     two-banded seabream, bogue) are on the coast all year and the
      landings mainly show when they are targeted and most active, so they get a
      floor of 0.4. Visiting pelagics get 0.1.
 
@@ -33,7 +34,16 @@ MAP = {
     "sargo": ("Sargo Sarguete", 0.4),
     "veja": ("Veja", 0.4),
     "moray": ("Moreia Pintada", 0.4),
+    "comber": ("Garoupa", 0.4),
+    "triggerfish": ("Peixe Porco", 0.1),
+    "pompano": ("Prombeta", 0.1),
+    "jackmackerel": ("Chicharro", 0.1),
+    "scorpionfish": ("Rocaz", 0.4),
+    "grouper": ("Badejo", 0.4),
+    "safia": ("Safia", 0.4),
+    "bogue": ("Boga", 0.4),
 }
+# lizardfish has no usable landings (18 kg in 32 years as "lagarto da costa"), so its flat season is set by hand.
 SOURCE = "SREA Pico landings 1994-2025"
 
 

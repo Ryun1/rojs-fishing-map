@@ -14,7 +14,7 @@ A static, installable PWA (no build step) giving a fishing forecast for Pico, Az
 
 ## Ranking and best times
 
-In the When panel, pick a start time, a length (1 to 6 hours, or the Dawn and Dusk buttons) and a fish, and "Best spots" ranks the five spots for that window. A spot is rated by its worst half hour. An orange or red sea warning makes every spot Unsafe; a yellow sea warning makes spots open to the swell Unsafe and the rest no better than Poor; any wind warning makes every spot no better than Poor. "Best times" shows fishability and the chosen fish through the day, with sunrise, sunset and the tides marked. The forecast is saved on the phone, so it still works offline and shows how old it is.
+In the When panel, pick a start time, a length (1 to 6 hours, or the Dawn and Dusk buttons) and a fish, and "Best spots" ranks the spots for that window. A spot is rated by its worst half hour. An orange or red sea warning makes every spot Unsafe; a yellow sea warning makes spots open to the swell Unsafe and the rest no better than Poor; any wind warning makes every spot no better than Poor. "Best times" shows fishability and the chosen fish through the day, with sunrise, sunset and the tides marked. The forecast is saved on the phone, so it still works offline and shows how old it is.
 
 ## Species scores
 

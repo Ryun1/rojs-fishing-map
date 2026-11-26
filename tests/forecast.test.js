@@ -9,10 +9,10 @@
   }
   function ok(cond, msg) { if (!cond) throw new Error(msg || 'not ok'); }
 
-  /* A state.live-shaped object: 5 spots, `hours` hourly values from startUtcMs; fn(spotIdx, hourIdx) gives the values. */
+  /* A state.live-shaped object: one entry per spot, `hours` hourly values from startUtcMs; fn(spotIdx, hourIdx) gives the values. */
   function liveFixture(startUtcMs, hours, fn) {
     var m = [], w = [], s, h, t0 = startUtcMs / 1000;
-    for (s = 0; s < 5; s++) {
+    for (s = 0; s < pico.SPOTS.length; s++) {
       var mm = { time: [], wave_height: [], wave_direction: [], wave_period: [], swell_wave_height: [], swell_wave_direction: [], swell_wave_period: [], wind_wave_height: [], wind_wave_direction: [], sea_surface_temperature: [] };
       var ww = { time: [], wind_speed_10m: [], wind_direction_10m: [], wind_gusts_10m: [] };
       for (h = 0; h < hours; h++) {
@@ -68,8 +68,8 @@
       if (s === 0) return { wave: 0.2, waveDir: 315, per: 8, wind: 45, windDir: 90, gust: 55, sst: 19 };
     });
     var r = pico.rankSpots(T12, 3, '');
-    eq(r.length, 5);
-    var last = r[4];
+    eq(r.length, pico.SPOTS.length);
+    var last = r[r.length - 1];
     eq(last.spot.id, pico.SPOTS[2].id); eq(last.level, 3); eq(last.score, null);
     var zero = r.filter(function (x) { return x.spot.id === pico.SPOTS[0].id; })[0];
     eq(zero.level, 2);
@@ -118,14 +118,14 @@
     calmLive();
     pico.state.warn = [redWarn()];
     var r = pico.rankSpots(T12, 3, '');
-    eq(r.length, 5);
+    eq(r.length, pico.SPOTS.length);
     r.forEach(function (x) { eq(x.level, 3); eq(x.score, null); });
   });
 
   test('manual mode', function () {
     pico.state.live = null; pico.state.source = 'manual';
     var r = pico.rankSpots(T12, 3, '');
-    eq(r.length, 5);
+    eq(r.length, pico.SPOTS.length);
     r.forEach(function (x) { ok(x.level !== null, 'level null'); });
   });
 
@@ -288,7 +288,7 @@
     var d = document.querySelector('#spotlist .detail');
     ok(d.textContent.indexOf('Fishable:') < 0, 'no Fishable badge');
     badges().forEach(function (t) { eq(t, 'No forecast'); });
-    eq(badges().length, 5);
+    eq(badges().length, pico.SPOTS.length);
     eq(document.getElementById('h-sum').textContent, 'No forecast for this time');
   });
   test('example values show no data in the spot views', function () {
@@ -302,7 +302,7 @@
     pico.state.live = null; pico.state.source = 'manual';
     setDay(); pico.render();
     var b = badges();
-    eq(b.length, 5);
+    eq(b.length, pico.SPOTS.length);
     b.forEach(function (t) { ok(t !== 'No forecast', 'real level'); });
   });
   test('flat scores say so instead of All day', function () {
@@ -450,11 +450,11 @@
     eq(document.querySelectorAll('#grid tbody tr').length, pico.SPECIES.length);
     eq(document.querySelectorAll('#grid [data-spot="' + pico.SPOTS[0].id + '"]').length, 0);
   });
-  test('week view: 7 days by 5 spots, worst hour per part of the day', function () {
+  test('week view: 7 days by every spot, worst hour per part of the day', function () {
     weekLive(function (s) { return s === 2 ? unsafeFor(2) : null; });
     pico.render();
     var cells = document.querySelectorAll('#week [data-week]');
-    eq(cells.length, 35);
+    eq(cells.length, 7 * pico.SPOTS.length);
     [].forEach.call(cells, function (b) {
       eq(b.querySelectorAll('.seg').length, 3);
       if (b.getAttribute('data-week').split('|')[1] === pico.SPOTS[2].id) eq(b.querySelectorAll('.seg.l3').length, 3, b.getAttribute('aria-label'));
@@ -475,6 +475,47 @@
     weekLive(); pico.state.source = 'manual'; pico.render();
     eq(document.querySelectorAll('#week [data-week]').length, 0);
     ok(document.getElementById('week').textContent.indexOf('your own values') >= 0);
+  });
+  test('week view lists one row per spot and one column per day', function () {
+    weekLive();
+    pico.render();
+    var rows = document.querySelectorAll('#week tbody tr');
+    eq(rows.length, pico.SPOTS.length);
+    [].forEach.call(rows, function (tr, i) {
+      eq(tr.querySelector('th').textContent, pico.SPOTS[i].short || pico.SPOTS[i].name);
+      eq(tr.querySelectorAll('[data-week]').length, 7);
+    });
+  });
+  /* Spots added from the owner's catch photos: positions on a 100 m grid, everything the forecast needs present. */
+  var PHOTO_SPOTS = ['saomateus', 'coxos', 'saocaetano', 'calhau', 'pocinho', 'smateusw', 'admoiro', 'cachorro'];
+  test('spots from catch photos are rounded and complete', function () {
+    PHOTO_SPOTS.forEach(function (id) {
+      var s = pico.SPOTS.filter(function (x) { return x.id === id; })[0];
+      ok(s, id + ' missing');
+      ok(Math.abs(s.lat * 1000 - Math.round(s.lat * 1000)) < 1e-6 && Math.abs(s.lon * 1000 - Math.round(s.lon * 1000)) < 1e-6, id + ' not on the 100 m grid');
+      ok(s.open.length > 0 && s.wavePt.length === 2 && s.d.length === 3 && (s.type === 'rock' || s.type === 'harbour'), id + ' incomplete');
+      ok(Math.abs(s.wavePt[0] - s.lat) + Math.abs(s.wavePt[1] - s.lon) > 0.02, id + ' wave point too close to shore');
+    });
+  });
+  test('map markers do not overlap', function () {
+    pico.render();
+    var mk = [].map.call(document.querySelectorAll('#map-spots .mk'), function (g) { return g.querySelector('.ring').getBoundingClientRect(); });
+    eq(mk.length, pico.SPOTS.length);
+    mk.forEach(function (a, i) { mk.forEach(function (b, j) {
+      if (j <= i) return;
+      var dx = (a.left + a.right - b.left - b.right) / 2, dy = (a.top + a.bottom - b.top - b.bottom) / 2;
+      ok(Math.sqrt(dx * dx + dy * dy) >= (a.width + b.width) / 2, pico.SPOTS[i].id + ' overlaps ' + pico.SPOTS[j].id);
+    }); });
+  });
+  test('a fish with no landings curve says its season is estimated', function () {
+    var liz = pico.SPECIES.filter(function (x) { return x.id === 'lizardfish'; })[0];
+    eq(liz.ev.season, 'estimated');
+    pico.render();
+    var items = document.querySelectorAll('#s-list > li');
+    var last = items[items.length - 1];
+    eq(last.getAttribute('data-sp'), 'lizardfish');
+    ok(last.querySelector('.score').textContent.indexOf('No data') >= 0, last.querySelector('.score').textContent);
+    ok(/flat guess/.test(last.querySelector('.speak').textContent), 'peak text');
   });
   test('following now hides the Now button until the time is changed', function () {
     calmLive(); pico.state.followNow = true; pico.render();
@@ -642,7 +683,7 @@
     document.getElementById('f-temp').value = '';
     setDay(); pico.render();
     var b = badges();
-    eq(b.length, 5);
+    eq(b.length, pico.SPOTS.length);
     b.forEach(function (t) { ok(t !== 'No forecast', 'rated: ' + t); });
     ok(document.querySelector('#spotlist .detail').textContent.indexOf('temperature unknown') >= 0, 'sea unknown');
   });

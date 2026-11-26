@@ -1,5 +1,5 @@
 {
-  "_about": "Spot data and fishability limits. Positions, facings and sectors come from the OpenStreetMap coastline (docs/research/spots.md), not checked on the ground. face = bearing the open water lies toward. open = wind/swell directions (FROM, degrees, clockwise from first to second) with 40 km or more of open ocean. channel = directions with only 2 to 40 km of water (Faial, São Jorge or Pico itself in the way). wavePt = offshore point sent to the Open-Meteo marine service; weather uses the spot position with cell_selection=sea. tideLag = minutes after Horta. d = distance offshore in metres to the 20, 50 and 100 m depths (null = beyond 2 km), from the EMODnet profile in docs/research/spots.md; dSure is false where the grid jumps from the coast straight to deep survey data, so only 'deep water within that distance' is known.",
+  "_about": "Spot data and fishability limits. Positions, facings and sectors come from the OpenStreetMap coastline (docs/research/spots.md), not checked on the ground. The spots from São Mateus onward are places the owner has fished (from catch-photo locations, rounded to a 100 m grid); their facings come from the app's map coastline and their depths from the nearest profile in docs/research/spots.md. face = bearing the open water lies toward. open = wind/swell directions (FROM, degrees, clockwise from first to second) with 40 km or more of open ocean. channel = directions with only 2 to 40 km of water (Faial, São Jorge or Pico itself in the way). wavePt = offshore point sent to the Open-Meteo marine service; weather uses the spot position with cell_selection=sea. tideLag = minutes after Horta. d = distance offshore in metres to the 20, 50 and 100 m depths (null = beyond 2 km), from the EMODnet profile in docs/research/spots.md; dSure is false where the grid jumps from the coast straight to deep survey data, so only 'deep water within that distance' is known.",
   "limits": {
     "_about": "Cautious starting values for the Good / Fair / Poor / Unsafe rating. Waves are the effective height at the spot, in metres; wind and gusts are Beaufort forces (0 to 12), each applying from that force up. After dark every wave limit is lowered by nightWaveCut. Tell Claude to change any number.",
     "unsafeWave": 2.0,
@@ -26,7 +26,7 @@
       "depth": "Shallow rocky shelf: 20 m about 735 m out, 50 m about 1.9 km.",
       "note": "Harbour breakwater facing the Faial channel. The most exposed part of Pico to the usual north-west swell. Westerly swell is mostly blocked by Faial.",
       "hazard": "Fishing limits around the Madalena islets. Local restrictions may apply here; check before fishing.",
-      "label": { "dx": 4, "dy": -16, "anchor": "start" }
+      "label": { "dx": 16, "dy": 6, "anchor": "start" }
     },
     {
       "id": "saoroque", "name": "São Roque", "short": "São Roque", "place": "Cais do Pico old quay, São Roque", "coast": "north coast, São Jorge channel",
@@ -36,7 +36,7 @@
       "depth": "Very steep: 20 m about 160 m out, 100 m about 460 m out.",
       "note": "The old quay in the bay at Cais do Pico. Open to north-north-west and easterly swell; São Jorge blocks most of the north-east. Sheltered in southerly weather.",
       "hazard": "Bathing place beside the quay. Local restrictions may apply here; check before fishing.",
-      "label": { "dx": 0, "dy": -18, "anchor": "middle" }
+      "label": { "dx": 0, "dy": -20, "anchor": "middle" }
     },
     {
       "id": "lajes", "name": "Lajes do Pico", "short": "Lajes", "place": "Lajes do Pico breakwater", "coast": "south coast",
@@ -46,7 +46,7 @@
       "depth": "Shallow lava shelf: 20 m about 440 m out, 100 m about 1 km.",
       "note": "South coast harbour breakwater, open from south to west. Sheltered when the wind and swell are northerly.",
       "hazard": "Two bathing places nearby, inside a Pico Nature Park resource-management area. Local restrictions may apply here; check before fishing.",
-      "label": { "dx": -8, "dy": -14, "anchor": "end" }
+      "label": { "dx": 0, "dy": 32, "anchor": "middle" }
     },
     {
       "id": "calheta", "name": "Calheta de Nesquim", "short": "Calheta", "place": "Calheta de Nesquim port", "coast": "south-east coast",
@@ -56,7 +56,7 @@
       "depth": "Deep water within about 250 m; nearer depths unknown.",
       "note": "Small port on the south-east coast, open from east round to south-south-west. Sheltered from the north-west.",
       "hazard": null,
-      "label": { "dx": 30, "dy": 36, "anchor": "end" }
+      "label": { "dx": 0, "dy": 32, "anchor": "middle" }
     },
     {
       "id": "ponta", "name": "Ponta da Ilha", "short": "Ponta", "place": "Ponta da Ilha lighthouse rocks", "coast": "east tip",
@@ -67,7 +67,87 @@
       "note": "Low lava point at the east tip, open through 190 degrees from east-north-east to west-south-west, with strong current.",
       "hazard": "Low lava platform: dangerous in any swell. Stricter wave limits are used here.",
       "limits": { "unsafeWave": 1.5, "unsafeWaveLong": 1.2, "poorWave": 0.9, "fairWave": 0.5 },
-      "label": { "dx": 10, "dy": -16, "anchor": "end" }
+      "label": { "dx": 0, "dy": -20, "anchor": "end" }
+    },
+    {
+      "id": "saomateus", "name": "São Mateus", "short": "S. Mateus", "place": "São Mateus shore, south-east of the port", "coast": "south coast",
+      "type": "rock", "lat": 38.427, "lon": -28.456, "face": 213,
+      "open": [[135, 290]], "channel": [[295, 295]],
+      "wavePt": [38.389, -28.487], "tideLag": 0, "d": [180, 306, 450], "dSure": false,
+      "depth": "Steep: about 100 m deep within roughly 450 m (from the profile at nearby Ponta de São Mateus).",
+      "note": "Lava shore just south-east of São Mateus fishing port, open to the ocean from south-east round to west-north-west. Sheltered in northerly weather.",
+      "hazard": null,
+      "label": { "dx": -16, "dy": 18, "anchor": "end", "at": [-8, 16] }
+    },
+    {
+      "id": "coxos", "name": "Coxos", "short": "Coxos", "place": "Coxos fishing rocks, east of São Mateus", "coast": "south coast",
+      "type": "rock", "lat": 38.42, "lon": -28.436, "face": 186,
+      "open": [[105, 270]], "channel": [[90, 100]],
+      "wavePt": [38.375, -28.442], "tideLag": 0, "d": [132, 132, 244], "dSure": false,
+      "depth": "Very steep: deep water within about 130 m; 100 m deep about 250 m out.",
+      "note": "Named shore-fishing rocks (marked for angling on OpenStreetMap) facing south. Open from east-south-east round to west. Sheltered in northerly weather.",
+      "hazard": null,
+      "label": { "dx": 6, "dy": 34, "anchor": "end", "at": [2, 24] }
+    },
+    {
+      "id": "saocaetano", "name": "São Caetano", "short": "S. Caetano", "place": "São Caetano port / Prainha do Galeão", "coast": "south coast",
+      "type": "harbour", "lat": 38.426, "lon": -28.421, "face": 164,
+      "open": [[110, 220]], "channel": [[100, 105]],
+      "wavePt": [38.383, -28.405], "tideLag": 0, "d": [320, 320, 320], "dSure": false,
+      "depth": "Deep water within about 320 m; nearer depths unknown.",
+      "note": "Small port facing south-south-east, open from east-south-east to south-west. Sheltered from westerly and northerly weather.",
+      "hazard": null,
+      "label": { "dx": -6, "dy": 34, "anchor": "start", "at": [14, 14] }
+    },
+    {
+      "id": "calhau", "name": "Calhau", "short": "Calhau", "place": "Rocks south of Porto do Calhau, Candelária", "coast": "west coast, Faial channel",
+      "type": "rock", "lat": 38.482, "lon": -28.537, "face": 225,
+      "open": [[160, 280]], "channel": [[285, 315]],
+      "wavePt": [38.45, -28.578], "tideLag": 0, "d": [202, 308, 414], "dSure": false,
+      "depth": "Steep: 50 m deep about 300 m out, 100 m about 400 m out (from the Porto do Calhau profile).",
+      "note": "Lava coast facing south-west, open from south-south-east round to west. Faial blocks swell from the west-north-west; sheltered in north-easterly weather.",
+      "hazard": null,
+      "label": { "dx": 18, "dy": 10, "anchor": "start", "at": [-12, 10] }
+    },
+    {
+      "id": "pocinho", "name": "Pocinho", "short": "Pocinho", "place": "Rocks south of Pocinho, Candelária", "coast": "west coast, Faial channel",
+      "type": "rock", "lat": 38.492, "lon": -28.542, "face": 243,
+      "open": [[165, 280], [340, 0]], "channel": [[285, 335]],
+      "wavePt": [38.471, -28.593], "tideLag": 0, "d": [464, 815, 1427], "dSure": false,
+      "depth": "Gentler shelf: 20 m about 460 m out, 50 m about 800 m out (from the Pocinho profile).",
+      "note": "Lava coast facing west-south-west, open from south-south-east round to west and to the north. Faial partly blocks the west-north-west.",
+      "hazard": null,
+      "label": { "dx": 18, "dy": 6, "anchor": "start", "at": [-14, -10] }
+    },
+    {
+      "id": "smateusw", "name": "West of São Mateus", "short": "W S. Mateus", "place": "Lava coast west of São Mateus", "coast": "south-west coast",
+      "type": "rock", "lat": 38.446, "lon": -28.503, "face": 216,
+      "open": [[140, 290]], "channel": [[295, 295]],
+      "wavePt": [38.409, -28.537], "tideLag": 0, "d": [450, 450, 450], "dSure": false,
+      "depth": "Not measured here; the coast on either side drops to 100 m within about 400 to 500 m.",
+      "note": "Lava coast facing south-west, open from south-east round to west-north-west. Sheltered in northerly and north-easterly weather.",
+      "hazard": null,
+      "label": { "dx": 18, "dy": 2, "anchor": "start" }
+    },
+    {
+      "id": "admoiro", "name": "Admoiro", "short": "Admoiro", "place": "Ponta do Admoiro, São João", "coast": "south coast",
+      "type": "rock", "lat": 38.415, "lon": -28.35, "face": 185,
+      "open": [[115, 255]], "channel": [[110, 110]],
+      "wavePt": [38.37, -28.355], "tideLag": 0, "d": [184, 184, 294], "dSure": false,
+      "depth": "Steep: deep water within about 180 m; 100 m deep about 300 m out.",
+      "note": "Lava point at São João facing south, open from east-south-east round to west-south-west. Sheltered in northerly weather.",
+      "hazard": null,
+      "label": { "dx": 0, "dy": -20, "anchor": "middle" }
+    },
+    {
+      "id": "cachorro", "name": "Cachorro", "short": "Cachorro", "place": "Lava coast west of Cachorro, Bandeiras", "coast": "north-west coast, Faial and São Jorge channels",
+      "type": "rock", "lat": 38.557, "lon": -28.455, "face": 357,
+      "open": [[295, 25]], "channel": [[30, 75], [290, 290]],
+      "wavePt": [38.602, -28.458], "tideLag": 0, "d": [240, 815, 1616], "dSure": false,
+      "depth": "Shelving: 20 m about 240 m out, 50 m about 800 m out (from the Cachorro profile).",
+      "note": "North-facing lava coast, open from west-north-west round to north-north-east. São Jorge blocks most north-easterly swell. Sheltered in southerly weather.",
+      "hazard": null,
+      "label": { "dx": 0, "dy": -20, "anchor": "middle" }
     }
   ]
 }

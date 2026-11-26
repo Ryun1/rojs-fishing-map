@@ -660,3 +660,12 @@ All under `<scratch>/`:
 - `scripts/`: `occ.py`, `facets2.py`, `ds.py` (occurrence APIs); `fb2.py` (FishBase parquet via DuckDB); `xl2.py` (SREA extraction); `oa.py` (OpenAlex abstracts).
 - `dl/` and `txt/`: downloaded legal texts and papers with Ghostscript text conversions.
 - `oa.sh`, `core.sh`, `pdftxt.py`, `r/`: helper scripts and scratch files left by the two delegated research threads (a hook blocked their deletion). Safe to ignore.
+
+## Fish added 2026-11-26 from the owner's catch photos
+
+Identified by eye from the owner's catch photos and added to `data/species.json`: blacktail comber (garoupa, 13 photos), grey triggerfish (peixe-porco, 7), pompano (prombeta, 5), blue jack mackerel (chicharro, 4), red scorpionfish (rocaz, 1 to 2), island grouper (badejo, 1), two-banded seabream (safia, 1), lizardfish (1) and bogue (boga, 1). Left out as too small to target (ornate wrasse, Azores chromis) or not identified with confidence (garfish, ballan wrasse, axillary seabream, a small eel).
+
+- Seasons: SREA Pico landings through `tools/season.py` (Peixe Porco, Prombeta, Rocaz, Badejo and Safia added to `docs/research/scripts/srea.py`). Thin series: prombeta (median 77 kg a year), boga (44), badejo (16) and safia (10 years with landings). Lizardfish has 18 kg in 32 years ("lagarto da costa"), so its season is a flat guess, marked `ev.season: "estimated"`, and the Seasons tab shows it last with no score.
+- Time of day: "measured" where the 2004-05 Faial/Pico shore survey separates day and night (recreational-catch.md 3.2: comber, triggerfish and pompano more by day, triggerfish only by day, jack mackerel and bogue both); estimated for the rest (scorpionfish and grouper treated as dusk and night feeders, safia like sargo).
+- Base (shore catch rate) [I]: jack mackerel 0.75 and comber 0.8 (common in the survey and in the owner's photos), triggerfish 0.6, pompano 0.55, safia 0.55, bogue 0.45, scorpionfish, grouper and lizardfish 0.5. The lowest are held at a level where the best spot, month and time can still reach Possible (45), as the tests require for every fish.
+- Rules: badejo (Mycteroperca fusca) has a 50 cm minimum size and a recreational limit of one per boat per trip (section 6); garoupa 30 cm and boga 15 cm minimums.

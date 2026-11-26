@@ -17,7 +17,9 @@ MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho",
 TARGETS = ["Veja", "Sargo Sarguete", "Bicuda", "Serra", "Lírio - Írio", "Anchova",
            "Encharéu", "Taínha Muja", "Salema", "Cavala", "Chicharro", "Boga",
            "Besugo", "Garoupa", "Congro", "Moreia Pintada", "Moreia Preta Viúva",
-           "Moreão", "Bonito Gaiado"]
+           "Moreão", "Bonito Gaiado",
+           # added 2026-11-26 for the fish in the owner's catch photos
+           "Peixe Porco", "Prombeta", "Rocaz", "Badejo", "Safia"]
 PERIODS = {"1994-2009": range(1994, 2010), "2010-2025": range(2010, 2026)}
 
 

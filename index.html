@@ -165,6 +165,7 @@ a { color: var(--accent); }
 .map .arrow.swell { stroke: var(--accent); }
 .map .dial { fill: var(--surface); stroke: var(--line); stroke-width: 1.2; }
 .map .alab { font-family: var(--font-data); font-size: 13px; fill: var(--fg); text-anchor: middle; }
+.map .lead { stroke: var(--muted); stroke-width: 1.2; fill: none; }
 .map .me { fill: var(--accent); stroke: var(--surface); stroke-width: 2.5; }
 .maplegend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 0.82rem; color: var(--muted); align-items: center; }
 .maplegend svg { width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; }
@@ -231,10 +232,11 @@ html { scroll-padding-top: 12px; scroll-padding-bottom: 84px; }
 /* Week view: days down, spots across, each box split into morning, afternoon and evening */
 .week { width: 100%; min-width: 0; table-layout: fixed; border-collapse: separate; border-spacing: 3px; font-size: 0.78rem; }
 .week th, .week td { padding: 0; border: 0; text-align: center; }
-.week thead th { font-weight: 600; font-size: 0.72rem; color: var(--muted); line-height: 1.15; padding-bottom: 4px; vertical-align: bottom; }
-.week thead th.sel { color: var(--accent); }
-.week tbody th { text-align: left; font-family: var(--font-data); font-weight: 500; font-size: 0.74rem; line-height: 1.15; width: 3.4em; }
-.week tbody th.today { color: var(--accent); }
+.week thead th { font-family: var(--font-data); font-weight: 500; font-size: 0.72rem; color: var(--muted); line-height: 1.15; padding-bottom: 4px; vertical-align: bottom; }
+.week thead th.today { color: var(--accent); }
+.week .corner { width: 5.4rem; }
+.week tbody th { text-align: left; font-weight: 600; font-size: 0.74rem; line-height: 1.15; }
+.week tbody th.sel { color: var(--accent); }
 .wk { width: 100%; display: flex; gap: 1px; padding: 2px; border: 1px solid transparent; border-radius: 6px; background: none; min-height: 40px; }
 .wk.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .seg { flex: 1; display: flex; align-items: center; justify-content: center; border-radius: 3px; min-width: 0; }
@@ -278,7 +280,7 @@ body{margin:0}
   <header>
     <p class="eyebrow">Pico island, Azores</p>
     <h1>Pico Fishing Forecast</h1>
-    <p class="lede">Fishability and the likely fish at five shore spots.</p>
+    <p class="lede">Fishability and the likely fish at shore spots around Pico.</p>
   </header>
 
   <div class="tabpanel" id="p-forecast" role="tabpanel" aria-labelledby="t-forecast">
@@ -333,6 +335,7 @@ body{margin:0}
         <text class="iname small" x="546" y="126" text-anchor="end">São Jorge &uarr;</text>
         <text class="iname" x="305" y="228" text-anchor="middle">PICO</text>
         <g id="map-arrows"></g>
+        <g id="map-leads"></g>
         <g id="map-me"></g>
         <g id="map-spots"></g>
       </svg>
@@ -366,7 +369,7 @@ body{margin:0}
     <p class="spotnote">How strongly each fish is in season, month by month, across the island. Pick a month to rank them, or tap a bar.</p>
     <p class="hazard"><b>Take these with a pinch of salt.</b> They come from commercial boat landings, not shore fishing. Boats fish deeper, further out and for the market, so these curves show roughly when each fish is around, not when it bites from the rocks. Your own catches and local knowledge count for more.</p>
     <ol class="rank" id="s-list"></ol>
-    <p class="fine">From 32 years of monthly fish-auction landings by boats on Pico (SREA, 1994 to 2025), smoothed. The landings also follow quotas, market prices and the days boats can go out. Sargo, veja and moray live on the coast all year, so they never fall below a moderate level.</p>
+    <p class="fine">From 32 years of monthly fish-auction landings by boats on Pico (SREA, 1994 to 2025), smoothed. The landings also follow quotas, market prices and the days boats can go out. Reef fish that live on the coast all year (sargo, veja, moray, comber, two-banded seabream, scorpionfish, grouper and bogue) never fall below a moderate level. Lizardfish is too rarely landed to have a curve, so it is shown as a flat guess.</p>
   </section>
   </div>
 
@@ -416,7 +419,7 @@ body{margin:0}
       <li>This week shows the worst fishability in each part of each day: morning 06:00 to 12:00, afternoon 12:00 to 18:00 and evening 18:00 to 22:00. Tap a box to look at that time and spot.</li>
       <li>With no forecast for the chosen time, spots are not rated: the app never fills the gap with made-up values. Tide, light and the fish in season are still shown, and the fish are ranked by season alone.</li>
       <li>Species pictures are from your own catches, except the moray, which is a drawing. Moon phase is shown for planning only; it does not change any rating or score.</li>
-      <li>Tide is computed on the phone for Horta from published tidal constants, for any date and with no connection, and matches the official Instituto Hidrogr&aacute;fico table to within a few minutes and about 5 cm. It is the astronomical tide only: wind and air pressure can move the real sea level. All five spots use Horta's times. Tidal constants: <a href="https://www.seanoe.org/data/00980/109129/" target="_blank" rel="noopener">TICON-4</a> (Hart-Davis, Dettmering and Seitz, CC BY 4.0).</li>
+      <li>Tide is computed on the phone for Horta from published tidal constants, for any date and with no connection, and matches the official Instituto Hidrogr&aacute;fico table to within a few minutes and about 5 cm. It is the astronomical tide only: wind and air pressure can move the real sea level. Every spot uses Horta's times. Tidal constants: <a href="https://www.seanoe.org/data/00980/109129/" target="_blank" rel="noopener">TICON-4</a> (Hart-Davis, Dettmering and Seitz, CC BY 4.0).</li>
       <li>Sources: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (wind and waves), <a href="https://www.ipma.pt/" target="_blank" rel="noopener">IPMA</a> (warnings), <a href="https://srea.azores.gov.pt/" target="_blank" rel="noopener">SREA</a> (landings), map &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>.</li>
     </ul>
   </section>
@@ -442,7 +445,16 @@ var FISH = {
     bonito: '<path d="M92 24 L113 12 L105 24 L113 36 Z" fill="#35536E"/><path d="M34 16 L40 10 L58 15 Z" fill="#35536E"/><path d="M64 16 C72 12 78 14 82 19 L64 18 Z" fill="#35536E"/><path d="M84 21 L90 19 L88 23 Z M84 27 L90 29 L88 25 Z" fill="#35536E"/><path d="M4 24 C14 16 36 13 60 15 C78 16 90 20 94 24 C90 28 78 32 60 33 C36 35 14 32 4 24 Z" fill="#D2DBE0"/><path d="M4 24 C14 16 36 13 60 15 C78 16 90 20 94 24 L60 22 L4 24 Z" fill="#2D4A66"/><path d="M30 16 L46 23 M42 15 L58 22 M54 15 L70 22 M66 16 L80 22 M76 18 L88 23" stroke="#14263A" stroke-width="1.2" fill="none"/><path d="M32 29 L38 34 L36 29 Z" fill="#8FA3B2"/><circle cx="16" cy="22" r="2" fill="#fff"/><circle cx="16.4" cy="22" r="1.1" fill="#13222B"/>',
     sargo: '<path d="M92 24 L110 14 L106 24 L110 34 Z" fill="#8F9BA3"/><path d="M28 12 C40 6 58 7 72 13 L72 16 C56 13 42 13 28 16 Z" fill="#8F9BA3"/><path d="M60 35 C68 40 76 39 82 33 L60 32 Z" fill="#8F9BA3"/><path d="M6 25 C10 14 32 9 54 10 C76 11 90 18 94 24 C90 30 76 38 54 38 C32 39 10 36 6 25 Z" fill="#D2DAE0"/><path d="M26 11 L30 36 M40 10 L44 38 M54 10 L58 38" stroke="#9AA8B2" stroke-width="2" opacity=".6" fill="none"/><ellipse cx="88" cy="24" rx="3.2" ry="5" fill="#1F2A31"/><path d="M6 25 L16 27" stroke="#28343B" stroke-width=".9" fill="none"/><path d="M8 25 C8 22 12 19 17 18" stroke="#8F9BA3" stroke-width="1.2" fill="none"/><circle cx="17" cy="22" r="2.2" fill="#fff"/><circle cx="17.4" cy="22" r="1.2" fill="#13222B"/>',
     veja: '<path d="M90 24 C98 14 108 16 112 24 C108 32 98 34 90 24 Z" fill="#9C5A46"/><path d="M26 10 C42 6 66 8 90 16 L90 20 C70 14 44 13 26 15 Z" fill="#B96A52"/><path d="M60 36 C70 41 80 40 86 33 L60 33 Z" fill="#B96A52"/><path d="M6 26 C8 15 28 10 50 11 C72 12 90 18 92 24 C90 31 74 37 52 37 C30 38 8 36 6 26 Z" fill="#B67761"/><path d="M6 26 C8 15 28 10 50 11 C72 12 90 18 92 24 L50 26 L6 27 Z" fill="#8E4F3E"/><path d="M10 33 C30 37 60 37 80 32 L52 33 Z" fill="#E1C7B0"/><circle cx="34" cy="22" r="1.3" fill="#E1C7B0"/><circle cx="48" cy="19" r="1.3" fill="#E1C7B0"/><circle cx="62" cy="23" r="1.3" fill="#E1C7B0"/><circle cx="74" cy="20" r="1.3" fill="#E1C7B0"/><path d="M6 27.5 L13 28.5" stroke="#3A2118" stroke-width="1.1" fill="none"/><circle cx="17" cy="21.5" r="2.4" fill="#F1E3B8"/><circle cx="17.4" cy="21.5" r="1.3" fill="#13222B"/>',
-    moray: '<path d="M6 25 C14 19 22 19 30 25 C40 33 50 31 58 24 C68 16 78 18 86 25 C94 31 104 30 112 22 L114 26 C106 36 92 38 84 31 C77 25 69 24 62 30 C52 38 38 40 28 31 C21 26 14 27 8 31 Z" fill="#A58A3F"/><path d="M30 25 C40 33 50 31 58 24 C68 16 78 18 86 25 C94 31 104 30 112 22" stroke="#6F5A1E" stroke-width="2" fill="none"/><circle cx="26" cy="28" r="1.5" fill="#4B3A12"/><circle cx="40" cy="31" r="1.5" fill="#4B3A12"/><circle cx="54" cy="29" r="1.5" fill="#4B3A12"/><circle cx="70" cy="22" r="1.5" fill="#4B3A12"/><circle cx="84" cy="27" r="1.5" fill="#4B3A12"/><circle cx="98" cy="29" r="1.5" fill="#4B3A12"/><path d="M4 27 L14 28.5" stroke="#2D2208" stroke-width="1" fill="none"/><path d="M5 28.4 L12 30 L9 28.4 Z" fill="#E9E2CC"/><circle cx="13" cy="25" r="1.4" fill="#fff"/><circle cx="13.3" cy="25" r=".8" fill="#13222B"/>'
+    moray: '<path d="M6 25 C14 19 22 19 30 25 C40 33 50 31 58 24 C68 16 78 18 86 25 C94 31 104 30 112 22 L114 26 C106 36 92 38 84 31 C77 25 69 24 62 30 C52 38 38 40 28 31 C21 26 14 27 8 31 Z" fill="#A58A3F"/><path d="M30 25 C40 33 50 31 58 24 C68 16 78 18 86 25 C94 31 104 30 112 22" stroke="#6F5A1E" stroke-width="2" fill="none"/><circle cx="26" cy="28" r="1.5" fill="#4B3A12"/><circle cx="40" cy="31" r="1.5" fill="#4B3A12"/><circle cx="54" cy="29" r="1.5" fill="#4B3A12"/><circle cx="70" cy="22" r="1.5" fill="#4B3A12"/><circle cx="84" cy="27" r="1.5" fill="#4B3A12"/><circle cx="98" cy="29" r="1.5" fill="#4B3A12"/><path d="M4 27 L14 28.5" stroke="#2D2208" stroke-width="1" fill="none"/><path d="M5 28.4 L12 30 L9 28.4 Z" fill="#E9E2CC"/><circle cx="13" cy="25" r="1.4" fill="#fff"/><circle cx="13.3" cy="25" r=".8" fill="#13222B"/>',
+    comber: '<path d="M94 24 C100 16 110 15 113 17 L113 31 C110 33 100 32 94 24 Z" fill="#8A4A2E"/><path d="M30 14 L34 8 L38 13 L42 7 L46 12 L50 7 L54 12 L58 8 L62 13 L80 14 C86 15 90 18 92 21 L30 18 Z" fill="#7A3F27"/><path d="M62 33 C72 38 82 36 88 30 L62 31 Z" fill="#8A4A2E"/><path d="M5 25 C10 15 30 12 54 13 C76 14 90 19 95 24 C90 30 76 35 54 35 C30 36 10 34 5 25 Z" fill="#B8673F"/><path d="M27 14 h6 v21 h-6 Z M41 13 h6 v22 h-6 Z M55 13 h6 v21 h-6 Z M69 15 h6 v18 h-6 Z" fill="#5E2E1B" opacity=".55"/><path d="M18 22 C40 21 70 22 92 24" stroke="#F1D9B8" stroke-width="1.6" opacity=".8" fill="none"/><path d="M5 26 L15 27.5" stroke="#3A1E12" stroke-width="1" fill="none"/><path d="M36 30 L42 36 L40 30 Z" fill="#E0A43A"/><circle cx="17" cy="21.5" r="2.3" fill="#fff"/><circle cx="17.4" cy="21.5" r="1.3" fill="#13222B"/>',
+    triggerfish: '<path d="M92 24 L112 13 C109 20 109 28 112 35 Z" fill="#6E7B73"/><path d="M30 12 L34 3 L38 11 Z" fill="#55625A"/><path d="M52 11 C66 6 80 10 90 19 L56 16 Z" fill="#6E7B73"/><path d="M52 37 C66 42 80 38 90 29 L56 32 Z" fill="#6E7B73"/><path d="M6 25 C10 17 22 10 40 9 C62 9 82 14 94 24 C82 34 62 40 40 39 C22 38 10 32 6 25 Z" fill="#9BA79C"/><path d="M30 12 C46 18 46 32 30 37 M54 11 C62 18 62 30 54 38" stroke="#6E7B73" stroke-width="3" opacity=".5" fill="none"/><path d="M6 25 L10 26" stroke="#2D3530" stroke-width="1.2" fill="none"/><path d="M34 27 L38 31 L40 26 Z" fill="#55625A"/><circle cx="22" cy="19" r="2.4" fill="#fff"/><circle cx="22.4" cy="19" r="1.3" fill="#13222B"/>',
+    pompano: '<path d="M90 24 L113 10 L105 24 L113 38 Z" fill="#8C9AA3"/><path d="M52 13 C56 4 62 2 66 3 C66 8 64 12 62 15 Z" fill="#5E6E78"/><path d="M52 35 C56 44 62 46 66 45 C66 40 64 36 62 33 Z" fill="#C9B35A"/><path d="M6 24 C12 15 30 10 50 11 C70 12 86 18 92 24 C86 30 70 36 50 37 C30 38 12 33 6 24 Z" fill="#D5DEE3"/><path d="M6 24 C12 15 30 10 50 11 C70 12 86 18 92 24 L50 21 L6 23.5 Z" fill="#6F8796"/><circle cx="42" cy="22.5" r="1.8" fill="#2A3640"/><circle cx="54" cy="22.8" r="1.8" fill="#2A3640"/><circle cx="66" cy="23.2" r="1.6" fill="#2A3640"/><path d="M6 24.5 L13 25.5" stroke="#2A3640" stroke-width="1" fill="none"/><path d="M30 28 L37 33 L35 28 Z" fill="#C9B35A"/><circle cx="17" cy="21.5" r="2.2" fill="#fff"/><circle cx="17.4" cy="21.5" r="1.2" fill="#13222B"/>',
+    jackmackerel: '<path d="M92 24 L113 12 L106 24 L113 36 Z" fill="#4E6E84"/><path d="M34 17 L40 11 L54 16 Z" fill="#4E6E84"/><path d="M58 17 C70 14 80 16 88 21 L58 19 Z" fill="#4E6E84"/><path d="M58 31 C70 34 80 32 88 27 L58 29 Z" fill="#AFC0CA"/><path d="M4 25 C14 18 36 15 60 16 C78 17 90 21 94 24 C90 27 78 31 60 32 C36 33 14 31 4 25 Z" fill="#D7E0E6"/><path d="M4 25 C14 18 36 15 60 16 C78 17 90 21 94 24 L60 22.5 L4 24.5 Z" fill="#3F6A8A"/><path d="M20 22 C40 21 56 23 66 25.5 C76 26 86 25 94 24" stroke="#7F98A8" stroke-width="1.6" fill="none"/><circle cx="24" cy="21.5" r="1.4" fill="#1E2C36"/><path d="M4 25.5 L14 26.5" stroke="#1E2C36" stroke-width=".9" fill="none"/><path d="M30 28 L36 33 L34 28 Z" fill="#AFC0CA"/><circle cx="15" cy="22.5" r="2.6" fill="#fff"/><circle cx="15.4" cy="22.5" r="1.4" fill="#13222B"/>',
+    scorpionfish: '<path d="M92 24 C100 16 110 16 113 20 L113 30 C110 33 100 32 92 24 Z" fill="#B0402C"/><path d="M30 14 L32 5 L36 13 L39 4 L42 12 L46 5 L48 12 L52 6 L54 13 L72 14 C82 15 88 18 90 21 L30 18 Z" fill="#9C3624"/><path d="M34 28 C38 40 48 44 56 40 L46 28 Z" fill="#C8573A"/><path d="M4 25 C6 13 22 10 40 12 C62 13 84 18 94 24 C86 30 66 35 44 35 C22 36 6 34 4 25 Z" fill="#D2603F"/><circle cx="34" cy="20" r="3" fill="#8E2E1E" opacity=".7"/><circle cx="52" cy="25" r="3.5" fill="#8E2E1E" opacity=".6"/><circle cx="70" cy="21" r="3" fill="#8E2E1E" opacity=".6"/><circle cx="62" cy="30" r="2.5" fill="#F2C3A8" opacity=".7"/><circle cx="26" cy="29" r="2.5" fill="#F2C3A8" opacity=".7"/><path d="M10 14 L12 10 M16 12 L18 8" stroke="#8E2E1E" stroke-width="1.4" fill="none"/><path d="M4 26 L14 28" stroke="#4A160C" stroke-width="1.1" fill="none"/><circle cx="16" cy="18.5" r="2.6" fill="#fff"/><circle cx="16.4" cy="18.5" r="1.4" fill="#13222B"/>',
+    grouper: '<path d="M92 24 C98 17 108 16 112 17 L112 31 C108 32 98 31 92 24 Z" fill="#5C4535"/><path d="M34 14 L38 9 L42 13 L46 8 L50 13 L54 9 L58 13 L80 14 C86 16 90 19 92 21 L34 18 Z" fill="#4E3A2D"/><path d="M60 33 C70 38 80 36 88 30 L60 31 Z" fill="#5C4535"/><path d="M3 26 C8 15 30 11 54 12 C76 13 90 19 94 24 C90 30 76 36 54 36 C30 37 8 35 3 26 Z" fill="#7A5C46"/><circle cx="30" cy="18" r="1.5" fill="#F3EBDD"/><circle cx="38" cy="24" r="1.5" fill="#F3EBDD"/><circle cx="46" cy="17" r="1.5" fill="#F3EBDD"/><circle cx="52" cy="29" r="1.5" fill="#F3EBDD"/><circle cx="58" cy="21" r="1.5" fill="#F3EBDD"/><circle cx="66" cy="27" r="1.5" fill="#F3EBDD"/><circle cx="72" cy="18" r="1.5" fill="#F3EBDD"/><circle cx="78" cy="25" r="1.5" fill="#F3EBDD"/><circle cx="84" cy="21" r="1.5" fill="#F3EBDD"/><circle cx="34" cy="30" r="1.5" fill="#F3EBDD"/><circle cx="44" cy="33" r="1.5" fill="#F3EBDD"/><circle cx="62" cy="33" r="1.5" fill="#F3EBDD"/><circle cx="24" cy="24" r="1.5" fill="#F3EBDD"/><path d="M3 27 L16 29" stroke="#2C1F16" stroke-width="1.2" fill="none"/><path d="M36 30 L42 36 L40 30 Z" fill="#5C4535"/><circle cx="16" cy="21" r="2.2" fill="#fff"/><circle cx="16.4" cy="21" r="1.2" fill="#13222B"/>',
+    safia: '<path d="M92 24 L110 14 L106 24 L110 34 Z" fill="#A9A27A"/><path d="M28 12 C40 6 58 7 72 13 L72 16 C56 13 42 13 28 16 Z" fill="#8F9BA3"/><path d="M60 35 C68 40 76 39 82 33 L60 32 Z" fill="#B9A76A"/><path d="M6 25 C10 14 32 9 54 10 C76 11 90 18 94 24 C90 30 76 38 54 38 C32 39 10 36 6 25 Z" fill="#D9D7C4"/><path d="M21 11.5 C25 18 25 31 21 37.5 L27 38.2 C30 31 30 18 27 10.6 Z" fill="#1F2A31"/><path d="M84 18.5 C86 22 86 26 84 29.5 L90 28 C91 25 91 23 90 20 Z" fill="#1F2A31"/><path d="M36 14 L82 20 M36 34 L82 29" stroke="#C7B98A" stroke-width="1" opacity=".7" fill="none"/><path d="M6 25 L14 27" stroke="#28343B" stroke-width=".9" fill="none"/><circle cx="15" cy="22" r="2.3" fill="#fff"/><circle cx="15.4" cy="22" r="1.3" fill="#13222B"/>',
+    lizardfish: '<path d="M96 24 L112 16 L108 24 L112 32 Z" fill="#7C7458"/><path d="M46 19 L50 13 L58 18 Z" fill="#6A6248"/><path d="M84 20 L88 17 L90 21 Z" fill="#6A6248"/><path d="M3 25 C6 19 18 18 40 19 C66 20 86 21 98 24 C86 27 66 29 40 30 C18 31 6 30 3 25 Z" fill="#A99E7C"/><path d="M3 25 C6 19 18 18 40 19 C66 20 86 21 98 24 L40 24 L3 24.5 Z" fill="#7C7458"/><ellipse cx="30" cy="25" rx="3.2" ry="2" fill="#9E4B3A" opacity=".75"/><ellipse cx="44" cy="25" rx="3.2" ry="2" fill="#9E4B3A" opacity=".75"/><ellipse cx="58" cy="25" rx="3.2" ry="2" fill="#9E4B3A" opacity=".75"/><ellipse cx="72" cy="25" rx="3.2" ry="2" fill="#9E4B3A" opacity=".75"/><ellipse cx="84" cy="25" rx="3.2" ry="2" fill="#9E4B3A" opacity=".75"/><path d="M3 25.5 L18 27" stroke="#2C2618" stroke-width="1.1" fill="none"/><circle cx="13" cy="22" r="2" fill="#fff"/><circle cx="13.4" cy="22" r="1.1" fill="#13222B"/>',
+    bogue: '<path d="M92 24 L113 13 L106 24 L113 35 Z" fill="#7A8F6A"/><path d="M36 17 C46 12 60 12 70 17 L70 19 L36 19 Z" fill="#6E8460"/><path d="M60 31 C68 34 76 32 82 28 L60 29 Z" fill="#C9C8A0"/><path d="M4 25 C12 18 34 15 58 16 C78 17 90 21 94 24 C90 27 78 31 58 32 C34 33 12 31 4 25 Z" fill="#DADFCB"/><path d="M4 25 C12 18 34 15 58 16 C78 17 90 21 94 24 L58 22 L4 24.5 Z" fill="#6E8F8A"/><path d="M18 23 C40 22 70 23 92 24.5 M20 26.5 C42 26 70 26 90 25.5 M24 29 C44 29 66 28.5 84 27" stroke="#D8B83C" stroke-width="1.2" fill="none"/><path d="M4 25.5 L11 26.3" stroke="#1F2A2A" stroke-width=".9" fill="none"/><path d="M30 29 L36 33 L34 29 Z" fill="#C9C8A0"/><circle cx="15" cy="22.5" r="2.8" fill="#fff"/><circle cx="15.4" cy="22.5" r="1.5" fill="#13222B"/>'
   };
   var PHOTOS = { barracuda: 1, amberjack: 1, bluefish: 1, bonito: 1, sargo: 1, veja: 1 };
   function fishSvg(id) {
@@ -547,7 +559,7 @@ var FISH = {
       ['season', 'time', 'habitat', 'base'].forEach(function (k) { if (worst === null || f[k] < f[worst]) worst = k; });
     }
     /* Resident fish (season never below 0.4: sargo, veja, moray) are here all year, just quieter in some months. */
-    if (worst === 'season') return (Math.min.apply(null, sp.season) >= 0.4 ? 'Here all year, but quieter in ' : 'Out of its usual season in ') + MONTHS[c.month - 1] + ' (measured).';
+    if (worst === 'season') return (Math.min.apply(null, sp.season) >= 0.4 ? 'Here all year, but quieter in ' : 'Out of its usual season in ') + MONTHS[c.month - 1] + ' (' + (sp.ev.season || 'measured') + ').';
     if (worst === 'time') return (f.time === 0 ? 'Does not feed ' : 'Weaker ') + PHASE_TEXT[c.phase] + ' (' + sp.ev.time + ').';
     if (worst === 'habitat') {
       if (fit.depth < fit.kind) return sp.deep > 0 ? 'Prefers deep water close in; it is shallow here (estimated).' : 'Prefers a shallow rocky shelf; it gets deep quickly here (estimated).';
@@ -661,6 +673,7 @@ var FISH = {
   function peakText(sp) {
     var top = Math.max.apply(null, sp.season), on = sp.season.map(function (v) { return v >= top - 0.05; });
     var ab = function (k) { return MONTHS[k].slice(0, 3); };
+    if (on.every(Boolean)) return sp.ev.season === 'estimated' ? 'No season data, a flat guess' : 'Same all year';
     var starts = [];
     on.forEach(function (x, k) { if (x && !on[(k + 11) % 12]) starts.push(k); });
     if (starts.length !== 1) return 'Peaks ' + on.map(function (x, k) { return x ? ab(k) : null; }).filter(Boolean).join(', ');
@@ -675,13 +688,15 @@ var FISH = {
       return '<button class="chip" type="button" data-smonth="' + (k + 1) + '" aria-pressed="' + (k === i) + '" aria-label="' + n + '">' + n.slice(0, 3) + '</button>';
     }).join('');
     var axis = '<div class="saxis" aria-hidden="true">' + MONTHS.map(function (n, k) { return '<span' + (k === i ? ' class="on"' : '') + '>' + n[0] + '</span>'; }).join('') + '</div>';
-    $('s-list').innerHTML = SPECIES.slice().sort(function (a, b) { return b.season[i] - a.season[i] || a.name.localeCompare(b.name); }).map(function (sp) {
-      var v = sp.season[i], lv = seasonLevel(v);
+    /* A fish with no landings curve (ev.season 'estimated') goes last and shows no score. */
+    var guess = function (sp) { return sp.ev.season === 'estimated' ? 1 : 0; };
+    $('s-list').innerHTML = SPECIES.slice().sort(function (a, b) { return guess(a) - guess(b) || b.season[i] - a.season[i] || a.name.localeCompare(b.name); }).map(function (sp) {
+      var v = sp.season[i], lv = guess(sp) ? ['No data', ''] : seasonLevel(v);
       var bars = sp.season.map(function (x, k) {
         return '<button type="button" data-smonth="' + (k + 1) + '"' + (k === i ? ' class="on"' : '') + ' tabindex="' + (k === i ? 0 : -1) + '" aria-label="' + sp.name + ', ' + MONTHS[k] + ': ' + Math.round(x * 100) + '"><span style="height:' + Math.max(4, Math.round(x * 100)) + '%"></span></button>';
       }).join('');
       return '<li class="' + lv[1] + '" data-sp="' + sp.id + '"><div class="rowtop"><div class="sid">' + fishSvg(sp.id) + '<div><div class="sname">' + sp.name + '<span>' + sp.pt + '</span></div><div class="speak">' + peakText(sp) + '</div></div></div>' +
-        '<div class="score">' + Math.round(v * 100) + '<small>' + lv[0] + '</small></div></div>' +
+        '<div class="score">' + (guess(sp) ? '–' : Math.round(v * 100)) + '<small>' + lv[0] + '</small></div></div>' +
         '<div class="spark" role="group" aria-label="' + sp.name + ' by month; arrow keys to move">' + bars + '</div>' + axis + '</li>';
     }).join('');
   }
@@ -842,13 +857,19 @@ var FISH = {
   function legendIcon(k) { return '<svg viewBox="-12 -12 24 24" aria-hidden="true">' + SHAPES[k] + '</svg>'; }
 
   function drawMap(conds) {
+    /* Markers are drawn at 80% size so neighbouring spots stay apart; label.at moves a marker off a crowded
+       stretch of coast, with a thin line back to the real position. Map labels use the short name. */
+    var leads = '';
     $('map-spots').innerHTML = SPOTS.map(function (s, i) {
       var p = mapXY(s.lat, s.lon), c = conds[i], lv = c.rating ? c.rating.level : 'x', sel = s.id === state.spot, lb = s.label || {};
+      var at = lb.at || [0, 0], x = p[0] + at[0], y = p[1] + at[1];
+      if (at[0] || at[1]) leads += '<path class="lead" d="M' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ' L' + x.toFixed(1) + ' ' + y.toFixed(1) + '"/>';
       var desc = s.name + ': ' + (c.rating ? c.rating.label : 'no forecast');
-      return '<g class="mk' + (sel ? ' sel' : '') + '" data-spot="' + s.id + '" tabindex="0" role="button" aria-pressed="' + sel + '" aria-label="' + desc + '" transform="translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')">' +
+      return '<g class="mk' + (sel ? ' sel' : '') + '" data-spot="' + s.id + '" tabindex="0" role="button" aria-pressed="' + sel + '" aria-label="' + desc + '" transform="translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') scale(0.8)">' +
         '<circle class="hit" r="22"/><circle class="ring" r="15"/>' + SHAPES[lv] +
-        '<text class="lbl" x="' + (lb.dx || 0) + '" y="' + (lb.dy || 0) + '" text-anchor="' + (lb.anchor || 'middle') + '">' + s.name + '</text></g>';
+        '<text class="lbl" x="' + (lb.dx || 0) + '" y="' + (lb.dy || 0) + '" text-anchor="' + (lb.anchor || 'middle') + '">' + (s.short || s.name) + '</text></g>';
     }).join('');
+    $('map-leads').innerHTML = leads;
     /* Wind and swell arrows: island-wide picture from the most exposed sample points. */
     var wx = 0, wy = 0, wn = 0, big = null;
     conds.forEach(function (c) {
@@ -869,9 +890,9 @@ var FISH = {
     }
     if (wn) {
       var wdir = (Math.atan2(wx, wy) * 180 / Math.PI + 360) % 360, wsp = Math.sqrt(wx * wx + wy * wy) / wn;
-      html += arrow(102, 298, wdir, 'wind', 'Wind ' + F(wsp));
+      html += arrow(428, 166, wdir, 'wind', 'Wind ' + F(wsp));
     }
-    if (big) html += arrow(170, 298, big.swellDir, 'swell', 'Sea ' + big.swellH.toFixed(1) + ' m');
+    if (big) html += arrow(500, 166, big.swellDir, 'swell', 'Sea ' + big.swellH.toFixed(1) + ' m');
     $('map-arrows').innerHTML = html;
     $('map-me').innerHTML = state.gps ? (function () { var p = mapXY(state.gps.lat, state.gps.lon); return '<circle class="me" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="7"><title>You</title></circle>'; })() : '';
     var anyX = conds.some(function (c) { return !c.rating; });
@@ -1204,7 +1225,7 @@ var FISH = {
     if (!r.f) return '<p class="fine more">Without a forecast only how often it is caught from the shore and the season count, for ' + MONTHS[month - 1] + '.</p>';
     var pts = function (k) { return signed(Math.round(r.adj[k] * 100)); };
     return '<ul class="factors" aria-label="What went into the score">' + FACTORS.map(function (x) {
-      var ev = x[2] || sp.ev.time;
+      var ev = (x[0] === 'season' && sp.ev.season) || x[2] || sp.ev.time;
       if (x[0] === 'cond') return '<li><span>' + x[1] + ' <span class="fine">(' + ev + ')</span></span><span class="bar"></span><span class="v">' + signed(['temp', 'wave', 'tide'].reduce(function (s, k) { return s + Math.round(r.adj[k] * 100); }, 0)) + '</span></li>';
       var v = Math.round(r.f[x[0]] * 100);
       return '<li><span>' + x[1] + ' <span class="fine">(' + ev + ')</span></span><span class="bar"><i style="width:' + v + '%"></i></span><span class="v">' + v + '</span></li>';
@@ -1335,10 +1356,11 @@ var FISH = {
     var date = when.y + '-' + pad(when.month) + '-' + pad(when.d), any = false;
     days.forEach(function (day) { if (day.date === date) any = true; });
     var label = function (day) { return day.k === 0 ? 'Today' : DAYS[new Date(Date.UTC(day.y, day.m - 1, day.d)).getUTCDay()] + '<br>' + day.d; };
-    box.innerHTML = '<table class="week"><thead><tr><td></td>' + SPOTS.map(function (s) {
-      return '<th scope="col"' + (s.id === state.spot ? ' class="sel"' : '') + '>' + (s.short || s.name) + '</th>';
-    }).join('') + '</tr></thead><tbody>' + days.map(function (day, r) {
-      return '<tr><th scope="row"' + (day.k === 0 ? ' class="today"' : '') + '>' + label(day) + '</th>' + SPOTS.map(function (s, ci) {
+    /* Spots down the side and days across, so the table stays readable on a phone however many spots there are. */
+    box.innerHTML = '<table class="week"><thead><tr><td class="corner"></td>' + days.map(function (day) {
+      return '<th scope="col"' + (day.k === 0 ? ' class="today"' : '') + '>' + label(day) + '</th>';
+    }).join('') + '</tr></thead><tbody>' + SPOTS.map(function (s, ci) {
+      return '<tr><th scope="row"' + (s.id === state.spot ? ' class="sel"' : '') + '>' + (s.short || s.name) + '</th>' + days.map(function (day, r) {
         var lv = day.row[ci], sel = day.date === date && s.id === state.spot, first = !any && r === 0 && ci === 0;
         var words = SLOTS.map(function (sl, n) { return sl[2] + ' ' + (lv[n] === null ? 'no forecast' : LEVELS[lv[n]]); }).join(', ');
         return '<td><button type="button" class="wk' + (sel ? ' sel' : '') + '" data-week="' + day.date + '|' + s.id + '" tabindex="' + (sel || first ? 0 : -1) + '" aria-label="' + s.name + ', ' + label(day).replace('<br>', ' ') + ': ' + words + '">' +
@@ -1589,7 +1611,7 @@ var FISH = {
       else if (act === 'manual') { showTab('about', true); $('f-temp').focus(); }
     });
     $('week').addEventListener('click', function (e) { var b = e.target.closest('[data-week]'); if (b) pickWeek(b.getAttribute('data-week')); });
-    $('week').addEventListener('keydown', function (e) { rove(e, 'table', '[data-week]', SPOTS.length); });
+    $('week').addEventListener('keydown', function (e) { var r = e.target.closest ? e.target.closest('tr') : null; rove(e, 'table', '[data-week]', r ? r.querySelectorAll('[data-week]').length : 7); });
     /* Best times: tap the timeline, or use the arrow keys on it, to move the chosen time. */
     function setHalf(n) {
       var cells = state.bestCells;
