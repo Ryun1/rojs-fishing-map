@@ -110,7 +110,7 @@
       "label": { "dx": 18, "dy": 10, "anchor": "start", "at": [-12, 10] }
     },
     {
-      "id": "pocinho", "name": "Pocinho", "short": "Pocinho", "place": "Rocks south of Pocinho, Candelária", "coast": "west coast, Faial channel",
+      "id": "pocinho", "name": "Calhau Deep", "short": "Calhau Deep", "place": "Calhau Deep", "coast": "west coast, Faial channel",
       "type": "rock", "lat": 38.492, "lon": -28.542, "face": 243,
       "open": [[165, 280], [340, 0]], "channel": [[285, 335]],
       "wavePt": [38.471, -28.593], "tideLag": 0, "d": [464, 815, 1427], "dSure": false,
