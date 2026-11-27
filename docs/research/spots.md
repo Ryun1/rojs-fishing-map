@@ -271,7 +271,7 @@ Eight spots were added from the GPS positions in the owner's own catch photos (2
 | calhau | Calhau | 38.482, -28.537 | 11 | calhau_w, 570 m north | 225 | 160-280 | 285-315 | calhau_w |
 | pocinho | Pocinho | 38.492, -28.542 | 4 | pocinho, 470 m north | 243 | 165-280, 340-000 | 285-335 | pocinho |
 | smateusw | West of São Mateus | 38.446, -28.503 | 4 | none within 4 km | 216 | 140-290 | 295 | none: assumed deep within about 450 m like the coast either side |
-| admoiro | Admoiro | 38.415, -28.350 | 2 | admoiro, 240 m west | 185 | 115-255 | 110 | admoiro |
+| admoiro | São João (Ponta do Admoiro; named by the owner) | 38.415, -28.350 | 2 | admoiro, 240 m west | 185 | 115-255 | 110 | admoiro |
 | cachorro | Cachorro | 38.557, -28.455 | 3 | cachorro, 730 m east | 357 | 295-025 | 030-075, 290 | cachorro |
 
 Method [I]. Overpass, EMODnet and OpenTopoData could not be reached from the session, so facings and sectors were computed with the same fetch method as Table 1 (rays every 5 degrees, facing weighted by fetch capped at 40 km) but against the simplified coastlines drawn in `index.html` (about 45 m precision). Checked against Table 1 at coxos, saocaetano and admoiro, this gives the same facings and the same sectors to within one 5 degree step, and at calhau_w a facing within 8 degrees. Depths are borrowed from the nearest profiled entry, so `dSure` is false for all eight. Wave sample points are 5 km out along the facing bearing. Place names come from the nearest OSM name and were not confirmed with the owner.

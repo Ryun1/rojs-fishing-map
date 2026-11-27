@@ -130,7 +130,7 @@
       "label": { "dx": 18, "dy": 2, "anchor": "start" }
     },
     {
-      "id": "admoiro", "name": "Admoiro", "short": "Admoiro", "place": "Ponta do Admoiro, São João", "coast": "south coast",
+      "id": "admoiro", "name": "São João", "short": "São João", "place": "São João", "coast": "south coast",
       "type": "rock", "lat": 38.415, "lon": -28.35, "face": 185,
       "open": [[115, 255]], "channel": [[110, 110]],
       "wavePt": [38.37, -28.355], "tideLag": 0, "d": [184, 184, 294], "dSure": false,
