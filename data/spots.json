@@ -120,7 +120,7 @@
       "label": { "dx": 18, "dy": 6, "anchor": "start", "at": [-14, -10] }
     },
     {
-      "id": "smateusw", "name": "West of São Mateus", "short": "W S. Mateus", "place": "Lava coast west of São Mateus", "coast": "south-west coast",
+      "id": "smateusw", "name": "Old Vineyard", "short": "Old Vineyard", "place": "Old Vineyard", "coast": "south-west coast",
       "type": "rock", "lat": 38.446, "lon": -28.503, "face": 216,
       "open": [[140, 290]], "channel": [[295, 295]],
       "wavePt": [38.409, -28.537], "tideLag": 0, "d": [450, 450, 450], "dSure": false,

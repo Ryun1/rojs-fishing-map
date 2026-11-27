@@ -270,7 +270,7 @@ Eight spots were added from the GPS positions in the owner's own catch photos (2
 | saocaetano | São Caetano | 38.426, -28.421 | 8 | saocaetano (same place) | 164 | 110-220 | 100-105 | saocaetano |
 | calhau | Mingato (named by the owner) | 38.482, -28.537 | 11 | calhau_w, 570 m north | 225 | 160-280 | 285-315 | calhau_w |
 | pocinho | Calhau Deep (named by the owner) | 38.492, -28.542 | 4 | pocinho, 470 m north | 243 | 165-280, 340-000 | 285-335 | pocinho |
-| smateusw | West of São Mateus | 38.446, -28.503 | 4 | none within 4 km | 216 | 140-290 | 295 | none: assumed deep within about 450 m like the coast either side |
+| smateusw | Old Vineyard (named by the owner) | 38.446, -28.503 | 4 | none within 4 km | 216 | 140-290 | 295 | none: assumed deep within about 450 m like the coast either side |
 | admoiro | São João (Ponta do Admoiro; named by the owner) | 38.415, -28.350 | 2 | admoiro, 240 m west | 185 | 115-255 | 110 | admoiro |
 | cachorro | Cachorro | 38.557, -28.455 | 3 | cachorro, 730 m east | 357 | 295-025 | 030-075, 290 | cachorro |
 
