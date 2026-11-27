@@ -80,7 +80,7 @@
       "label": { "dx": -16, "dy": 18, "anchor": "end", "at": [-8, 16] }
     },
     {
-      "id": "coxos", "name": "Coxos", "short": "Coxos", "place": "Coxos fishing rocks, east of São Mateus", "coast": "south coast",
+      "id": "coxos", "name": "Barracuda Rock", "short": "Barracuda Rock", "place": "Barracuda Rock (Coxos fishing rocks), east of São Mateus", "coast": "south coast",
       "type": "rock", "lat": 38.42, "lon": -28.436, "face": 186,
       "open": [[105, 270]], "channel": [[90, 100]],
       "wavePt": [38.375, -28.442], "tideLag": 0, "d": [132, 132, 244], "dSure": false,
