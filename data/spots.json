@@ -70,7 +70,7 @@
       "label": { "dx": 0, "dy": -20, "anchor": "end" }
     },
     {
-      "id": "saomateus", "name": "São Mateus", "short": "S. Mateus", "place": "São Mateus shore, south-east of the port", "coast": "south coast",
+      "id": "saomateus", "name": "São Mateus", "short": "S. Mateus", "place": "São Mateus", "coast": "south coast",
       "type": "rock", "lat": 38.427, "lon": -28.456, "face": 213,
       "open": [[135, 290]], "channel": [[295, 295]],
       "wavePt": [38.389, -28.487], "tideLag": 0, "d": [180, 306, 450], "dSure": false,
