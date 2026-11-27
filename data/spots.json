@@ -100,7 +100,7 @@
       "label": { "dx": -6, "dy": 34, "anchor": "start", "at": [14, 14] }
     },
     {
-      "id": "calhau", "name": "Calhau", "short": "Calhau", "place": "Rocks south of Porto do Calhau, Candelária", "coast": "west coast, Faial channel",
+      "id": "calhau", "name": "Mingato", "short": "Mingato", "place": "Mingato", "coast": "west coast, Faial channel",
       "type": "rock", "lat": 38.482, "lon": -28.537, "face": 225,
       "open": [[160, 280]], "channel": [[285, 315]],
       "wavePt": [38.45, -28.578], "tideLag": 0, "d": [202, 308, 414], "dSure": false,

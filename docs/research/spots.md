@@ -268,7 +268,7 @@ Eight spots were added from the GPS positions in the owner's own catch photos (2
 | saomateus | São Mateus | 38.427, -28.456 | 37 | between saomateus (port) and ptasaomateus | 213 | 135-290 | 295 | ptasaomateus |
 | coxos | Barracuda Rock (Coxos; named by the owner) | 38.420, -28.436 | 23 | coxos (same place, OSM leisure=fishing) | 186 | 105-270 | 090-100 | coxos |
 | saocaetano | São Caetano | 38.426, -28.421 | 8 | saocaetano (same place) | 164 | 110-220 | 100-105 | saocaetano |
-| calhau | Calhau | 38.482, -28.537 | 11 | calhau_w, 570 m north | 225 | 160-280 | 285-315 | calhau_w |
+| calhau | Mingato (named by the owner) | 38.482, -28.537 | 11 | calhau_w, 570 m north | 225 | 160-280 | 285-315 | calhau_w |
 | pocinho | Pocinho | 38.492, -28.542 | 4 | pocinho, 470 m north | 243 | 165-280, 340-000 | 285-335 | pocinho |
 | smateusw | West of São Mateus | 38.446, -28.503 | 4 | none within 4 km | 216 | 140-290 | 295 | none: assumed deep within about 450 m like the coast either side |
 | admoiro | São João (Ponta do Admoiro; named by the owner) | 38.415, -28.350 | 2 | admoiro, 240 m west | 185 | 115-255 | 110 | admoiro |
